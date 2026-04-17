@@ -603,11 +603,16 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
         <button class="btn-sm" onclick="importJSON()" style="width:100%">Restore</button>
       </div>
       <div style="background:var(--surface2);border-radius:8px;padding:12px;margin-top:10px">
-        <div class="form-label">Import CSV</div>
-        <div style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.6">Accepts M-FRAME export CSV or a minimal 4-column format: <em style="color:var(--text2)">Date, Sport, Min, Intensity</em>. Duplicates are skipped.</div>
-        <input type="file" id="importCSVFile" accept=".csv" class="form-input" style="margin-bottom:8px">
-        <button class="btn-sm" onclick="importCSV()" style="width:100%">Import CSV</button>
-        <div id="csvImportStatus" style="font-size:11px;margin-top:6px;color:var(--text3)"></div>
+        <div class="form-label">Import from Garmin Connect</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.6">
+          Export from <strong style="color:var(--text2)">Garmin Connect → Activities → Export CSV</strong>.<br>
+          Running &amp; swimming use your saved threshold pace to calculate IF.<br>
+          Cycling uses Aerobic Training Effect as an intensity estimate.<br>
+          Activities under 5 min and duplicates are skipped.
+        </div>
+        <input type="file" id="importGarminFile" accept=".csv" class="form-input" style="margin-bottom:8px">
+        <button class="btn-sm" onclick="importGarmin()" style="width:100%">Import Garmin CSV</button>
+        <div id="garminImportStatus" style="font-size:11px;margin-top:6px;line-height:1.5;color:var(--text3)"></div>
       </div>
     </div>
   </div>
@@ -1977,58 +1982,100 @@ function setTSSGoal(v){weeklyTSSGoal=v;save();renderSettings();renderWeek()}
 function exportJSON(){const b=new Blob([JSON.stringify({workouts,profile,weeklyLoadKey,weeklyTSSGoal,intensityTarget},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='mframe_'+today()+'.json';a.click()}
 function exportCSV(){if(!workouts.length)return alert('No data');const h=['Date','Sport','Min','Intensity','RawTSS','AdjTSS','IF','LoadPts','IntPts','M'];const rows=workouts.map(w=>[w.date,w.sport,w.time,w.intensity,w.rawTSS,w.adjTSS,w.ifv.toFixed(2),w.lp,w.ip,w.m]);const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent([h,...rows].map(r=>r.join(',')).join('\n'));a.download='mframe_'+today()+'.csv';a.click()}
 function importJSON(){const f=document.getElementById('importFile').files[0];if(!f)return alert('Select a file');const r=new FileReader();r.onload=e=>{try{const d=JSON.parse(e.target.result);if(d.workouts)workouts=d.workouts;if(d.profile)profile=d.profile;if(d.weeklyLoadKey)weeklyLoadKey=d.weeklyLoadKey;if(d.weeklyTSSGoal)weeklyTSSGoal=d.weeklyTSSGoal;if(d.intensityTarget)intensityTarget=d.intensityTarget;save();render();renderSettings();flash('Imported '+workouts.length+' sessions')}catch{alert('Invalid file')}};r.readAsText(f)}
-function importCSV(){
-  const f=document.getElementById('importCSVFile').files[0]
-  const st=document.getElementById('csvImportStatus')
+// Parse a single CSV line respecting double-quoted fields (Garmin uses these)
+function parseCSVLine(line){
+  const out=[];let cur='',inQ=false
+  for(let i=0;i<line.length;i++){
+    const c=line[i]
+    if(c==='"'){inQ=!inQ}
+    else if(c===','&&!inQ){out.push(cur.trim());cur=''}
+    else{cur+=c}
+  }
+  out.push(cur.trim())
+  return out
+}
+
+function importGarmin(){
+  const f=document.getElementById('importGarminFile').files[0]
+  const st=document.getElementById('garminImportStatus')
   if(!f){st.textContent='Select a CSV file first.';st.style.color='var(--red)';return}
   const r=new FileReader()
   r.onload=e=>{
     try{
       const lines=e.target.result.trim().split('\n').filter(l=>l.trim())
       if(lines.length<2){st.textContent='File appears empty.';st.style.color='var(--red)';return}
-      const hdr=lines[0].split(',').map(h=>h.trim().toLowerCase())
-      // Detect format: full export has 'rawtss' or 'if' column
-      const fullFmt=hdr.includes('rawtss')||hdr.includes('if')
-      const iDate=hdr.indexOf('date'),iSport=hdr.findIndex(h=>h==='sport')
-      const iMin=hdr.findIndex(h=>h==='min'||h==='duration'||h==='duration(min)')
-      const iInt=hdr.findIndex(h=>h==='intensity'||h==='power'||h==='pace')
-      const iRawTSS=hdr.indexOf('rawtss'),iIF=hdr.indexOf('if')
-      const iAdjTSS=hdr.indexOf('adjtss'),iLp=hdr.indexOf('loadpts'),iIp=hdr.indexOf('intpts'),iM=hdr.indexOf('m')
-      if(iDate<0||iSport<0||iMin<0||iInt<0){
-        st.textContent='Could not find required columns (Date, Sport, Min, Intensity).';st.style.color='var(--red)';return}
-      let added=0,skipped=0,errors=0
+      const hdr=parseCSVLine(lines[0]).map(h=>h.toLowerCase().replace(/[®\s]+/g,' ').trim())
+      if(!hdr.includes('activity type')){
+        st.textContent='Not a Garmin Activities CSV — expected "Activity Type" column.'
+        st.style.color='var(--red)';return
+      }
+      const col=n=>hdr.indexOf(n)
+      const iType=col('activity type'),iDate=col('date'),iTime=col('time')
+      const iPace=col('avg pace'),iTE=col('aerobic te')
+      // Map Garmin activity type → M-FRAME sport
+      const toSport=t=>{
+        const tl=t.toLowerCase()
+        if(tl.includes('run')||tl.includes('treadmill')||tl.includes('trail'))return'run'
+        if(tl.includes('cycl')||tl.includes('bike')||tl.includes('ride')||tl.includes('spinning'))return'bike'
+        if(tl.includes('swim'))return'swim'
+        return null
+      }
+      // Parse Garmin duration "HH:MM:SS" or "MM:SS.s" to minutes
+      const parseDur=s=>{
+        if(!s||s==='--')return 0
+        const pts=s.split(':')
+        if(pts.length===3)return parseInt(pts[0])*60+parseInt(pts[1])+parseFloat(pts[2])/60
+        if(pts.length===2)return parseInt(pts[0])+parseFloat(pts[1])/60
+        return 0
+      }
+      // Aerobic TE → estimated IF (for cycling without power data)
+      const teToIF=te=>te>=5?0.97:te>=4?0.90:te>=3?0.82:te>=2?0.74:0.63
+      let added=0,skipped=0,noThresh=0,ignored=0
       lines.slice(1).forEach(line=>{
         if(!line.trim())return
-        const cols=line.split(',').map(c=>c.trim().replace(/^"|"$/g,''))
-        const date=cols[iDate],sport=(cols[iSport]||'bike').toLowerCase()
-        const time=parseFloat(cols[iMin]),intensity=cols[iInt]
-        if(!date||!time||isNaN(time)||!intensity){errors++;return}
-        // Duplicate check: same date + sport + time
-        if(workouts.some(w=>w.date===date&&w.sport===sport&&w.time===time)){skipped++;return}
-        let ifv,rawTSS,adjTSS,lp,ip,m
-        if(fullFmt&&iIF>=0&&iRawTSS>=0){
-          // Use stored values, recalc m/lp/ip to keep them consistent
-          ifv=parseFloat(cols[iIF])||0
-          rawTSS=parseFloat(cols[iRawTSS])||0
-          adjTSS=iAdjTSS>=0?parseFloat(cols[iAdjTSS])||rawTSS:rawTSS
-          const mc=calcM(sport,rawTSS,ifv)
-          lp=mc.lp;ip=mc.ip;m=mc.m
+        const c=parseCSVLine(line)
+        const type=(c[iType]||'').trim()
+        const sport=toSport(type)
+        if(!sport){ignored++;return}
+        // Date: "2026-04-14 20:30:50" → "2026-04-14"
+        const rawDate=(c[iDate]||'').trim()
+        const date=rawDate.slice(0,10)
+        if(!date.match(/^\d{4}-\d{2}-\d{2}$/))return
+        const durMin=parseDur((c[iTime]||'').trim())
+        if(durMin<5)return // skip warm-up fragments
+        // Duplicate: same date + sport within 1 min duration tolerance
+        if(workouts.some(w=>w.date===date&&w.sport===sport&&Math.abs(w.time-Math.round(durMin))<2)){skipped++;return}
+        let ifv,intensity
+        if(sport==='run'||sport==='swim'){
+          const paceStr=(iPace>=0?(c[iPace]||''):'').trim()
+          if(!paceStr||paceStr==='--'){skipped++;return}
+          ifv=calcIF(paceStr,sport)
+          if(!ifv||ifv<=0){noThresh++;return}
+          intensity=paceStr
         } else {
-          // Minimal format: calculate from profile
-          ifv=calcIF(intensity,sport)
-          if(!ifv){errors++;return}
-          rawTSS=calcRawTSS(time,ifv)
-          const mc=calcM(sport,rawTSS,ifv)
-          adjTSS=mc.adjTSS;lp=mc.lp;ip=mc.ip;m=mc.m
+          // Cycling: estimate from Aerobic TE
+          const te=iTE>=0?parseFloat(c[iTE]):NaN
+          if(isNaN(te)||te<=0){skipped++;return}
+          ifv=teToIF(te)
+          // Store estimated watts (FTP × IF, or 200 × IF if no FTP set)
+          const ftp=parseFloat(profile.bike)||200
+          intensity=String(Math.round(ftp*ifv))
         }
-        workouts.push({id:uid(),date,sport,time,intensity,rawTSS,adjTSS,ifv,lp,ip,m})
+        const time=Math.round(durMin)
+        const rawTSS=calcRawTSS(time,ifv)
+        const mc=calcM(sport,rawTSS,ifv)
+        workouts.push({id:uid(),date,sport,time,intensity,rawTSS,adjTSS:mc.adjTSS,ifv,lp:mc.lp,ip:mc.ip,m:mc.m})
         added++
       })
       workouts.sort((a,b)=>a.date.localeCompare(b.date))
       save();render();renderSettings()
-      st.style.color='var(--accent)'
-      st.textContent=`✓ Added ${added} session${added!==1?'s':''}${skipped?` · ${skipped} duplicate${skipped!==1?'s':''} skipped`:''}${errors?` · ${errors} row${errors!==1?'s':''} skipped (missing data)`:'.'}`
-      if(added>0)flash('Imported '+added+' sessions from CSV')
+      const parts=[`✓ ${added} session${added!==1?'s':''} imported`]
+      if(skipped)parts.push(`${skipped} duplicate${skipped!==1?'s':''} skipped`)
+      if(noThresh)parts.push(`${noThresh} skipped — set your run/swim threshold in Setup first`)
+      if(ignored)parts.push(`${ignored} non-endurance activities ignored`)
+      st.style.color=added>0?'var(--accent)':'var(--text3)'
+      st.innerHTML=parts.join('<br>')
+      if(added>0)flash('Imported '+added+' sessions from Garmin')
     }catch(err){st.textContent='Parse error: '+err.message;st.style.color='var(--red)'}
   }
   r.readAsText(f)
