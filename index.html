@@ -275,67 +275,94 @@ nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px sol
     <div class="rec-context" id="recContext"></div>
   </div>
 
-  <div class="card" id="plannerCard">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-      <div class="card-label" style="margin:0">Week planner</div>
-      <button onclick="clearWeekPlan()" style="padding:3px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text3);font-size:11px;cursor:pointer">Clear</button>
+  <!-- INTENSITY BUDGET — sits above planner for quick read -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div class="card-label" style="margin:0">Time in zones</div>
+      <span style="font-size:10px;color:var(--text3);font-family:var(--font-display);font-weight:600" id="budgetTotalTime"></span>
     </div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.6">Two waves: <span style="color:var(--vol)">volume</span> (Low·Mid·Mid·High·Low·Mid·High) × <span style="color:var(--int)">intensity</span> (Low·High·Low·High·Low·High·Low). Set your 2 rest days — the waves fill in automatically.</div>
-
-    <!-- STEP 1: SET REST DAYS -->
-    <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;font-weight:600">1 · Set rest days (pick 2)</div>
-    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:12px" id="restDayPicker"></div>
-
-    <!-- STEP 2: ORDER VALLEY VOLUMES -->
-    <div id="valleyOrderSection" style="display:none">
-      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;font-weight:600">2 · Order valley volumes <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">(tap days to cycle)</span></div>
-      <div style="font-size:10px;color:var(--text3);margin-bottom:8px;line-height:1.6" id="valleyHint"></div>
+    <!-- Stacked bar -->
+    <div style="display:flex;height:18px;border-radius:4px;overflow:hidden;margin-bottom:10px;background:var(--surface2)" id="budgetBar">
+      <div id="budgLow" style="height:100%;background:#00d4aa;transition:width 0.4s;width:0%;min-width:0"></div>
+      <div id="budgMod" style="height:100%;background:#ffcc00;transition:width 0.4s;width:0%;min-width:0"></div>
+      <div id="budgHigh" style="height:100%;background:#ff6b35;transition:width 0.4s;width:0%;min-width:0"></div>
     </div>
-
-    <!-- DUAL WAVE VISUALIZER -->
-    <div id="waveViz" style="display:none;margin-bottom:10px">
-      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:4px" id="waveVolRow"></div>
-      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:2px" id="waveIntRow"></div>
-      <div style="display:flex;gap:12px;margin-top:4px;flex-wrap:wrap">
-        <span style="font-size:9px;color:var(--vol)">■ Volume wave</span>
-        <span style="font-size:9px;color:var(--int)">■ Intensity wave</span>
-      </div>
-    </div>
-
-    <!-- PROJECTED M + STATUS -->
-    <div id="projMSection" style="display:none;background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">
-        <span style="font-size:11px;color:var(--text3)">Projected week M</span>
-        <span style="font-family:var(--font-display);font-size:22px;font-weight:800;transition:color 0.3s" id="projMVal">0</span>
-      </div>
-      <div style="position:relative;height:8px;border-radius:4px;background:linear-gradient(90deg,#00d4aa 0%,#00d4aa 50%,#ffcc00 65%,#ff6b35 78%,#ff3b3b 88%,#ff3b3b 100%);margin-bottom:3px">
-        <div id="projMNeedle" style="position:absolute;top:-4px;width:4px;height:16px;background:var(--text);border-radius:2px;transform:translateX(-50%);transition:left 0.4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 0 0 2px var(--bg);left:2%"></div>
-      </div>
-      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-bottom:4px">
-        <span>0</span><span style="color:var(--accent)">▲<span id="projMBudgetTick">27</span></span><span style="color:var(--red)">30⚠</span><span>42</span>
-      </div>
-      <div id="projMStatus" style="font-size:11px;font-weight:600;text-align:center;color:var(--text3)">—</div>
-      <!-- Per-day M breakdown -->
-      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:8px" id="dayMRow"></div>
-    </div>
-
-    <!-- ACTUAL vs PLAN -->
-    <div class="planner-days" id="plannerDays"></div>
-    <div id="waveBreakWarning" style="display:none;margin-top:6px;padding:7px 10px;background:rgba(255,204,0,0.08);border-radius:6px;border-left:2px solid var(--yellow);font-size:11px;color:var(--yellow);line-height:1.6"></div>
-    <div id="weekComplete" style="margin-top:6px;text-align:center"></div>
+    <!-- Zone rows -->
+    <div id="budgetZoneRows"></div>
+    <div style="font-size:9px;color:var(--text3);margin-top:8px;text-align:right;letter-spacing:0.03em">Target <span id="zoneLabelTarget" style="font-weight:600;color:var(--text2)"></span></div>
   </div>
 
-  <div class="card">
-    <div class="card-label">Intensity budget — target <span id="zoneLabelTarget"></span></div>
-    <div class="budget-row">
-      <div class="budget-seg budget-low" id="budgLow" style="width:0%"></div>
-      <div class="budget-seg budget-mod" id="budgMod" style="width:0%"></div>
-      <div class="budget-seg budget-high" id="budgHigh" style="width:0%"></div>
+  <!-- WEEK PLANNER — collapsible -->
+  <div class="card" id="plannerCard">
+    <div class="collapse-toggle" onclick="toggleCollapse('plannerBody','plannerIcon')">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="card-label" style="margin:0">Week planner</div>
+        <button onclick="event.stopPropagation();clearWeekPlan()" style="padding:2px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text3);font-size:10px;cursor:pointer">Clear</button>
+      </div>
+      <span class="collapse-icon" id="plannerIcon">&#9662;</span>
     </div>
-    <div class="budget-labels">
-      <span>Low Z1–2: <strong id="budgLowPct">0</strong>%</span>
-      <span>Mod Z3: <strong id="budgModPct">0</strong>%</span>
-      <span>High Z4+: <strong id="budgHighPct">0</strong>%</span>
+    <div class="collapse-body" id="plannerBody">
+      <div style="height:8px"></div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.6">Two waves: <span style="color:var(--vol)">volume</span> (Low·Mid·Mid·High·Low·Mid·High) × <span style="color:var(--int)">intensity</span> (Low·High·Low·High·Low·High·Low). Set your 2 rest days — the waves fill in automatically.</div>
+
+      <!-- STEP 1: SET REST DAYS -->
+      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;font-weight:600">1 · Set rest days (pick 2)</div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:12px" id="restDayPicker"></div>
+
+      <!-- STEP 2: ORDER VALLEY VOLUMES -->
+      <div id="valleyOrderSection" style="display:none">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;font-weight:600">2 · Order valley volumes <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">(tap days to cycle)</span></div>
+        <div style="font-size:10px;color:var(--text3);margin-bottom:8px;line-height:1.6" id="valleyHint"></div>
+      </div>
+
+      <!-- DUAL WAVE VISUALIZER -->
+      <div id="waveViz" style="display:none;margin-bottom:10px">
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:4px" id="waveVolRow"></div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:2px" id="waveIntRow"></div>
+        <div style="display:flex;gap:12px;margin-top:4px;flex-wrap:wrap">
+          <span style="font-size:9px;color:var(--vol)">■ Volume wave</span>
+          <span style="font-size:9px;color:var(--int)">■ Intensity wave</span>
+        </div>
+      </div>
+
+      <!-- PROJECTED M + STATUS -->
+      <div id="projMSection" style="display:none;background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+          <span style="font-size:11px;color:var(--text3)">Projected week M</span>
+          <span style="font-family:var(--font-display);font-size:22px;font-weight:800;transition:color 0.3s" id="projMVal">0</span>
+        </div>
+        <!-- Gauge track — same gradient & scale (0–42) as main M-Score gauge -->
+        <div style="position:relative;height:10px;border-radius:5px;background:linear-gradient(90deg,#00d4aa 0%,#00d4aa 33.3%,#ffcc00 42.9%,#ff6b35 59.5%,#ff3b3b 71.4%,#ff3b3b 100%);margin-top:20px">
+          <!-- tier target marker: thin white line at tier.mCeil position -->
+          <div id="projMTargetLine" style="position:absolute;top:-3px;bottom:-3px;width:2px;background:rgba(255,255,255,0.55);border-radius:1px;left:64%">
+            <span id="projMBudgetTick" style="position:absolute;bottom:14px;left:50%;transform:translateX(-50%);font-size:8px;font-family:var(--font-display);font-weight:700;color:rgba(255,255,255,0.7);white-space:nowrap">27</span>
+          </div>
+          <!-- Injury marker at 30 -->
+          <div style="position:absolute;top:-3px;bottom:-3px;width:1px;background:rgba(255,59,59,0.5);border-radius:1px;left:71.4%">
+            <span style="position:absolute;bottom:14px;left:50%;transform:translateX(-50%);font-size:8px;font-family:var(--font-display);font-weight:700;color:rgba(255,59,59,0.7);white-space:nowrap">30</span>
+          </div>
+          <!-- Needle -->
+          <div id="projMNeedle" style="position:absolute;top:-4px;width:3px;height:18px;background:var(--text);border-radius:2px;transform:translateX(-50%);transition:left 0.4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 0 0 2px var(--bg);left:2%;overflow:visible">
+            <span id="projMNeedleVal" style="position:absolute;bottom:21px;left:50%;transform:translateX(-50%);font-family:var(--font-display);font-size:13px;font-weight:800;white-space:nowrap;color:var(--text);text-shadow:0 0 6px var(--bg),0 0 6px var(--bg);pointer-events:none;line-height:1;transition:color 0.3s"></span>
+          </div>
+        </div>
+        <!-- Zone chips: same percentages as main gauge (scale 0–42) -->
+        <div style="position:relative;height:26px;margin-top:4px" id="projMChips">
+          <span data-zone="low"    style="position:absolute;left:38.1%;top:2px;  transform:translateX(-50%);font-size:8px;font-family:var(--font-display);font-weight:700;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;color:#00d4aa;opacity:0.3;transition:opacity 0.25s">Low</span>
+          <span data-zone="maint"  style="position:absolute;left:51.2%;top:14px; transform:translateX(-50%);font-size:8px;font-family:var(--font-display);font-weight:700;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;color:var(--text2);opacity:0.3;transition:opacity 0.25s">Maint</span>
+          <span data-zone="mod"    style="position:absolute;left:61.9%;top:2px;  transform:translateX(-50%);font-size:8px;font-family:var(--font-display);font-weight:700;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;color:var(--yellow);opacity:0.3;transition:opacity 0.25s">Mod</span>
+          <span data-zone="high"   style="position:absolute;left:67.9%;top:14px; transform:translateX(-50%);font-size:8px;font-family:var(--font-display);font-weight:700;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;color:var(--accent2);opacity:0.3;transition:opacity 0.25s">Hi</span>
+          <span data-zone="injury" style="position:absolute;left:83.3%;top:2px;  transform:translateX(-50%);font-size:8px;font-family:var(--font-display);font-weight:700;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;color:var(--red);opacity:0.3;transition:opacity 0.25s">Injury</span>
+        </div>
+        <div id="projMStatus" style="font-size:10px;font-weight:600;text-align:center;color:var(--text3);margin-top:2px;line-height:1.3">—</div>
+        <!-- Per-day M breakdown -->
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:8px" id="dayMRow"></div>
+      </div>
+
+      <!-- ACTUAL vs PLAN -->
+      <div class="planner-days" id="plannerDays"></div>
+      <div id="waveBreakWarning" style="display:none;margin-top:6px;padding:7px 10px;background:rgba(255,204,0,0.08);border-radius:6px;border-left:2px solid var(--yellow);font-size:11px;color:var(--yellow);line-height:1.6"></div>
+      <div id="weekComplete" style="margin-top:6px;text-align:center"></div>
     </div>
   </div>
 
@@ -597,7 +624,7 @@ const ZONE_PRESETS=[
   {label:'Build 70/20/10',lo:70,mo:20,hi:10},
   {label:'Race 60/25/15',lo:60,mo:25,hi:15},
 ]
-const DAYS=['Mon','Tue','Wed','Thu','Fri','Sun','Sat']
+const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
 const getTier=()=>LOAD_TIERS[weeklyLoadKey]||LOAD_TIERS.moderate
 const getStype=id=>STYPES.find(s=>s.id===id)||STYPES[0]
 
@@ -663,10 +690,11 @@ function load(){
   intensityTarget=d.intensityTarget||{lo:70,mo:20,hi:10}
   const wk=getWeekRange().start;const saved=d.weekPlanWeek===wk?(d.weekPlan||{}):{}
   weekPlan={restDays:saved.restDays||[],valleyVols:saved.valleyVols||{},makeup:saved.makeup||{}}}
-function today(){return new Date().toISOString().split('T')[0]}
-function getWeekRange(){const now=new Date(),day=now.getDay(),diff=day===0?-6:1-day;const mon=new Date(now);mon.setDate(now.getDate()+diff);mon.setHours(0,0,0,0);return{start:mon.toISOString().split('T')[0],end:new Date(mon.getTime()+6*864e5).toISOString().split('T')[0],mon}}
+function nyDate(d){return (d||new Date()).toLocaleDateString('en-CA',{timeZone:'America/New_York'})}
+function today(){return nyDate()}
+function getWeekRange(){const t=today(),p=t.split('-').map(Number);const mon=new Date(p[0],p[1]-1,p[2],12,0,0);const day=mon.getDay(),diff=day===0?-6:1-day;mon.setDate(mon.getDate()+diff);const fmtD=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');return{start:fmtD(mon),end:fmtD(new Date(mon.getTime()+6*864e5)),mon}}
 function getDayIdx(dateStr){const{mon}=getWeekRange();const diff=Math.round((new Date(dateStr)-mon)/864e5);return diff>=0&&diff<7?diff:-1}
-function tom(){const d=new Date();d.setDate(d.getDate()+1);return d.toISOString().split('T')[0]}
+function tom(){const d=new Date();d.setDate(d.getDate()+1);return nyDate(d)}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
 function getWeekWo(){const{start,end}=getWeekRange();return workouts.filter(w=>w.date>=start&&w.date<=end)}
 function getZone(sport,intensity){
@@ -703,7 +731,7 @@ function getWeekContext(days){
   const tier=getTier()
   const todayAgg=days.find(d=>d.date===today())||null
   const ystD=new Date();ystD.setDate(ystD.getDate()-1)
-  const ystStr=ystD.toISOString().split('T')[0]
+  const ystStr=nyDate(ystD)
   const ystAgg=days.find(d=>d.date===ystStr)||null
   const ystIF=ystAgg?ystAgg.avgIF:0
 
@@ -1259,8 +1287,18 @@ function renderProjectedM(plan, ww){
   })
   const color=proj===0?'var(--text3)':proj<14?'var(--text3)':proj<=18?'var(--accent)':proj<=24?'var(--text2)':proj<=27?'var(--green)':proj<=29?'var(--yellow)':proj<=30?'var(--accent2)':'var(--red)'
   pv.textContent=proj;pv.style.color=color
-  if(pn)pn.style.left=Math.min(98,Math.max(2,(proj/42)*100))+'%'
+  const needlePct=Math.min(98,Math.max(2,(proj/42)*100))
+  if(pn)pn.style.left=needlePct+'%'
+  // Floating number on needle
+  const pnv=document.getElementById('projMNeedleVal')
+  if(pnv){pnv.textContent=proj>0?proj:'';pnv.style.color=color}
+  // Target line at tier ceiling
+  const ptl=document.getElementById('projMTargetLine')
+  if(ptl){const tPct=Math.min(98,Math.max(2,(tier.mCeil/42)*100));ptl.style.left=tPct+'%'}
   if(pt)pt.textContent=tier.mCeil
+  // Zone chips
+  const pZoneKey=proj<14?'none':proj<=18?'low':proj<=24?'maint':proj<=27?'mod':proj<=29?'high':'injury'
+  document.querySelectorAll('#projMChips [data-zone]').forEach(c=>c.style.opacity=c.dataset.zone===pZoneKey?'1':'0.25')
   let msg,msgColor
   if(proj===0){msg='Set rest days to see projection';msgColor='var(--text3)'}
   else if(proj<14){msg='Below maintenance — not enough stimulus to preserve fitness';msgColor='var(--text3)'}
@@ -1333,10 +1371,10 @@ function renderWeek(){
   const hrs=Math.floor(totalMin/60),mins=Math.round(totalMin%60)
   const tEl=document.getElementById('weekTime');if(tEl)tEl.textContent=totalMin>0?(hrs>0?hrs+'h ':'')+(mins<10&&hrs>0?'0':'')+mins+'m this week':'—'
   const badge=document.getElementById('riskBadge')
-  if(weekM>=30){badge.className='risk-badge risk-danger';badge.textContent='Injury zone'}
-  else if(weekM>=tier.mCeil){badge.className='risk-badge risk-danger';badge.textContent='Budget full'}
-  else if(weekM>=tier.mCeil-2){badge.className='risk-badge risk-high';badge.textContent='Near ceiling'}
-  else{badge.className='risk-badge risk-'+(tier.key==='low'?'low':tier.key==='moderate'?'mod':'high');badge.textContent=tier.label}
+  if(weekM>=30){badge.style.display='';badge.className='risk-badge risk-danger';badge.textContent='Injury zone'}
+  else if(weekM>=tier.mCeil){badge.style.display='';badge.className='risk-badge risk-danger';badge.textContent='Budget full'}
+  else if(weekM>=tier.mCeil-2){badge.style.display='';badge.className='risk-badge risk-high';badge.textContent='Near ceiling'}
+  else{badge.style.display='none'}
   document.getElementById('mNeedle').style.left=Math.min(98,Math.max(2,(weekM/42)*100))+'%'
   const zoneKey=weekM<14?'none':weekM<=18?'low':weekM<=24?'maint':weekM<=27?'mod':weekM<=29?'high':'injury'
   document.querySelectorAll('#gaugeChips .risk-gauge-chip').forEach(c=>c.classList.toggle('active',c.dataset.zone===zoneKey))
@@ -1372,19 +1410,41 @@ function renderWeek(){
   }
   document.getElementById('weekComplete').innerHTML=ap>0&&ac===ap?'<div class="complete-badge">✓ All planned sessions done</div>':''
 
-  // Intensity budget bar
-  let lo=0,mo=0,hi=0
-  ww.forEach(w=>{if(w.ifv<0.75)lo+=w.rawTSS;else if(w.ifv<0.90)mo+=w.rawTSS;else hi+=w.rawTSS})
-  const tot=lo+mo+hi||1
-  const lp=Math.round(lo/tot*100),mp=Math.round(mo/tot*100),hp=100-lp-mp
+  // Intensity budget — time in zones
+  let loMin=0,moMin=0,hiMin=0
+  ww.forEach(w=>{if(w.ifv<0.75)loMin+=w.time;else if(w.ifv<0.90)moMin+=w.time;else hiMin+=w.time})
+  const totMin=loMin+moMin+hiMin
+  const tot=totMin||1
+  const lp=Math.round(loMin/tot*100),mp=Math.round(moMin/tot*100),hp=100-lp-mp
   document.getElementById('budgLow').style.width=lp+'%'
   document.getElementById('budgMod').style.width=mp+'%'
   document.getElementById('budgHigh').style.width=hp+'%'
-  document.getElementById('budgLowPct').textContent=lp
-  document.getElementById('budgModPct').textContent=mp
-  document.getElementById('budgHighPct').textContent=hp
   const zt=intensityTarget
-  document.getElementById('zoneLabelTarget').textContent=zt.lo+' / '+zt.mo+' / '+zt.hi
+  document.getElementById('zoneLabelTarget').textContent=zt.lo+' / '+zt.mo+' / '+zt.hi+'%'
+  const fmtMin=m=>{if(!m)return'0m';const h=Math.floor(m/60),mm=Math.round(m%60);return h>0?h+'h'+(mm?(mm<10?'0':'')+mm+'m':''):mm+'m'}
+  const tEl2=document.getElementById('budgetTotalTime')
+  if(tEl2)tEl2.textContent=totMin>0?fmtMin(totMin)+' logged':''
+  const budRows=document.getElementById('budgetZoneRows')
+  if(budRows){
+    const zones=[
+      {label:'Low  Z1–2',min:loMin,pct:lp,target:zt.lo,color:'#00d4aa'},
+      {label:'Mod  Z3',  min:moMin,pct:mp,target:zt.mo,color:'#ffcc00'},
+      {label:'High Z4+', min:hiMin,pct:hp,target:zt.hi,color:'#ff6b35'},
+    ]
+    budRows.innerHTML=zones.map(z=>{
+      const delta=totMin>0?z.pct-z.target:null
+      const absDelta=delta!==null?Math.abs(delta):0
+      const deltaColor=absDelta<=5?'var(--text3)':delta>0?'var(--yellow)':'var(--red)'
+      const deltaStr=delta===null?'':delta>=0?'+'+delta+'%':delta+'%'
+      return `<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border)">
+        <div style="width:8px;height:8px;border-radius:2px;background:${z.color};flex-shrink:0"></div>
+        <div style="font-size:11px;color:var(--text2);flex:1;font-family:var(--font-display);letter-spacing:0.03em">${z.label}</div>
+        <div style="font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--text);min-width:36px;text-align:right">${totMin>0?fmtMin(z.min):'—'}</div>
+        <div style="font-size:10px;color:var(--text3);min-width:28px;text-align:right">${totMin>0?z.pct+'%':'—'}</div>
+        <div style="font-size:9px;font-weight:600;min-width:30px;text-align:right;color:${deltaColor}">${deltaStr}</div>
+      </div>`
+    }).join('')
+  }
 
   // Rule compliance
   const hiDays=days.filter(d=>d.avgIF>=0.95).length
