@@ -85,7 +85,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
 .pday-chip-tick{font-size:9px;display:block;margin-top:2px}
 .pday-remove{position:absolute;top:2px;right:2px;width:13px;height:13px;border-radius:50%;background:rgba(255,59,59,0.18);color:var(--red);font-size:8px;display:none;align-items:center;justify-content:center;cursor:pointer;line-height:1}
 .planner-day:hover .pday-remove{display:flex}
-.pday-empty{font-size:9px;color:var(--text3);margin-top:6px;text-align:center;pointer-events:none}
+.pday-empty{font-size:16px;color:var(--border);margin-top:4px;text-align:center;pointer-events:none;line-height:1}
 .stype-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:4px}
 .stype-btn{padding:7px 2px;border-radius:7px;text-align:center;font-family:var(--font-display);font-size:10px;font-weight:700;text-transform:uppercase;cursor:pointer;border:1.5px solid transparent;transition:all 0.1s;background:var(--surface2)}
 .stype-btn.selected{filter:brightness(1.2)}
@@ -278,6 +278,10 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
       <span class="nav-tab-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v2m0 16v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M2 12h2m16 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></span>
       <span class="nav-tab-label">Setup</span>
     </button>
+    <button class="nav-tab" onclick="showTab('guide')">
+      <span class="nav-tab-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>
+      <span class="nav-tab-label">Guide</span>
+    </button>
   </div>
 </nav>
 <div class="main-content">
@@ -301,11 +305,15 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
       <div class="hero-stat">
         <div class="hero-stat-val" id="heroM">0</div>
         <div class="hero-stat-sub">M-Score</div>
+        <div id="heroMDelta" style="font-size:9px;color:var(--text3);margin-top:2px;font-family:var(--font-display);font-weight:600"></div>
         <div class="risk-badge risk-low" id="riskBadge">Low</div>
+        <div id="heroProjM" style="font-size:10px;color:var(--text3);margin-top:5px;font-family:var(--font-display);font-weight:700;letter-spacing:0.03em"></div>
+        <div id="heroProjLabel" style="font-size:9px;color:var(--text3);margin-top:1px;letter-spacing:0.04em;text-transform:uppercase;font-family:var(--font-display)"></div>
       </div>
       <div class="hero-stat" style="border-left:1px solid var(--border);border-right:1px solid var(--border)">
         <div class="hero-stat-val" id="heroTSS">0</div>
         <div class="hero-stat-sub">TSS / <span id="heroTSSGoal">400</span></div>
+        <div id="heroTSSDelta" style="font-size:9px;color:var(--text3);margin-top:2px;font-family:var(--font-display);font-weight:600"></div>
         <div style="margin:5px 14px 0;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden">
           <div id="tssMini" style="height:100%;background:var(--vol);border-radius:2px;transition:width 0.4s;width:0%"></div>
         </div>
@@ -465,18 +473,35 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
 
   <div class="card">
     <div class="collapse-toggle" onclick="toggleCollapse('compBody','compIcon')">
-      <div class="card-label" style="margin:0">Rule compliance</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="card-label" style="margin:0">Rule compliance</div>
+        <span id="comp4wkBadge" style="font-size:9px;font-family:var(--font-display);font-weight:700;letter-spacing:0.04em;padding:2px 7px;border-radius:4px;display:none"></span>
+      </div>
       <span class="collapse-icon open" id="compIcon">&#9662;</span>
     </div>
     <div class="collapse-body open" id="compBody">
       <div style="height:6px"></div>
+      <div id="compPlanRows"></div>
       <div id="compRows"></div>
       <div class="divider"></div>
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <span style="font-size:12px;color:var(--text3)">M Ratio (Vol/Int)</span>
-        <span style="font-weight:700;font-size:15px" id="mRatioVal">—</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+        <span style="font-size:12px;color:var(--text3)">M Ratio</span>
+        <span style="font-family:var(--font-display);font-weight:700;font-size:13px" id="mRatioVal">—</span>
       </div>
-      <div style="font-size:11px;color:var(--text3);margin-top:2px" id="mRatioText"></div>
+      <div style="position:relative;height:8px;border-radius:4px;overflow:hidden;margin-bottom:4px">
+        <div style="position:absolute;inset:0;display:flex">
+          <div style="width:50%;background:rgba(255,107,53,0.28)"></div>
+          <div style="width:31.5%;background:rgba(0,212,170,0.22)"></div>
+          <div style="width:18.5%;background:rgba(59,130,246,0.28)"></div>
+        </div>
+        <div id="mRatioMarker" style="position:absolute;top:0;bottom:0;width:3px;background:var(--text);border-radius:1.5px;transform:translateX(-50%);left:50%;transition:left 0.4s ease;box-shadow:0 0 0 1px var(--bg)"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:4px">
+        <span style="color:var(--accent2)">Sharp</span>
+        <span style="color:var(--accent)">Balanced</span>
+        <span style="color:var(--vol)">Engine</span>
+      </div>
+      <div style="font-size:10px;color:var(--text3);margin-top:1px" id="mRatioText"></div>
     </div>
   </div>
   </div><!-- end .week-right -->
@@ -541,34 +566,89 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
       <button class="range-arrow" onclick="shiftHist(1)" id="histFwdBtn">&#8250;</button>
       <span class="range-nav-label" id="rangeLabel"></span>
     </div>
-    <canvas id="histCanvas" height="180" style="width:100%"></canvas>
-    <div id="histLegend" style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px"></div>
+    <div id="histSummary" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"></div>
+    <div style="position:relative">
+      <canvas id="histCanvas" height="180" style="width:100%;display:block"></canvas>
+      <div id="histTooltip" style="position:absolute;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:11px;pointer-events:none;display:none;min-width:100px;z-index:10"></div>
+    </div>
+    <div id="histLegend" style="margin-top:8px"></div>
   </div>
   <div id="sessionList"></div>
+
+  <!-- Efficiency curve -->
+  <div class="card" style="margin-top:12px">
+    <div class="collapse-toggle" onclick="toggleCollapse('effCurveBody','effCurveIcon')">
+      <div style="font-family:var(--font-display);font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3)">Efficiency curve — <span style="color:var(--yellow)">experimental</span></div>
+      <span class="collapse-icon" id="effCurveIcon">&#9662;</span>
+    </div>
+    <div class="collapse-body" id="effCurveBody">
+      <div style="height:6px"></div>
+      <div style="font-size:10px;color:var(--text3);font-style:italic;margin-bottom:10px;line-height:1.5">Curve shape is experimental and configurable in Setup. Anchors: 300 TSS → 0.8 ratio, 1000 TSS → 1.5 ratio.</div>
+      <div style="position:relative">
+        <canvas id="effCurveCanvas" style="width:100%;display:block"></canvas>
+        <div id="effCurveTooltip" style="position:absolute;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:11px;pointer-events:none;display:none;min-width:130px;z-index:10;line-height:1.6"></div>
+      </div>
+      <div id="effCurveLegend" style="display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:9px;color:var(--text3);align-items:center"></div>
+      <div id="effCurveDrift" style="font-size:10px;color:var(--text3);margin-top:6px"></div>
+    </div>
+  </div>
 </div>
 
 <div id="tab-settings" class="panel">
   <div class="card">
-    <div class="card-label">Sport thresholds</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <span style="font-family:var(--font-display);font-size:10px;font-weight:800;color:var(--accent);background:rgba(0,212,170,0.12);border:1px solid rgba(0,212,170,0.25);padding:2px 8px;border-radius:4px;letter-spacing:0.06em">STEP 1</span>
+      <div class="card-label" style="margin:0">Sport thresholds</div>
+    </div>
     <input type="text" id="sBikeFTP" class="form-input" placeholder="Bike FTP (watts) e.g. 250">
     <input type="text" id="sRunLTP" class="form-input" placeholder="Run LT pace (min:sec/mile) e.g. 7:40" style="margin-top:8px">
     <input type="text" id="sSwimCSS" class="form-input" placeholder="Swim CSS (min:sec/100m) e.g. 1:50" style="margin-top:8px">
     <button class="btn-primary" onclick="saveProfile()" style="margin-top:12px">Save</button>
   </div>
   <div class="card">
-    <div class="card-label">TSS weekly target</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <span style="font-family:var(--font-display);font-size:10px;font-weight:800;color:var(--accent);background:rgba(0,212,170,0.12);border:1px solid rgba(0,212,170,0.25);padding:2px 8px;border-radius:4px;letter-spacing:0.06em">STEP 2</span>
+      <div class="card-label" style="margin:0">TSS weekly target</div>
+    </div>
     <div id="tssButtons" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
     <div id="tssDesc" style="font-size:11px;color:var(--text3)"></div>
+    <div style="margin-top:12px">
+      <div class="collapse-toggle" onclick="toggleCollapse('cutoffBody','cutoffIcon')" style="padding:4px 0">
+        <span style="font-size:11px;color:var(--text3)">Advanced — load cutoffs (experimental)</span>
+        <span class="collapse-icon" id="cutoffIcon">&#9662;</span>
+      </div>
+      <div class="collapse-body" id="cutoffBody">
+        <div style="margin-top:8px;font-size:11px;color:var(--text3);line-height:1.6;margin-bottom:10px">Cutoffs define what counts as a low, mid, or high volume session as a percentage of your weekly TSS goal. Default values are experimental — adjust only if you understand your training data.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <div>
+            <div class="form-label">Low cutoff %</div>
+            <input type="number" id="sLoCut" class="form-input" step="0.001" oninput="updateCutoffPreview()">
+          </div>
+          <div>
+            <div class="form-label">High cutoff %</div>
+            <input type="number" id="sHiCut" class="form-input" step="0.001" oninput="updateCutoffPreview()">
+          </div>
+        </div>
+        <div id="cutoffPreview" style="font-size:11px;color:var(--text3);margin-bottom:10px"></div>
+        <button class="btn-primary" onclick="saveCutoffs()">Apply cutoffs</button>
+      </div>
+    </div>
   </div>
   <div class="card">
-    <div class="card-label">M budget (intensity ceiling)</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <span style="font-family:var(--font-display);font-size:10px;font-weight:800;color:var(--accent);background:rgba(0,212,170,0.12);border:1px solid rgba(0,212,170,0.25);padding:2px 8px;border-radius:4px;letter-spacing:0.06em">STEP 3</span>
+      <div class="card-label" style="margin:0">M budget (intensity ceiling)</div>
+    </div>
     <div id="mBudgetCards"></div>
     <div style="margin-top:8px;padding:8px 12px;background:var(--surface2);border-radius:8px;border-left:3px solid var(--text3)" id="mBudgetNote">
       <div style="font-size:12px;color:var(--text2)" id="mBudgetDesc">—</div>
     </div>
   </div>
   <div class="card">
-    <div class="card-label">Zone distribution target</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <span style="font-family:var(--font-display);font-size:10px;font-weight:800;color:var(--accent);background:rgba(0,212,170,0.12);border:1px solid rgba(0,212,170,0.25);padding:2px 8px;border-radius:4px;letter-spacing:0.06em">STEP 4</span>
+      <div class="card-label" style="margin:0">Zone distribution target</div>
+    </div>
     <div style="font-size:11px;color:var(--text3);margin-bottom:8px">Set your intensity zone targets. These appear in rule compliance and guide recommendations.</div>
     <div class="zone-preset-btns" id="zonePresetBtns"></div>
     <div class="form-row" style="margin-bottom:8px">
@@ -618,15 +698,370 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
       </div>
     </div>
   </div>
+
+  <!-- Efficiency curve configurator -->
+  <div class="card">
+    <div class="collapse-toggle" onclick="toggleCollapse('curveConfigBody','curveConfigIcon')">
+      <div class="card-label" style="margin-bottom:0">Efficiency curve — <span style="color:var(--yellow)">experimental</span></div>
+      <span class="collapse-icon" id="curveConfigIcon">&#9662;</span>
+    </div>
+    <div class="collapse-body" id="curveConfigBody">
+      <div style="height:6px"></div>
+      <div style="font-size:11px;color:var(--text3);font-style:italic;margin-bottom:10px;line-height:1.5">These values define the shape of your optimal ratio curve in History. They are experimental. Default anchors are based on initial hypotheses — adjust as you accumulate training data.</div>
+      <div class="form-row" style="margin-bottom:10px">
+        <div class="form-group">
+          <label class="form-label">Low anchor TSS</label>
+          <input type="number" id="curveLowTSS" class="form-input" value="300" step="10" min="50" oninput="updateCurvePreview()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Low anchor ratio</label>
+          <input type="number" id="curveLowRatio" class="form-input" value="0.8" step="0.01" min="0.1" oninput="updateCurvePreview()">
+        </div>
+      </div>
+      <div class="form-row" style="margin-bottom:10px">
+        <div class="form-group">
+          <label class="form-label">High anchor TSS</label>
+          <input type="number" id="curveHighTSS" class="form-input" value="1000" step="10" min="100" oninput="updateCurvePreview()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">High anchor ratio</label>
+          <input type="number" id="curveHighRatio" class="form-input" value="1.5" step="0.01" min="0.2" oninput="updateCurvePreview()">
+        </div>
+      </div>
+      <div id="curvePreview" style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.6"></div>
+      <button class="btn-sm" onclick="saveCurveConfig()" style="width:100%">Apply curve</button>
+    </div>
+  </div>
+</div>
+
+<div id="tab-guide" class="panel">
+
+  <!-- TL;DR — always visible -->
+  <div class="card" style="border-left:3px solid var(--accent)">
+    <div style="font-size:13px;color:var(--text2);line-height:1.8;margin-bottom:14px">
+      M-FRAME gives every athlete — beginner or elite, any sport, any age — the same weekly target: <strong style="color:var(--accent)">27 M</strong>. Hit it consistently and fitness comes. The number measures workout quality relative to your own threshold, not absolute performance. Think of it as a handicap system for training load.
+    </div>
+    <div class="collapse-toggle" onclick="toggleCollapse('guideExpandBody','guideExpandIcon')" style="justify-content:flex-start;gap:6px;padding:0">
+      <span style="font-size:11px;color:var(--accent);font-family:var(--font-display);font-weight:700;letter-spacing:0.05em;text-transform:uppercase">Read the full explanation</span>
+      <span class="collapse-icon" id="guideExpandIcon" style="color:var(--accent)">&#9662;</span>
+    </div>
+  </div>
+
+  <!-- Sections 1–5: collapsed by default -->
+  <div class="collapse-body" id="guideExpandBody">
+
+    <!-- S1: What is M? -->
+    <div class="card">
+      <div class="card-label">What is M?</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.8">
+        <p style="margin-bottom:10px">One number = <strong style="color:var(--text)">Load Points + Intensity Points</strong>. Each ranges from 1 to 3, so one session scores between <strong style="color:var(--accent)">2</strong> and <strong style="color:var(--accent)">6 M</strong>, and a full week maxes out at <strong style="color:var(--accent)">42 M</strong>.</p>
+        <p style="margin-bottom:10px">The sport doesn't matter — a hard 60-min swim and a hard 60-min run are both M4. Only effort and duration count.</p>
+        <p style="margin-bottom:0">Rest days are <strong style="color:var(--text)">0 M</strong>. The week resets every Monday.</p>
+      </div>
+    </div>
+
+    <!-- S2: The 27 -->
+    <div class="card" style="border-left:3px solid var(--accent)">
+      <div style="text-align:center;margin-bottom:10px">
+        <div style="font-family:var(--font-display);font-size:72px;font-weight:800;color:var(--accent);line-height:1">27</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-top:4px">The universal fitness target</div>
+      </div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.8;text-align:left">
+        <p style="margin-bottom:10px">It doesn't matter if you're 22 or 65. If you run, swim, bike, or do all three. If you have 15 minutes or 3 hours a day. If you're a beginner or a competitive athlete.</p>
+        <p style="margin-bottom:10px">Hit <strong style="color:var(--accent)">27 M</strong> consistently for 8–12 weeks and you will measurably improve — regardless of sport, age, or starting point.</p>
+        <p style="margin-bottom:0">Not because of the number itself — but because <strong style="color:var(--accent)">27 M</strong> encodes the right amount of metabolic stress, at the right intensity, with the right recovery built in. The system does the thinking for you.</p>
+      </div>
+    </div>
+
+    <!-- S3: Why not just TSS? -->
+    <div class="card">
+      <div class="card-label">Why not just TSS?</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.8;font-style:italic;margin-bottom:12px">TSS punishes missed days. M salvages them.</div>
+      <div style="background:var(--surface2);border-radius:8px;border:1px solid var(--border);overflow:hidden;margin-bottom:12px">
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border)">
+              <th style="padding:7px 10px;text-align:left;color:var(--text3);font-weight:600;letter-spacing:0.05em;text-transform:uppercase;font-family:var(--font-display)">Day</th>
+              <th style="padding:7px 10px;text-align:right;color:var(--text3);font-weight:600;letter-spacing:0.05em;text-transform:uppercase;font-family:var(--font-display)">TSS</th>
+              <th style="padding:7px 10px;text-align:right;color:var(--text3);font-weight:600;letter-spacing:0.05em;text-transform:uppercase;font-family:var(--font-display)">M-Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:7px 10px;color:var(--text2)">Monday</td>
+              <td style="padding:7px 10px;text-align:right;font-family:var(--font-display);color:var(--text2)">54</td>
+              <td style="padding:7px 10px;text-align:right;color:var(--accent);font-weight:700;font-family:var(--font-display)">M4</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:7px 10px;color:var(--text2)">Tuesday</td>
+              <td style="padding:7px 10px;text-align:right;font-family:var(--font-display);color:var(--text2)">40</td>
+              <td style="padding:7px 10px;text-align:right;color:var(--accent);font-weight:700;font-family:var(--font-display)">M4</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:7px 10px;color:var(--text2)">Saturday</td>
+              <td style="padding:7px 10px;text-align:right;font-family:var(--font-display);color:var(--text2)">62</td>
+              <td style="padding:7px 10px;text-align:right;color:var(--accent);font-weight:700;font-family:var(--font-display)">M5</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:7px 10px;color:var(--text2)">Sunday</td>
+              <td style="padding:7px 10px;text-align:right;font-family:var(--font-display);color:var(--text2)">104</td>
+              <td style="padding:7px 10px;text-align:right;color:var(--accent);font-weight:700;font-family:var(--font-display)">M6</td>
+            </tr>
+            <tr>
+              <td style="padding:7px 10px;color:var(--text);font-weight:700">Total</td>
+              <td style="padding:7px 10px;text-align:right;font-family:var(--font-display);color:var(--text);font-weight:700">260</td>
+              <td style="padding:7px 10px;text-align:right;color:var(--accent);font-weight:800;font-family:var(--font-display)">19 / 27</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.8">
+        <p style="margin-bottom:10px">TSS goal was 650. Reality was 260 — <strong style="color:var(--accent)">40%</strong> of target. By TSS, the week is a failure.</p>
+        <p style="margin-bottom:10px">By M, the same week is <strong style="color:var(--accent)">19/27</strong> — <strong style="color:var(--accent)">70%</strong> of the productive stimulus reached.</p>
+        <p style="margin-bottom:0">You didn't lose the week. M rewards quality, not just volume.</p>
+      </div>
+    </div>
+
+    <!-- S4: M normalizes grind -->
+    <div class="card">
+      <div class="card-label">M normalizes grind</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.8">
+        <p style="margin-bottom:12px">TSS normalizes load across paces and watts. M adds a second normalization:</p>
+      </div>
+      <div style="background:var(--surface2);border-radius:9px;padding:10px 12px;margin-bottom:12px;border:1px solid var(--border)">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div>
+            <div style="font-family:var(--font-display);font-size:12px;font-weight:700;color:var(--vol);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em">TSS</div>
+            <div style="font-size:11px;color:var(--text2);line-height:1.7;margin-bottom:6px">Elite: 1000 TSS → productive week</div>
+            <div style="font-size:11px;color:var(--text3);line-height:1.7">Amateur: cannot reach 1000 TSS</div>
+          </div>
+          <div style="border-left:1px solid var(--border);padding-left:12px">
+            <div style="font-family:var(--font-display);font-size:12px;font-weight:700;color:var(--accent);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em">M-FRAME</div>
+            <div style="font-size:11px;color:var(--text2);line-height:1.7;margin-bottom:6px"><strong style="color:var(--accent)">27 M</strong> → productive week</div>
+            <div style="font-size:11px;color:var(--text2);line-height:1.7">can still reach <strong style="color:var(--accent)">27 M</strong></div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.8">
+        <p style="margin-bottom:10px">M becomes a real measure of grind — independent of your level. Hit <strong style="color:var(--accent)">27 M</strong> consistently and you will be in the top percentiles of your athleticism level, whether you're a beginner or a pro.</p>
+        <p style="margin-bottom:10px">Think of it like a handicap system in golf. A handicap doesn't measure absolute performance — it measures the quality of your round relative to your own standard. A 28-handicapper playing their best round and a scratch golfer playing theirs are producing the same quality of effort, on the same scale.</p>
+        <p style="margin-bottom:0">M works the same way. A 65-year-old recreational swimmer hitting M5 produced the same quality of metabolic stimulus as a 25-year-old elite triathlete hitting M5 — relative to their own threshold, at their own level. Every athlete fits into the same number.</p>
+      </div>
+    </div>
+
+    <!-- S5: You don't need volume -->
+    <div class="card">
+      <div class="card-label">You don't need volume</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.8">
+        <p style="margin-bottom:10px">15 minutes at max effort scores <strong style="color:var(--accent)">M4</strong>. Three of those in a week is <strong style="color:var(--accent)">12 M</strong> — the same as one long easy run.</p>
+        <p style="margin-bottom:10px">The distribution is flexible. The target isn't.</p>
+        <p style="margin-bottom:0">Consistency beats intensity: 12 weeks at <strong style="color:var(--accent)">25 M</strong> will outperform 4 weeks at <strong style="color:var(--red)">35 M</strong> followed by injury. The hard cap at <strong style="color:var(--red)">30 M</strong> exists for this reason. M tells you how much is enough — and when to stop.</p>
+      </div>
+    </div>
+
+  </div><!-- end collapsible sections 1–5 -->
+
+  <!-- M-Score ranges (unchanged) -->
+  <div class="card">
+    <div class="card-label">M-Score — weekly ranges</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:4px">
+      <div style="background:var(--surface2);border-radius:8px;padding:10px;text-align:center;border-top:3px solid var(--accent)">
+        <div style="font-family:var(--font-display);font-size:20px;font-weight:800;color:var(--accent)">14–18</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:3px;text-transform:uppercase;letter-spacing:0.05em">Recovery</div>
+        <div style="font-size:10px;color:var(--text2);margin-top:4px;line-height:1.4">Fatigue clearing, fitness maintained</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;padding:10px;text-align:center;border-top:3px solid var(--yellow)">
+        <div style="font-family:var(--font-display);font-size:20px;font-weight:800;color:var(--yellow)">25–27</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:3px;text-transform:uppercase;letter-spacing:0.05em">Productive</div>
+        <div style="font-size:10px;color:var(--text2);margin-top:4px;line-height:1.4">Real adaptation. Target for most athletes</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;padding:10px;text-align:center;border-top:3px solid var(--red)">
+        <div style="font-family:var(--font-display);font-size:20px;font-weight:800;color:var(--red)">30+</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:3px;text-transform:uppercase;letter-spacing:0.05em">Injury risk</div>
+        <div style="font-size:10px;color:var(--text2);margin-top:4px;line-height:1.4">Elite only. Always follow with recovery</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TSS & IF -->
+  <div class="card">
+    <div class="card-label">TSS and IF explained</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div>
+        <div style="font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--vol);margin-bottom:5px">TSS</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.6">Training Stress Score — total work done. Accounts for both duration and intensity. A 1-hour threshold ride = 100 TSS. Easy 2-hour run ≈ 100 TSS.</div>
+      </div>
+      <div style="border-left:1px solid var(--border);padding-left:12px">
+        <div style="font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--int);margin-bottom:5px">IF</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.6">Intensity Factor — how hard relative to your personal threshold. 1.00 = threshold effort. Above 1.0 is very hard. Below 0.75 is recovery pace.</div>
+      </div>
+    </div>
+    <div style="margin-top:12px;background:var(--surface2);border-radius:8px;padding:10px 12px">
+      <div style="font-size:10px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.06em;font-family:var(--font-display);font-weight:600">IF reference scale</div>
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <div style="display:flex;justify-content:space-between;font-size:11px"><span style="color:var(--accent)">below 0.75</span><span style="color:var(--text3)">Easy / Z1–Z2 — recovery, base</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px"><span style="color:var(--yellow)">0.75–0.90</span><span style="color:var(--text3)">Moderate / Z3 — aerobic power</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px"><span style="color:var(--int)">0.90–1.05</span><span style="color:var(--text3)">Hard / Z4 — threshold and above</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px"><span style="color:var(--red)">above 1.05</span><span style="color:var(--text3)">Very hard / Z5 — VO2max, sprints</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 80/20 Rule -->
+  <div class="card">
+    <div class="card-label">The 80/20 principle</div>
+    <div style="font-size:12px;color:var(--text2);line-height:1.7">
+      Most endurance research points to roughly <strong style="color:var(--text)">80% of training time in the easy zone</strong> (IF below 0.75) and only 20% hard. Going harder more often increases injury risk without proportional fitness gain.<br><br>
+      M-FRAME's default zone target is <strong style="color:var(--text)">70% low / 20% mod / 10% high</strong>. You can adjust this in Setup → Step 4.
+    </div>
+  </div>
+
+  <!-- Rules -->
+  <div class="card">
+    <div class="card-label">Rule compliance — what the checks mean</div>
+    <div style="font-size:12px;color:var(--text2);line-height:1;display:flex;flex-direction:column;gap:10px;margin-top:4px">
+      <div><span style="color:var(--text);font-weight:600">No back-to-back key sessions</span><br><span style="font-size:11px;color:var(--text3)">Two consecutive days at threshold-or-above effort doesn't allow recovery between stimuli. One day should always be easy in between.</span></div>
+      <div><span style="color:var(--text);font-weight:600">Max 3 key days / week</span><br><span style="font-size:11px;color:var(--text3)">More than 3 high-intensity sessions in 7 days accumulates more stress than most athletes can absorb. Quality drops, injury risk rises.</span></div>
+      <div><span style="color:var(--text);font-weight:600">Zone distribution</span><br><span style="font-size:11px;color:var(--text3)">Compares your actual low/mod/high time split against your targets in Setup. A green zone is within ±8% of target.</span></div>
+      <div><span style="color:var(--text);font-weight:600">M Ratio</span><br><span style="font-size:11px;color:var(--text3)">Load Points divided by Intensity Points. Displayed as a track in the compliance panel — see "The M ratio" in the Guide for the full explanation.</span></div>
+    </div>
+  </div>
+
+  <!-- The M ratio -->
+  <div class="card">
+    <div class="card-label">The M ratio</div>
+    <div style="font-size:12px;color:var(--text2);line-height:1.8">
+      <p style="margin-bottom:10px">Load Points divided by Intensity Points. It doesn't tell you how fit you are — it tells you how you got there.</p>
+      <p style="margin-bottom:10px">In a normal week it lands in a healthy range without you thinking about it. It only matters when something shifts: a makeup week drives it low (smart), a drift toward pure volume drives it high (watch it).</p>
+    </div>
+    <div style="background:var(--surface2);border-radius:9px;padding:10px 12px;margin-bottom:10px;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;align-items:baseline;gap:8px">
+        <span style="font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--accent2);min-width:90px">Sharp  <span style="font-size:10px;font-weight:400;color:var(--text3)">(< 1)</span></span>
+        <span style="font-size:11px;color:var(--text2)">Short and hard. Time-efficient.</span>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:8px">
+        <span style="font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--accent);min-width:90px">Balanced  <span style="font-size:10px;font-weight:400;color:var(--text3)">(1–2)</span></span>
+        <span style="font-size:11px;color:var(--text2)">Polarized. What the wave is designed for.</span>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:8px">
+        <span style="font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--vol);min-width:90px">Engine  <span style="font-size:10px;font-weight:400;color:var(--text3)">(> 2)</span></span>
+        <span style="font-size:11px;color:var(--text2)">High volume. Aerobic base building.</span>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);font-style:italic;line-height:1.6">There is no right ratio. Knowing yours helps M-FRAME recommend the right week for you — coming soon.</div>
+  </div>
+
+  <!-- Load classes & the unload week -->
+  <div class="card">
+    <div class="card-label">Load classes &amp; the unload week</div>
+
+    <!-- Part A: Weekly TSS table -->
+    <div style="font-size:11px;font-family:var(--font-display);font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Weekly TSS &amp; what it means</div>
+    <div style="background:var(--surface2);border-radius:8px;border:1px solid var(--border);overflow:hidden;margin-bottom:12px">
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border)">
+            <th style="padding:6px 10px;text-align:left;color:var(--text3);font-family:var(--font-display);font-weight:600;letter-spacing:0.05em;text-transform:uppercase">TSS / week</th>
+            <th style="padding:6px 10px;text-align:left;color:var(--text3);font-family:var(--font-display);font-weight:600;letter-spacing:0.05em;text-transform:uppercase">Regime</th>
+            <th style="padding:6px 10px;text-align:left;color:var(--text3);font-family:var(--font-display);font-weight:600;letter-spacing:0.05em;text-transform:uppercase">What it means</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:6px 10px;font-family:monospace;color:var(--text2)">&lt; 100</td>
+            <td style="padding:6px 10px;color:var(--text2)">Detraining</td>
+            <td style="padding:6px 10px;color:var(--text3);font-size:10px">Maintaining coordination only</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:6px 10px;font-family:monospace;color:var(--text2)">100–300</td>
+            <td style="padding:6px 10px;color:var(--text2)">Limited</td>
+            <td style="padding:6px 10px;color:var(--text3);font-size:10px">Protecting habits and intensity</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:6px 10px;font-family:monospace;color:var(--text2)">300–500</td>
+            <td style="padding:6px 10px;color:var(--text2)">Productive</td>
+            <td style="padding:6px 10px;color:var(--text3);font-size:10px">Structure matters. Training.</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:6px 10px;font-family:monospace;color:var(--text2)">500–700</td>
+            <td style="padding:6px 10px;color:var(--text2)">Advanced</td>
+            <td style="padding:6px 10px;color:var(--text3);font-size:10px">M rules fully apply</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:6px 10px;font-family:monospace;color:var(--text2)">700–900</td>
+            <td style="padding:6px 10px;color:var(--text2)">Pro-Am</td>
+            <td style="padding:6px 10px;color:var(--text3);font-size:10px">Fatigue accumulates across weeks</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 10px;font-family:monospace;color:var(--text2)">900–1200+</td>
+            <td style="padding:6px 10px;color:var(--text2)">Elite</td>
+            <td style="padding:6px 10px;color:var(--text3);font-size:10px">Narrow margins. No shortcuts.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:14px">
+      <p style="margin-bottom:10px">Under <strong style="color:var(--accent)">300 TSS</strong> the app will still track your M score — but don't expect adaptation. You're protecting intensity and habits until load returns. That's valuable. It's just not building fitness yet.</p>
+    </div>
+
+    <!-- Part B: Load classes -->
+    <div style="font-size:11px;font-family:var(--font-display);font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Load classes</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+      <div style="background:var(--surface2);border-radius:9px;padding:10px 12px;border-left:3px solid var(--accent)">
+        <div style="font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--accent);margin-bottom:4px">Class I · ≤ 500 TSS</div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.7">Developmental / Amateur. Fast recovery. Intensity is the main limiter. Consecutive high-M weeks are fine.</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:9px;padding:10px 12px;border-left:3px solid var(--yellow)">
+        <div style="font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--yellow);margin-bottom:4px">Class II · 600–800 TSS</div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.7">Advanced Amateur / Pro-Am. Fatigue accumulates across weeks. Plan a recovery week every 3–4 build weeks.</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:9px;padding:10px 12px;border-left:3px solid var(--accent2)">
+        <div style="font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--accent2);margin-bottom:4px">Class III · 900–1200+ TSS</div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.7">Elite. Narrow margins. Small errors compound. Maximum 2 consecutive build weeks. Deload weeks are mandatory.</div>
+      </div>
+    </div>
+
+    <!-- Part C: The unload week -->
+    <div style="font-size:11px;font-family:var(--font-display);font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3);margin-bottom:6px">The unload week</div>
+    <div style="font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:10px">
+      <p style="margin-bottom:10px">Every 3–4 weeks, drop your M target to <strong style="color:var(--accent)">14–18</strong>. This is not failure — it is the week that makes the previous three weeks count.</p>
+      <p style="margin-bottom:10px">Set your M budget to <strong style="color:var(--text)">Low</strong> in Setup when you intend an unload week. The gauge and recommendations will adjust accordingly.</p>
+      <p style="margin-bottom:0"><strong style="color:var(--accent)">Class I:</strong> optional but recommended.<br><strong style="color:var(--yellow)">Class II:</strong> strongly recommended every 3rd week.<br><strong style="color:var(--accent2)">Class III:</strong> mandatory every 2nd week.</p>
+    </div>
+    <div style="font-size:11px;color:var(--text3);font-style:italic;line-height:1.6">These are coaching guidelines, not hard rules enforced by the app. Use them to build your own rhythm.</div>
+  </div>
+
+  <!-- Quick start -->
+  <div class="card">
+    <div class="card-label">Quick start</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div class="onboard-step"><span class="onboard-num">1</span><span style="font-size:12px;color:var(--text2)">Go to <strong style="color:var(--text)">Setup</strong> — enter your FTP, run LT pace, or swim CSS. This unlocks IF and TSS calculations.</span></div>
+      <div class="onboard-step"><span class="onboard-num">2</span><span style="font-size:12px;color:var(--text2)">Set your <strong style="color:var(--text)">weekly TSS goal</strong> and <strong style="color:var(--text)">M-budget tier</strong> based on your training phase.</span></div>
+      <div class="onboard-step"><span class="onboard-num">3</span><span style="font-size:12px;color:var(--text2)">Use the <strong style="color:var(--text)">Week planner</strong> to map out rest days — the dual wave fills in automatically.</span></div>
+      <div class="onboard-step"><span class="onboard-num">4</span><span style="font-size:12px;color:var(--text2)">Log sessions in the <strong style="color:var(--text)">Log tab</strong>. M-score and IF appear instantly as you type.</span></div>
+      <div class="onboard-step"><span class="onboard-num">5</span><span style="font-size:12px;color:var(--text2)">Track trends in <strong style="color:var(--text)">History</strong> — weekly TSS, IF lines, and session log grouped by week.</span></div>
+    </div>
+    <button class="btn-primary" onclick="showTab('settings')" style="margin-top:14px">Go to Setup →</button>
+  </div>
 </div>
 
 </div><!-- end .container -->
 </div><!-- end .main-content -->
 <script>
-let workouts=[],profile={},weeklyLoadKey='moderate',weeklyTSSGoal=400,editId=null,currentRange='week',selectedType=null,weekPlan={restDays:[],valleyVols:{}},intensityTarget={lo:70,mo:20,hi:10},histOffset=0,histLines={tssTrend:true,tssAvg:true,ifAvg:true,loIfAvg:true,hiIfAvg:true,loIF:true,hiIF:true}
+let workouts=[],profile={},weeklyLoadKey='moderate',weeklyTSSGoal=650,editId=null,currentRange='week',selectedType=null,weekPlan={restDays:[],valleyVols:{}},intensityTarget={lo:70,mo:20,hi:10},histOffset=0,histLines={tssTrend:true,tssAvg:true,ifAvg:true,loIfAvg:true,hiIfAvg:true,loIF:true,hiIF:true}
+let loadCutoffs={lo:8.333,hi:16.666}
+let curveConfig={anchorLowTSS:300,anchorLowRatio:0.8,anchorHighTSS:1000,anchorHighRatio:1.5}
 
 const LOAD_TIERS={low:{key:'low',label:'Low',mMin:14,mCeil:18,accent:'#00d4aa',desc:'Recovery week. 14–18 M — fitness maintained, fatigue cleared. Under 14: not even maintaining. Use after every 2–3 hard blocks.'},moderate:{key:'moderate',label:'Moderate',mMin:25,mCeil:27,accent:'#ffcc00',desc:'Productive training. 25–27 M — real fitness gains week over week. The target for most athletes most of the year. Note: 19–24 M is maintenance only — sustaining, not building.'},high:{key:'high',label:'High',mMin:28,mCeil:29,accent:'#ff6b35',desc:'Competitive prep. 28–29 M — hard limit for non-elite. Must follow with a Low recovery week after 2–3 blocks.'},extreme:{key:'extreme',label:'Extreme',mMin:30,mCeil:32,accent:'#ff3b3b',desc:'Elite only. 30+ M — maximum 1 consecutive week. Always followed by a full Low recovery week. Any session logged that tips you over 30 is a warning.'}}
-const TSS_OPTS=[{v:150,l:'150',d:'Recovery'},{v:300,l:'300',d:'Light'},{v:400,l:'400',d:'Moderate'},{v:500,l:'500',d:'Solid'},{v:650,l:'650',d:'High'},{v:800,l:'800',d:'Very high'},{v:1000,l:'1000',d:'Elite'}]
+const TSS_OPTS=[
+  {v:150, l:'150', d:'Detraining — maintaining coordination only'},
+  {v:300, l:'300', d:'Limited — protecting habits and intensity'},
+  {v:400, l:'400', d:'Productive — structure matters, training begins'},
+  {v:500, l:'500', d:'Advanced — M rules fully apply'},
+  {v:650, l:'650', d:'Advanced Amateur — recommended default'},
+  {v:800, l:'800', d:'Pro-Am — fatigue accumulates across weeks'},
+  {v:1000,l:'1000',d:'Elite — narrow margins, no shortcuts'}
+]
 
 // Simplified: Rest / Easy / Hard. M per day is estimated by duration bucket.
 const STYPES=[
@@ -750,7 +1185,12 @@ function calcIF(intensity,sport){
   return Math.max(ifv,0.50)
 }
 function calcRawTSS(min,ifv){return Math.round((min/60)*ifv*ifv*100)}
-function getLoadPts(adj){return adj<50?1:adj<=100?2:3}
+function getLoadPts(adj){
+  const base=weeklyTSSGoal
+  const loCut=base*(loadCutoffs.lo/100)
+  const hiCut=base*(loadCutoffs.hi/100)
+  return adj<loCut?1:adj<=hiCut?2:3
+}
 function getIntPts(sport,ifv){
   if(sport==='run')return ifv<0.83?1:ifv<0.90?2:3
   if(sport==='bike')return ifv<0.76?1:ifv<0.91?2:3
@@ -793,12 +1233,14 @@ function getDayAggs(list){
   }
   return out.sort((a,b)=>a.date.localeCompare(b.date))
 }
-function save(){const wk=getWeekRange().start;localStorage.setItem('mf6',JSON.stringify({workouts,profile,weeklyLoadKey,weeklyTSSGoal,weekPlan,weekPlanWeek:wk,intensityTarget}))}
+function save(){const wk=getWeekRange().start;localStorage.setItem('mf6',JSON.stringify({workouts,profile,weeklyLoadKey,weeklyTSSGoal,weekPlan,weekPlanWeek:wk,intensityTarget,loadCutoffs,curveConfig}))}
 function load(){
   const raw=localStorage.getItem('mf6')||localStorage.getItem('mframe5')||localStorage.getItem('mframe4')||localStorage.getItem('mframe3')||'{}'
   const d=JSON.parse(raw)
-  workouts=d.workouts||[];profile=d.profile||{};weeklyLoadKey=d.weeklyLoadKey||'moderate';weeklyTSSGoal=d.weeklyTSSGoal||400
+  workouts=d.workouts||[];profile=d.profile||{};weeklyLoadKey=d.weeklyLoadKey||'moderate';weeklyTSSGoal=d.weeklyTSSGoal||650
   intensityTarget=d.intensityTarget||{lo:70,mo:20,hi:10}
+  loadCutoffs=d.loadCutoffs||{lo:8.333,hi:16.666}
+  curveConfig=d.curveConfig||{anchorLowTSS:300,anchorLowRatio:0.8,anchorHighTSS:1000,anchorHighRatio:1.5}
   const wk=getWeekRange().start;const saved=d.weekPlanWeek===wk?(d.weekPlan||{}):{}
   weekPlan={restDays:saved.restDays||[],valleyVols:saved.valleyVols||{},makeup:saved.makeup||{}}}
 function nyDate(d){
@@ -842,7 +1284,7 @@ function getWeekContext(days){
   const{mon}=getWeekRange()
   const todayIdx=getDayIdx(today())
   const ww=getWeekWo()
-  const weekM=days.reduce((s,d)=>s+d.m,0)
+  const weekM=days.reduce((s,d)=>s+d.m,0)+getWeekRestM(new Map(days.map(d=>[d.date,d])))
   const weekTSS=ww.reduce((s,w)=>s+w.rawTSS,0)
   const tier=getTier()
   const todayAgg=days.find(d=>d.date===today())||null
@@ -1000,7 +1442,7 @@ function drawFrameCanvas(days){
     actualTSS.push(agg?agg.rawTSS:0)
     actualIF.push(agg?agg.avgIF:null)
     mScores.push(agg?agg.m:0)
-    const plan=buildFullPlan();plannedW.push(plan?calcDayM(plan.vol[i],plan.intWave[i],false):0)
+    const plan=buildFullPlan();const mk=plan&&plan.vol[i]==='rest'?(weekPlan.makeup||{})[i]||null:null;plannedW.push(plan?calcDayM(plan.vol[i],plan.intWave[i],false,mk):0)
   }
   const maxActual=Math.max(...actualTSS,1)
   const maxPlanW=Math.max(...plannedW,1)
@@ -1093,7 +1535,7 @@ function setupFrameTooltip(){
     const tss=meta.actualTSS[i]||0
     const ifv=meta.actualIF[i]
     const m=meta.mScores[i]
-    const mColor=m<=2?'#00d4aa':m<=3?'#ffcc00':m<=4?'#ff6b35':'#ff3b3b'
+    const mColor=m<=2?'#00d4aa':m<=4?'#ffcc00':'#ff3b3b'
     tip.innerHTML=`<div class="chart-tooltip-title">${DAYS[i]} ${ds.slice(5)}</div>`+(tss>0?`<div class="chart-tooltip-row">TSS: <strong>${tss}</strong></div><div class="chart-tooltip-row">IF: <strong>${ifv?ifv.toFixed(2):'—'}</strong></div><div class="chart-tooltip-row">M-Score: <strong style="color:${mColor}">M${m}</strong></div>`:'<div class="chart-tooltip-row" style="color:var(--text3)">No session</div>')
     const tw=tip.offsetWidth||90
     let lx=clientX-rect.left+10
@@ -1182,11 +1624,10 @@ function getValleyVolAssignment(valleyDays, valleySize, valleyVols){
 function calcDayM(vol, intW, missed, makeup=null){
   if(missed)return 0
   if(vol==='rest'){
-    if(makeup==='off')  return 0  // full rest, no contribution
-    if(makeup==='easy') return 3  // easy makeup session
-    if(makeup==='mod')  return 4  // moderate makeup session
-    if(makeup==='hard') return 5  // hard makeup session
-    return 2                      // default: active rest (walk, mobility, etc.)
+    if(makeup==='off')  return 0  // full rest — no contribution
+    if(makeup==='easy') return 3  // easy volume session: 2L + 1I = 3
+    if(makeup==='mod')  return 4  // moderate volume session: 3L + 1I = 4
+    return 2                      // default: active rest (walk, mobility) — 1L + 1I = 2
   }
   if(vol==='mid'&&intW==='low')return 3
   if(vol==='mid'&&intW==='high')return 5
@@ -1253,9 +1694,9 @@ function renderRestDayPicker(){
   const rd=getRestDays()
   el.innerHTML=DAYS.map((d,i)=>{
     const sel=rd.includes(i)
-    return`<div onclick="toggleRestDay(${i})" style="text-align:center;padding:8px 2px;border-radius:7px;cursor:pointer;border:1.5px solid ${sel?'var(--accent)':'var(--border)'};background:${sel?'rgba(0,212,170,0.1)':'var(--surface2)'};transition:all 0.12s">
+    return`<div onclick="toggleRestDay(${i})" style="text-align:center;padding:8px 2px;border-radius:7px;cursor:pointer;border:1.5px solid ${sel?'var(--accent)':'var(--border)'};background:${sel?'rgba(0,212,170,0.1)':'var(--surface2)'};transition:all 0.12s;user-select:none">
       <div style="font-family:var(--font-display);font-size:11px;font-weight:700;color:${sel?'var(--accent)':'var(--text3)'}">${d}</div>
-      ${sel?'<div style="font-size:8px;color:var(--accent);margin-top:2px">REST</div>':'<div style="font-size:8px;color:var(--text3);margin-top:2px">—</div>'}
+      ${sel?'<div style="font-size:9px;color:var(--accent);margin-top:2px;font-weight:800">REST</div>':'<div style="font-size:13px;color:var(--text3);margin-top:1px;opacity:0.4;line-height:1">+</div>'}
     </div>`
   }).join('')
 }
@@ -1267,19 +1708,35 @@ function renderWaveViz(plan){
   if(!volRow||!intRow)return
   if(!plan){waveViz.style.display='none';return}
   waveViz.style.display='block'
+  const makeup=weekPlan.makeup||{}
   const volColors={rest:'rgba(138,147,153,0.4)',mid:'rgba(59,130,246,0.55)',high:'rgba(59,130,246,0.9)'}
   const volH={rest:6,mid:14,high:22}
   const intColors={low:'rgba(255,107,53,0.3)',high:'rgba(255,107,53,0.9)'}
-  volRow.innerHTML=plan.vol.map((v,i)=>`
-    <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+  // Makeup volume heights + labels (teal = volume-only, no intensity added)
+  const mkH={easy:8,mod:14}
+  const mkLabel={easy:'+E',mod:'+M'}
+  volRow.innerHTML=plan.vol.map((v,i)=>{
+    const mk=v==='rest'?makeup[i]:null
+    if(mk&&mk!=='off'){
+      // Teal bar: shows added volume on a rest day, sized by makeup level
+      return`<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+        <div style="font-size:8px;color:rgba(0,212,170,0.85);font-family:var(--font-display);font-weight:800">${mkLabel[mk]||'+'}</div>
+        <div style="width:100%;height:${mkH[mk]||8}px;border-radius:2px;background:rgba(0,212,170,0.5);transition:height 0.3s"></div>
+      </div>`
+    }
+    return`<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
       <div style="font-size:8px;color:${v==='rest'?'var(--text3)':v==='mid'?'rgba(59,130,246,0.8)':'rgba(59,130,246,1)'};font-family:var(--font-display);font-weight:700">${v==='rest'?'R':v==='mid'?'M':'H'}</div>
       <div style="width:100%;height:${volH[v]||8}px;border-radius:2px;background:${volColors[v]||'#1e2427'};transition:height 0.3s"></div>
-    </div>`).join('')
-  intRow.innerHTML=plan.intWave.map((v,i)=>`
-    <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
-      <div style="width:100%;height:${v==='high'?14:6}px;border-radius:2px;background:${intColors[v]};transition:height 0.3s"></div>
-      <div style="font-size:8px;color:${v==='high'?'var(--int)':'var(--text3)'};font-family:var(--font-display);font-weight:700">${v==='high'?'H':'L'}</div>
-    </div>`).join('')
+    </div>`
+  }).join('')
+  intRow.innerHTML=plan.intWave.map((v,i)=>{
+    // Rest days (including makeup) always stay at low intensity — no IF change
+    const effV=plan.vol[i]==='rest'?'low':v
+    return`<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+      <div style="width:100%;height:${effV==='high'?14:6}px;border-radius:2px;background:${intColors[effV]};transition:height 0.3s"></div>
+      <div style="font-size:8px;color:${effV==='high'?'var(--int)':'var(--text3)'};font-family:var(--font-display);font-weight:700">${effV==='high'?'H':'L'}</div>
+    </div>`
+  }).join('')
 }
 
 function renderDayMRow(plan, ww){
@@ -1302,11 +1759,12 @@ function renderDayMRow(plan, ww){
       m=calcDayM(v,plan.intWave[i],false,makeup)
     }
     const isFuture=!isPast&&!isToday
-    const color=m===0?'var(--text3)':m<=2?'var(--text3)':m<=3?'var(--vol)':m<=4?'var(--accent)':m<=5?'var(--yellow)':'var(--red)'
+    const isMakeup=v==='rest'&&makeup&&makeup!=='off'
+    const color=m===0?'var(--text3)':m<=2?'var(--green)':m<=4?'var(--yellow)':'var(--red)'
     return`<div style="text-align:center">
       <div style="font-family:var(--font-display);font-size:14px;font-weight:800;color:${color};opacity:${isFuture?0.55:1}">${m}</div>
       <div style="font-size:8px;color:var(--text3)">${DAYS[i]}</div>
-    </div>`
+      ${isMakeup?`<div style="font-size:7px;color:rgba(0,212,170,0.7);font-weight:700;letter-spacing:0.03em">vol</div>`:''}</div>`
   }).join('')
 }
 
@@ -1344,26 +1802,29 @@ function renderPlannerDays(ww){
     const isValley=[...plan.valley3,...plan.valley2].includes(i)
     const canCycle=isValley&&!isPast
     const canMakeup=isRest&&!isPast
-    const volColor=vol==='rest'?'#4a5560':'#3b82f6'
-    const intDot=intW==='high'?'var(--int)':'var(--text3)'
+    // Makeup volume bar: teal + scales with level; intensity stays low
+    const isMakeupActive=isRest&&makeup&&makeup!=='off'
+    const mkVolH={easy:8,mod:12}
+    const volBarH=isMakeupActive?mkVolH[makeup]||8:vol==='rest'?4:vol==='mid'?10:16
+    const volBarColor=isMakeupActive?'rgba(0,212,170,0.55)':vol==='rest'?'#4a5560':'#3b82f6'
+    const volBarOpacity=isMakeupActive?0.9:vol==='rest'?0.3:0.75
+    const intDot=intW==='high'&&!isRest?'var(--int)':'var(--text3)'  // rest days always low-IF dot
     // For rest days: 0M is intentional (off), not an error — use text3 not red
-    const mColor=isMissed?'var(--red)':displayM===0?'var(--text3)':displayM<=2?'var(--text3)':displayM<=3?'var(--vol)':displayM<=4?'var(--accent)':displayM<=5?'var(--yellow)':'var(--red)'
-    // Makeup label + color per level
-    const muLabels={off:'off',easy:'+easy',mod:'+mod',hard:'+hard'}
-    const muColors={off:'var(--text3)',easy:'var(--vol)',mod:'var(--accent)',hard:'var(--accent2)'}
-    const muLabel=makeup?muLabels[makeup]:null
-    const muColor=makeup?muColors[makeup]:'var(--text3)'
+    const mColor=isMissed?'var(--red)':displayM===0?'var(--text3)':displayM<=2?'var(--green)':displayM<=4?'var(--yellow)':'var(--red)'
+    // Bottom label: LP breakdown for makeup, vol/int for training days
+    const muLPLabel={easy:'2L · low',mod:'3L · low'}
+    const bottomLabel=isMakeupActive?(muLPLabel[makeup]||'+vol'):makeup==='off'?'full rest':vol==='rest'?'rest':vol+'/'+intW
+    const bottomColor=isMakeupActive?'rgba(0,212,170,0.7)':makeup==='off'?'var(--text3)':'var(--text3)'
     let cls='planner-day'+(isToday?' is-today':'')+(isPast&&!isToday?' is-past':'')+(hasLogged?' is-done':'')+(isMissed?' is-missed':'')
     const clickAttr=canCycle?`onclick="cycleValleyVol(${i})" title="Tap to cycle volume"`:canMakeup?`onclick="cycleRestMakeup(${i},event)" title="Tap to cycle rest level" style="cursor:pointer"`:'style="cursor:default"'
     return`<div class="${cls}" ${clickAttr}>
       <div class="pday-name${isToday?' is-today':''}">${DAYS[i]}</div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;margin-top:2px">
-        <div style="width:85%;height:${vol==='rest'?4:vol==='mid'?10:16}px;border-radius:2px;background:${volColor};opacity:${vol==='rest'?0.3:0.75};transition:height 0.25s"></div>
+        <div style="width:85%;height:${volBarH}px;border-radius:2px;background:${volBarColor};opacity:${volBarOpacity};transition:height 0.25s,background 0.2s"></div>
         <div style="width:6px;height:6px;border-radius:50%;background:${intDot}"></div>
       </div>
       <div style="font-family:var(--font-display);font-size:13px;font-weight:800;color:${mColor};margin-top:3px">${displayM}</div>
-      <div style="font-size:8px;color:var(--text3);line-height:1.2">${vol==='rest'?'rest':vol+'/'+intW}</div>
-      ${muLabel?`<div style="font-size:8px;font-weight:700;color:${muColor};margin-top:1px">${muLabel}</div>`:''}
+      <div style="font-size:8px;color:${bottomColor};line-height:1.2">${bottomLabel}</div>
       ${hasLogged?'<span class="pday-chip-tick" style="color:var(--accent);font-size:9px">✓</span>':isMissed?'<span style="font-size:8px;color:var(--red)">miss</span>':''}
       ${canCycle?'<div style="font-size:7px;color:var(--text3);margin-top:1px">tap↕</div>':''}
       ${canMakeup?'<div style="font-size:7px;color:var(--text3);margin-top:1px">tap↕</div>':''}
@@ -1425,6 +1886,10 @@ function renderProjectedM(plan, ww){
   else if(proj<=30){msg='⛔ Extreme territory (30) — elite use only, 1 week max';msgColor='var(--accent2)'}
   else{msg='⛔ Over M30 — reduce a session or add rest to avoid injury';msgColor='var(--red)'}
   if(ps){ps.textContent=msg;ps.style.color=msgColor}
+  const heroPM=document.getElementById('heroProjM')
+  const heroPL=document.getElementById('heroProjLabel')
+  if(heroPM){heroPM.textContent=proj>0?'→ '+proj+' proj':'';heroPM.style.color=color}
+  if(heroPL){const sl=proj===0?'':proj<14?'Detraining':proj<=18?'Recovery':proj<=24?'Maintaining':proj<=27?'Productive':proj<=29?'Overreaching':'Over limit';heroPL.textContent=sl;heroPL.style.color=msgColor}
   renderDayMRow(plan,ww)
 }
 
@@ -1472,12 +1937,28 @@ function renderPlanner(ww){
 // ═══ MAIN RENDER ═════════════════════════════
 function renderWeek(){
   const{mon}=getWeekRange();const ww=getWeekWo();const days=getDayAggs(ww)
-  const weekM=days.reduce((s,d)=>s+d.m,0);const weekTSS=ww.reduce((s,w)=>s+w.rawTSS,0)
+  const weekDayMap=new Map(days.map(d=>[d.date,d]))
+  const weekM=days.reduce((s,d)=>s+d.m,0)+getWeekRestM(weekDayMap);const weekTSS=ww.reduce((s,w)=>s+w.rawTSS,0)
   const peakIF=days.length?Math.max(...days.map(d=>d.avgIF)):0;const tier=getTier()
   document.getElementById('heroM').textContent=weekM
   document.getElementById('heroM').className='hero-stat-val'+(weekM>=30?' danger':weekM>=tier.mCeil?' warn':'')
   document.getElementById('heroTSS').textContent=weekTSS;document.getElementById('heroTSSGoal').textContent=weeklyTSSGoal
   document.getElementById('tssMini').style.width=Math.min(100,Math.round(weekTSS/weeklyTSSGoal*100))+'%'
+  // vs last week delta
+  ;(()=>{
+    const fmtD=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')
+    const todayIdx=getDayIdx(today())
+    const lastMon=new Date(mon);lastMon.setDate(mon.getDate()-7)
+    const lastEnd=new Date(lastMon);lastEnd.setDate(lastMon.getDate()+(todayIdx>=0?todayIdx:6))
+    const lwWo=workouts.filter(w=>w.date>=fmtD(lastMon)&&w.date<=fmtD(lastEnd))
+    const lwTSS=lwWo.reduce((s,w)=>s+w.rawTSS,0)
+    const lwM=getDayAggs(lwWo).reduce((s,d)=>s+d.m,0)
+    const mDelta=document.getElementById('heroMDelta')
+    const tssDelta=document.getElementById('heroTSSDelta')
+    const fmt=(cur,prev)=>{if(!prev&&!cur)return'';const d=cur-prev;const s=d>=0?'↑':'↓';const c=d>=0?'var(--accent)':'var(--red)';return`<span style="color:${c}">${s} ${Math.abs(d)}</span> <span style="color:var(--text3)">vs last wk</span>`}
+    if(mDelta)mDelta.innerHTML=lwWo.length||lwM?fmt(weekM,lwM):''
+    if(tssDelta)tssDelta.innerHTML=lwWo.length||lwTSS?fmt(weekTSS,lwTSS):''
+  })()
   document.getElementById('heroIF').textContent=peakIF?peakIF.toFixed(2):'—'
   document.getElementById('heroIFzone').textContent=peakIF?ifZoneLabel(peakIF):''
   // TSS regime + total time
@@ -1562,17 +2043,14 @@ function renderWeek(){
     }).join('')
   }
 
-  // Rule compliance
+  // Rule compliance — actual sessions
   const hiDays=days.filter(d=>d.avgIF>=0.95).length
-  let consec=false
-  for(let i=0;i<days.length-1;i++){if(days[i].avgIF>=0.95&&days[i+1].avgIF>=0.95){consec=true;break}}
-  // Back-to-back key from actual data
   let consecKey=false
   for(let i=0;i<days.length-1;i++){if(days[i].avgIF>=0.90&&days[i+1].avgIF>=0.90){consecKey=true;break}}
   const tlp=days.reduce((s,d)=>s+d.lp,0),tip=days.reduce((s,d)=>s+d.ip,0)
   const ratio=tip>0?(tlp/tip).toFixed(2):0
   // Zone distribution compliance
-  const loDiff=lp-zt.lo, moDiff=mp-zt.mo, hiDiff=hp-zt.hi
+  const loDiff=lp-zt.lo, hiDiff=hp-zt.hi
   const loStatus=Math.abs(loDiff)<=8?'rule-ok':loDiff<-8?'rule-fail':'rule-warn'
   const hiStatus=Math.abs(hiDiff)<=5?'rule-ok':hiDiff>5?'rule-fail':'rule-warn'
   const loVal=lp+'% '+(loDiff>=0?'+':'')+loDiff+' vs '+zt.lo+'%'
@@ -1582,8 +2060,47 @@ function renderWeek(){
     '<div class="rule-row"><span>Max 3 key days/week</span><span class="'+(hiDays>3?'rule-fail':hiDays===3?'rule-warn':'rule-ok')+'">'+hiDays+'/3</span></div>'+
     '<div class="rule-row"><span>Low zone (target '+zt.lo+'%)</span><span class="'+loStatus+'">'+loVal+'</span></div>'+
     '<div class="rule-row"><span>High zone (target '+zt.hi+'%)</span><span class="'+hiStatus+'">'+hiVal+'</span></div>'
-  document.getElementById('mRatioVal').textContent=ratio
-  document.getElementById('mRatioText').textContent=ratio<1?'Intensity-dominant (ratio < 1) — high quality per mile, low injury risk':ratio>2?'Volume-heavy (ratio > 2) — add intensity or reduce volume to stay efficient':'Balanced (ratio 1–2) — volume and intensity in good proportion'
+  // Plan compliance preview — check planned week for rule violations
+  const planRows=document.getElementById('compPlanRows')
+  if(planRows){
+    const planFull=buildFullPlan()
+    let planHtml=''
+    if(planFull){
+      let planConsec=false
+      for(let i=0;i<6;i++){if(planFull.intWave[i]==='high'&&planFull.vol[i]!=='rest'&&planFull.intWave[i+1]==='high'&&planFull.vol[i+1]!=='rest'){planConsec=true;break}}
+      const planHiDays=planFull.intWave.filter((w,i)=>w==='high'&&planFull.vol[i]!=='rest').length
+      if(planConsec)planHtml+=`<div style="padding:6px 10px;margin-bottom:5px;background:rgba(255,204,0,0.07);border-radius:6px;border-left:2px solid var(--yellow);font-size:11px;color:var(--yellow)">⚠ Plan has back-to-back hard days — consider separating</div>`
+      if(planHiDays>3)planHtml+=`<div style="padding:6px 10px;margin-bottom:5px;background:rgba(255,204,0,0.07);border-radius:6px;border-left:2px solid var(--yellow);font-size:11px;color:var(--yellow)">⚠ Plan has ${planHiDays} key days — max recommended is 3</div>`
+    }
+    planRows.innerHTML=planHtml
+  }
+  // 4-week compliance trend badge
+  const fmtD2=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')
+  let comp4ok=0,comp4total=0
+  for(let w=1;w<=4;w++){
+    const wMon=new Date(mon);wMon.setDate(mon.getDate()-7*w)
+    const wSun=new Date(wMon);wSun.setDate(wMon.getDate()+6)
+    const wWo=workouts.filter(x=>x.date>=fmtD2(wMon)&&x.date<=fmtD2(wSun))
+    if(!wWo.length)continue
+    comp4total++
+    const wDays=getDayAggs(wWo)
+    const wHi=wDays.filter(d=>d.avgIF>=0.95).length
+    let wConsec=false
+    for(let i=0;i<wDays.length-1;i++){if(wDays[i].avgIF>=0.90&&wDays[i+1].avgIF>=0.90){wConsec=true;break}}
+    if(!wConsec&&wHi<=3)comp4ok++
+  }
+  const badge4=document.getElementById('comp4wkBadge')
+  if(badge4&&comp4total>0){
+    const color=comp4ok===comp4total?'var(--accent)':comp4ok>=comp4total/2?'var(--yellow)':'var(--red)'
+    badge4.textContent=comp4ok+'/'+comp4total+' wks'
+    badge4.style.cssText+=`;color:${color};background:${color}18;border:1px solid ${color}44;display:inline`
+  } else if(badge4){badge4.style.display='none'}
+  const rValEl=document.getElementById('mRatioVal')
+  const rMark=document.getElementById('mRatioMarker')
+  const rTxt=document.getElementById('mRatioText')
+  if(rValEl)rValEl.textContent=ratio>0?ratio:'—'
+  if(rMark&&ratio>0){const logMin=Math.log(1/3),logMax=Math.log(3),pct=Math.min(97,Math.max(3,((Math.log(Math.max(1/3,Math.min(3,parseFloat(ratio))))-logMin)/(logMax-logMin))*100));rMark.style.left=pct+'%'}
+  if(rTxt)rTxt.textContent=ratio<=0?'':ratio<1?'Sharp — short and hard. Time-efficient.':ratio>2?'Engine — high volume. Aerobic base building.':'Balanced — polarized. What the wave is designed for.'
 }
 
 // ═══ LOG ═════════════════════════════════════
@@ -1608,7 +2125,7 @@ function updateLivePreview(){
   if(!ifv||ifv<=0){prev.classList.remove('visible');return}
   const rawTSS=calcRawTSS(time,ifv)
   const{m,lp,ip}=calcM(s,rawTSS,ifv)
-  const mColor=m<=2?'var(--green)':m<=3?'var(--yellow)':m<=4?'var(--accent2)':'var(--red)'
+  const mColor=m<=2?'var(--green)':m<=4?'var(--yellow)':'var(--red)'
   document.getElementById('lpM').textContent=m
   document.getElementById('lpM').style.color=mColor
   document.getElementById('lpTSS').textContent=rawTSS
@@ -1631,11 +2148,25 @@ function saveWorkout(){
 function edit(id){const w=workouts.find(x=>x.id===id);if(!w)return;document.getElementById('fSport').value=w.sport;document.getElementById('fTime').value=w.time;document.getElementById('fIntensity').value=w.intensity;document.getElementById('fDate').value=w.date;editId=id;document.getElementById('logTitle').textContent='Edit session';document.getElementById('cancelBtn').style.display='block';onSportChange();showTab('log');window.scrollTo({top:0,behavior:'smooth'})}
 function cancelEdit(){editId=null;document.getElementById('logTitle').textContent='Log a session';document.getElementById('cancelBtn').style.display='none';document.getElementById('fSport').value='bike';document.getElementById('fTime').value='';document.getElementById('fIntensity').value='';document.getElementById('fDate').value=today();document.getElementById('zoneTag').style.display='none';document.getElementById('livePreview').classList.remove('visible');onSportChange()}
 function del(id){if(!confirm('Delete?'))return;workouts=workouts.filter(x=>x.id!==id);save();render()}
+function getWeekRestM(dayAggMap){
+  const plan=buildFullPlan();if(!plan)return 0
+  const{mon}=getWeekRange()
+  const fmtD=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')
+  let restM=0
+  plan.vol.forEach((v,i)=>{
+    if(v==='rest'){
+      const ds=fmtD(new Date(mon.getTime()+i*864e5))
+      if(!dayAggMap||!dayAggMap.has(ds)){const makeup=(weekPlan.makeup||{})[i]||null;restM+=calcDayM('rest',plan.intWave[i],false,makeup)}
+    }
+  })
+  return restM
+}
 function renderLog(){
   const ww=getWeekWo(),days=getDayAggs(ww)
   document.getElementById('statSessions').textContent=ww.length
   document.getElementById('statTSS').textContent=ww.reduce((s,w)=>s+w.rawTSS,0)
-  document.getElementById('statM').textContent=days.reduce((s,d)=>s+d.m,0)
+  const logDayMap=new Map(days.map(d=>[d.date,d]))
+  document.getElementById('statM').textContent=days.reduce((s,d)=>s+d.m,0)+getWeekRestM(logDayMap)
   const listEl=document.getElementById('logSessionList')
   if(!listEl)return
   if(!ww.length){listEl.innerHTML='';return}
@@ -1649,15 +2180,15 @@ function renderLog(){
   for(const[date,sessions] of byDate){
     const agg=days.find(d=>d.date===date)
     const multi=sessions.length>1
-    const mColor=agg?agg.m<=2?'var(--text3)':agg.m<=3?'var(--vol)':agg.m<=4?'var(--accent)':agg.m<=5?'var(--yellow)':'var(--red)':'var(--text3)'
+    const mColor=agg?agg.m<=2?'var(--green)':agg.m<=4?'var(--yellow)':'var(--red)':'var(--text3)'
     if(multi){
       // Show daily aggregate header
       html+=`<div style="background:var(--surface2);border-radius:10px;padding:10px 12px;margin-bottom:8px;border-left:3px solid ${mColor}">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
           <div style="font-size:13px;font-weight:700">${date} <span style="font-size:10px;color:var(--text3);font-weight:400">${sessions.length} sessions · aggregated</span></div>
-          <div style="font-family:var(--font-display);font-size:16px;font-weight:800;color:${mColor}">M${agg?agg.m:'?'}</div>
+          <div style="text-align:right"><div style="font-family:var(--font-display);font-size:16px;font-weight:800;color:${mColor}">M${agg?agg.m:'?'}</div><div style="font-size:9px;color:var(--text3);font-family:var(--font-display);text-align:center;margin-top:1px">${agg?agg.lp+'L/'+agg.ip+'I':''}</div></div>
         </div>
-        <div style="font-size:10px;color:var(--text3);margin-bottom:8px">Total TSS ${agg?agg.rawTSS:0} · Peak IF ${agg?agg.peakIF.toFixed(2):'—'} · Avg IF ${agg?agg.avgIF.toFixed(2):'—'} · ${agg?agg.lp+'L+'+agg.ip+'I':''}</div>`
+        <div style="font-size:10px;color:var(--text3);margin-bottom:8px">Total TSS ${agg?agg.rawTSS:0} · Peak IF ${agg?agg.peakIF.toFixed(2):'—'} · Avg IF ${agg?agg.avgIF.toFixed(2):'—'}</div>`
       sessions.forEach(w=>{
         html+=`<div style="padding:6px 8px;background:var(--surface);border-radius:6px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center">
           <div style="font-size:11px;color:var(--text2)">${w.sport.toUpperCase()} · ${w.time}min · ${w.intensity} · IF ${w.ifv.toFixed(2)} · TSS ${w.rawTSS}</div>
@@ -1671,7 +2202,7 @@ function renderLog(){
     } else {
       const w=sessions[0]
       const mc=w.m<=2?'low':w.m<=3?'mid':w.m<=4?'high':'peak'
-      html+=`<div class="session m-${mc}"><div class="session-top"><div class="session-title">${w.date} · ${w.sport.toUpperCase()}</div><div class="session-badge" style="background:${mColor}22;color:${mColor}">M${w.m}</div></div><div class="session-meta">${w.time} min · ${w.intensity} · IF ${w.ifv.toFixed(2)} · TSS ${w.rawTSS} · ${w.lp}L+${w.ip}I</div><div class="session-btns"><button class="session-btn" onclick="edit('${w.id}')">Edit</button><button class="session-btn del" onclick="del('${w.id}')">Delete</button></div></div>`
+      html+=`<div class="session m-${mc}"><div class="session-top"><div class="session-title">${w.date} · ${w.sport.toUpperCase()}</div><div style="display:flex;flex-direction:column;align-items:center;gap:2px"><div class="session-badge" style="background:${mColor}22;color:${mColor}">M${w.m}</div><div style="font-size:9px;color:var(--text3);font-family:var(--font-display)">${w.lp}L/${w.ip}I</div></div></div><div class="session-meta">${w.time} min · ${w.intensity} · IF ${w.ifv.toFixed(2)} · TSS ${w.rawTSS}</div><div class="session-btns"><button class="session-btn" onclick="edit('${w.id}')">Edit</button><button class="session-btn del" onclick="del('${w.id}')">Delete</button></div></div>`
     }
   }
   listEl.innerHTML=html
@@ -1685,45 +2216,82 @@ function checkOnboarding(){
 
 // ═══ HISTORY ═════════════════════════════════
 function renderHistory(){
-  // Group workouts by date
-  const byDate=new Map()
-  ;[...workouts].sort((a,b)=>b.date.localeCompare(a.date)).forEach(w=>{
-    if(!byDate.has(w.date))byDate.set(w.date,[])
-    byDate.get(w.date).push(w)
-  })
+  const fmtD=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')
   // Build per-date aggregates for M display
   const allDays=getDayAggs(workouts)
   const dayMap=new Map(allDays.map(d=>[d.date,d]))
+
+  // ── Summary strip ──────────────────────────────────────────────────
+  const sumEl=document.getElementById('histSummary')
+  if(sumEl&&workouts.length){
+    const now=new Date()
+    // last 4 complete weeks
+    const mon=new Date(now);const dow=mon.getDay();mon.setDate(mon.getDate()-(dow===0?6:dow-1));mon.setHours(12,0,0,0)
+    const fourWkStart=new Date(mon);fourWkStart.setDate(mon.getDate()-28)
+    const fourWkWo=workouts.filter(w=>w.date>=fmtD(fourWkStart)&&w.date<fmtD(mon))
+    const wkCount=Math.min(4,Math.max(1,Math.round((mon-fourWkStart)/(7*864e5))))
+    const avgTSS=fourWkWo.length?Math.round(fourWkWo.reduce((s,w)=>s+w.rawTSS,0)/wkCount):0
+    const totLoMin=fourWkWo.filter(w=>w.ifv<0.75).reduce((s,w)=>s+w.time,0)
+    const totMin=fourWkWo.reduce((s,w)=>s+w.time,0)
+    const loPct=totMin?Math.round(totLoMin/totMin*100):0
+    const chip=(v,label,color)=>`<span style="font-size:10px;font-family:var(--font-display);font-weight:700;letter-spacing:0.04em;padding:3px 8px;border-radius:4px;background:var(--surface2);border:1px solid var(--border);color:${color}">${v} <span style="font-weight:400;color:var(--text3)">${label}</span></span>`
+    sumEl.innerHTML=chip(fourWkWo.length,'sessions / 4 wks','var(--text)')+chip(avgTSS,'TSS avg/wk','rgba(59,130,246,0.9)')+chip(loPct+'%','low zone','var(--accent)')
+  } else if(sumEl){sumEl.innerHTML=''}
+
+  // ── Session list grouped by week ─────────────────────────────────────
+  const byWeek=new Map()
+  ;[...workouts].sort((a,b)=>b.date.localeCompare(a.date)).forEach(w=>{
+    const d=new Date(w.date+'T12:00:00'),wd=d.getDay(),df=wd===0?-6:1-wd
+    const mn=new Date(d);mn.setDate(d.getDate()+df)
+    const k=fmtD(mn)
+    if(!byWeek.has(k))byWeek.set(k,{mon:mn,sessions:[]})
+    byWeek.get(k).sessions.push(w)
+  })
   let html=''
-  for(const[date,sessions] of byDate){
-    const agg=dayMap.get(date)
-    const multi=sessions.length>1
-    const mColor=agg?agg.m<=2?'var(--text3)':agg.m<=3?'var(--vol)':agg.m<=4?'var(--accent)':agg.m<=5?'var(--yellow)':'var(--red)':'var(--text3)'
-    if(multi){
-      html+=`<div style="background:var(--surface2);border-radius:10px;padding:10px 12px;margin-bottom:8px;border-left:3px solid ${mColor}">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-          <div style="font-size:13px;font-weight:700">${date} <span style="font-size:10px;color:var(--text3);font-weight:400">${sessions.length} sessions</span></div>
-          <div style="font-family:var(--font-display);font-size:16px;font-weight:800;color:${mColor}">M${agg?agg.m:'?'} <span style="font-size:10px;font-weight:400;color:var(--text3)">daily total</span></div>
+  const fmtShort=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric'})
+  for(const[wkKey,wkData] of byWeek){
+    const wkSun=new Date(wkData.mon);wkSun.setDate(wkData.mon.getDate()+6)
+    const wkWo=wkData.sessions
+    const wkTSS=wkWo.reduce((s,w)=>s+w.rawTSS,0)
+    const wkDays=getDayAggs(wkWo);const wkDayMap=new Map(wkDays.map(d=>[d.date,d]));const wkRestM=wkKey===getWeekRange().start?getWeekRestM(wkDayMap):0;const wkM=wkDays.reduce((s,d)=>s+d.m,0)+wkRestM;const wkLP=wkDays.reduce((s,d)=>s+d.lp,0);const wkIP=wkDays.reduce((s,d)=>s+d.ip,0)
+    const mColor=wkM<=0?'var(--text3)':wkM<=18?'var(--accent)':wkM<=27?'var(--yellow)':wkM<=29?'var(--accent2)':'var(--red)'
+    // Week header
+    html+=`<div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);margin-bottom:6px">
+        <div style="font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--text2)">${fmtShort(wkData.mon)} – ${fmtShort(wkSun)}</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:10px;color:var(--text3)">TSS ${wkTSS}</span>
+          <div style="text-align:right"><div style="font-family:var(--font-display);font-size:14px;font-weight:800;color:${mColor}">M${wkM}</div><div style="font-size:9px;color:var(--text3);font-family:var(--font-display);text-align:center;margin-top:1px">${wkLP}L/${wkIP}I</div></div>
         </div>
-        <div style="font-size:10px;color:var(--text3);margin-bottom:7px">TSS ${agg?agg.rawTSS:0} total · Peak IF ${agg?agg.peakIF.toFixed(2):'—'} · Avg IF ${agg?agg.avgIF.toFixed(2):'—'} · ${agg?agg.lp+'L + '+agg.ip+'I':''}</div>`
-      sessions.forEach(w=>{
-        html+=`<div style="padding:6px 8px;background:var(--surface);border-radius:6px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <div style="font-size:12px;font-weight:600;color:var(--text2)">${w.sport.toUpperCase()} · ${w.time}min · ${w.intensity}</div>
-            <div style="font-size:10px;color:var(--text3)">IF ${w.ifv.toFixed(2)} · TSS ${w.rawTSS} · M${w.m} (${w.lp}L+${w.ip}I) <span style="color:var(--text3);font-style:italic">individual</span></div>
+      </div>`
+    // Group sessions within the week by date
+    const byDate=new Map()
+    wkWo.forEach(w=>{if(!byDate.has(w.date))byDate.set(w.date,[]);byDate.get(w.date).push(w)})
+    for(const[date,sessions] of [...byDate.entries()].sort((a,b)=>b[0].localeCompare(a[0]))){
+      const agg=dayMap.get(date)
+      const mC=agg?agg.m<=2?'var(--green)':agg.m<=4?'var(--yellow)':'var(--red)':'var(--text3)'
+      const dow=new Date(date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})
+      if(sessions.length>1){
+        html+=`<div style="background:var(--surface2);border-radius:8px;padding:8px 10px;margin-bottom:6px;border-left:3px solid ${mC}">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+            <div style="font-size:12px;font-weight:700">${dow}</div>
+            <div style="text-align:right"><div style="font-family:var(--font-display);font-size:14px;font-weight:800;color:${mC}">M${agg?agg.m:'?'}</div><div style="font-size:9px;color:var(--text3);font-family:var(--font-display);text-align:center;margin-top:1px">${agg?agg.lp+'L/'+agg.ip+'I':''}</div></div>
           </div>
-          <div style="display:flex;gap:5px">
-            <button class="session-btn" style="padding:3px 8px" onclick="edit('${w.id}')">Edit</button>
-            <button class="session-btn del" style="padding:3px 8px" onclick="del('${w.id}')">×</button>
-          </div>
-        </div>`
-      })
-      html+=`</div>`
-    } else {
-      const w=sessions[0]
-      const mc=w.m<=2?'low':w.m<=3?'mid':w.m<=4?'high':'peak'
-      html+=`<div class="session m-${mc}"><div class="session-top"><div class="session-title">${w.date} · ${w.sport.toUpperCase()}</div><div class="session-badge" style="background:${mColor}22;color:${mColor}">M${w.m}</div></div><div class="session-meta">${w.time} min · ${w.intensity} · IF ${w.ifv.toFixed(2)} · TSS ${w.rawTSS} · M${w.m} (${w.lp}L+${w.ip}I)</div><div class="session-btns"><button class="session-btn" onclick="edit('${w.id}')">Edit</button><button class="session-btn del" onclick="del('${w.id}')">Delete</button></div></div>`
+          <div style="font-size:10px;color:var(--text3);margin-bottom:5px">TSS ${agg?agg.rawTSS:0} · Peak IF ${agg?agg.peakIF.toFixed(2):'—'}</div>`
+        sessions.forEach(w=>{
+          html+=`<div style="padding:5px 8px;background:var(--surface);border-radius:5px;margin-bottom:3px;display:flex;justify-content:space-between;align-items:center">
+            <div style="font-size:11px;color:var(--text2)">${w.sport.toUpperCase()} · ${w.time}min · IF ${w.ifv.toFixed(2)} · TSS ${w.rawTSS}</div>
+            <div style="display:flex;gap:4px"><button class="session-btn" style="padding:2px 7px" onclick="edit('${w.id}')">Edit</button><button class="session-btn del" style="padding:2px 7px" onclick="del('${w.id}')">×</button></div>
+          </div>`
+        })
+        html+=`</div>`
+      } else {
+        const w=sessions[0]
+        const mc=w.m<=2?'low':w.m<=3?'mid':w.m<=4?'high':'peak'
+        html+=`<div class="session m-${mc}" style="margin-bottom:6px"><div class="session-top"><div class="session-title">${dow} · ${w.sport.toUpperCase()}</div><div style="display:flex;flex-direction:column;align-items:center;gap:2px"><div class="session-badge" style="background:${mC}22;color:${mC}">M${w.m}</div><div style="font-size:9px;color:var(--text3);font-family:var(--font-display)">${w.lp}L/${w.ip}I</div></div></div><div class="session-meta">${w.time} min · ${w.intensity} · IF ${w.ifv.toFixed(2)} · TSS ${w.rawTSS}</div><div class="session-btns"><button class="session-btn" onclick="edit('${w.id}')">Edit</button><button class="session-btn del" onclick="del('${w.id}')">Delete</button></div></div>`
+      }
     }
+    html+=`</div>`
   }
   document.getElementById('sessionList').innerHTML=html||'<div style="text-align:center;padding:40px;color:var(--text3)">No sessions logged yet</div>'
   // Update range selector buttons
@@ -1738,6 +2306,7 @@ function renderHistory(){
   if(fwd)fwd.style.opacity=histOffset>=0?'0.3':'1'
   document.getElementById('rangeLabel').textContent=getRangeLabel(currentRange,histOffset)
   renderHistChart()
+  drawEfficiencyCurve()
 }
 
 function getRangeLabel(range,offset){
@@ -1757,21 +2326,42 @@ function getRangeLabel(range,offset){
 
 function getGroupedData(range,offset){
   const now=new Date()
+  const fmtD=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')
+  const DSHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
   if(range==='week'){
     const start=new Date(now);start.setDate(now.getDate()-6+offset*7);start.setHours(0,0,0,0)
     const end=new Date(start);end.setDate(start.getDate()+6)
-    const ss=start.toISOString().split('T')[0],es=end.toISOString().split('T')[0]
+    const ss=fmtD(start),es=fmtD(end)
     const map=new Map()
-    for(let i=0;i<7;i++){const d=new Date(start);d.setDate(start.getDate()+i);const k=d.toISOString().split('T')[0];map.set(k,{tss:0,ifSum:0,cnt:0,loS:0,loN:0,hiS:0,hiN:0,label:k.slice(5)})}
+    for(let i=0;i<7;i++){const d=new Date(start);d.setDate(start.getDate()+i);const k=fmtD(d);const lbl=DSHORT[d.getDay()]+'|'+(d.getMonth()+1)+'/'+d.getDate();map.set(k,{tss:0,ifSum:0,cnt:0,loS:0,loN:0,hiS:0,hiN:0,label:lbl})}
     workouts.filter(w=>w.date>=ss&&w.date<=es).forEach(w=>{if(map.has(w.date)){const e=map.get(w.date);e.tss+=w.rawTSS;e.ifSum+=w.ifv;e.cnt++;if(w.ifv<0.90){e.loS+=w.ifv;e.loN++}else{e.hiS+=w.ifv;e.hiN++}}})
     return[...map.values()].map(e=>({label:e.label,tss:e.tss,avgIF:e.cnt?e.ifSum/e.cnt:null,loIF:e.loN?e.loS/e.loN:null,hiIF:e.hiN?e.hiS/e.hiN:null}))
   }
   if(range==='month'){
     const base=new Date(now.getFullYear(),now.getMonth()+offset,1)
     const y=base.getFullYear(),m=base.getMonth()
-    const ss=new Date(y,m,1).toISOString().split('T')[0],es=new Date(y,m+1,0).toISOString().split('T')[0]
+    const monthEnd=new Date(y,m+1,0)
+    // Find first Monday on or before month start
+    const firstD=new Date(y,m,1)
+    const wd0=firstD.getDay(),df0=wd0===0?-6:1-wd0
+    firstD.setDate(firstD.getDate()+df0)
+    // Pre-fill every week that overlaps this month
     const map=new Map()
-    workouts.filter(w=>w.date>=ss&&w.date<=es).forEach(w=>{const d=new Date(w.date),wd=d.getDay(),df=wd===0?-6:1-wd,mn=new Date(d);mn.setDate(d.getDate()+df);const k=mn.toISOString().split('T')[0];if(!map.has(k))map.set(k,{tss:0,ifSum:0,cnt:0,loS:0,loN:0,hiS:0,hiN:0,label:'W'+k.slice(8)});const e=map.get(k);e.tss+=w.rawTSS;e.ifSum+=w.ifv;e.cnt++;if(w.ifv<0.90){e.loS+=w.ifv;e.loN++}else{e.hiS+=w.ifv;e.hiN++}})
+    let wk=new Date(firstD)
+    while(wk<=monthEnd){
+      const k=fmtD(wk)
+      const lbl=(wk.getMonth()+1)+'/'+wk.getDate()
+      map.set(k,{tss:0,ifSum:0,cnt:0,loS:0,loN:0,hiS:0,hiN:0,label:lbl})
+      wk=new Date(wk.getTime()+7*864e5)
+    }
+    // Fill with workouts (include partial weeks at edges)
+    const wRangeEnd=fmtD(monthEnd)
+    const wRangeStart=fmtD(firstD)
+    workouts.filter(w=>w.date>=wRangeStart&&w.date<=wRangeEnd).forEach(w=>{
+      const d=new Date(w.date+'T12:00:00'),wd=d.getDay(),df=wd===0?-6:1-wd
+      const mn=new Date(d);mn.setDate(d.getDate()+df);const k=fmtD(mn)
+      if(map.has(k)){const e=map.get(k);e.tss+=w.rawTSS;e.ifSum+=w.ifv;e.cnt++;if(w.ifv<0.90){e.loS+=w.ifv;e.loN++}else{e.hiS+=w.ifv;e.hiN++}}
+    })
     return[...map.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([,e])=>({label:e.label,tss:e.tss,avgIF:e.cnt?e.ifSum/e.cnt:null,loIF:e.loN?e.loS/e.loN:null,hiIF:e.hiN?e.hiS/e.hiN:null}))
   }
   const yr=now.getFullYear()+offset
@@ -1788,10 +2378,10 @@ function renderHistChart(){
   const loIFs=data.map(d=>d.loIF),hiIFs=data.map(d=>d.hiIF)
   const dpr=window.devicePixelRatio||1
   // Use clientWidth - card padding so canvas never overflows the card box
-  const W=Math.max(200,canvas.parentElement.clientWidth-32),H=190
+  const W=Math.max(200,canvas.parentElement.clientWidth-2),H=190
   canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.width=W+'px';canvas.style.height=H+'px'
   const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr)
-  const PAD_L=36,PAD_R=46,PAD_T=12,PAD_B=22
+  const PAD_L=36,PAD_R=46,PAD_T=12,PAD_B=currentRange==='week'?30:22
   const cW=W-PAD_L-PAD_R,cH=H-PAD_T-PAD_B
   const n=labels.length,bW=cW/n
   const maxTSS=Math.max(...tss,1)
@@ -1923,25 +2513,64 @@ function renderHistChart(){
 
   ctx.setLineDash([])
 
-  // X labels
-  ctx.fillStyle='rgba(74,85,96,0.9)';ctx.font='bold 8px Barlow Condensed,sans-serif';ctx.textAlign='center'
-  labels.forEach((l,i)=>ctx.fillText(l,PAD_L+bW*i+bW/2,H-6))
+  // X labels — week view gets two lines (day name + date), others single line
+  ctx.textAlign='center'
+  if(currentRange==='week'){
+    labels.forEach((l,i)=>{
+      const x=PAD_L+bW*i+bW/2
+      const parts=l.split('|')
+      ctx.fillStyle='rgba(138,147,153,0.9)';ctx.font='bold 8px Barlow Condensed,sans-serif'
+      ctx.fillText(parts[0]||l,x,H-16)
+      ctx.fillStyle='rgba(74,85,96,0.75)';ctx.font='7px Barlow Condensed,sans-serif'
+      ctx.fillText(parts[1]||'',x,H-5)
+    })
+  } else {
+    ctx.fillStyle='rgba(74,85,96,0.9)';ctx.font='bold 8px Barlow Condensed,sans-serif'
+    labels.forEach((l,i)=>ctx.fillText(l,PAD_L+bW*i+bW/2,H-6))
+  }
 
-  // Legend toggle buttons
-  const LEG=[
-    {key:'tssTrend', label:'TSS trend', rgb:'59,130,246'},
-    {key:'tssAvg',   label:'TSS avg',   rgb:'59,130,246'},
-    {key:'ifAvg',    label:'IF avg',    rgb:'255,107,53'},
-    {key:'loIfAvg',  label:'Lo IF avg', rgb:'0,212,170'},
-    {key:'hiIfAvg',  label:'Hi IF avg', rgb:'255,59,59'},
-    {key:'loIF',     label:'Lo IF',     rgb:'0,212,170'},
-    {key:'hiIF',     label:'Hi IF',     rgb:'255,59,59'},
+  // ── Tooltip (hover/touch) ─────────────────────────────────────────────
+  const tip=document.getElementById('histTooltip')
+  function showHistTip(clientX,clientY){
+    const rect=canvas.getBoundingClientRect()
+    const mx=clientX-rect.left,my=clientY-rect.top
+    if(mx<PAD_L||mx>W-PAD_R||my<PAD_T||my>PAD_T+cH){if(tip)tip.style.display='none';return}
+    const idx=Math.floor((mx-PAD_L)/bW)
+    if(idx<0||idx>=n||!tip)return
+    const d=data[idx]
+    const label=labels[idx].replace('|',' ')
+    const tssVal=d.tss||0
+    const ifVal=d.avgIF!=null?d.avgIF.toFixed(2):'—'
+    const loVal=d.loIF!=null?d.loIF.toFixed(2):'—'
+    const hiVal=d.hiIF!=null?d.hiIF.toFixed(2):'—'
+    tip.innerHTML=`<div style="font-family:var(--font-display);font-weight:700;font-size:11px;margin-bottom:4px;color:var(--text)">${label}</div>`+
+      `<div style="color:rgba(59,130,246,0.9);line-height:1.7;font-size:10px">TSS ${tssVal}</div>`+
+      `<div style="color:rgba(255,107,53,0.9);line-height:1.7;font-size:10px">Avg IF ${ifVal}</div>`+
+      (d.loIF!=null?`<div style="color:rgba(0,212,170,0.9);line-height:1.7;font-size:10px">Lo IF ${loVal}</div>`:'')+(d.hiIF!=null?`<div style="color:rgba(255,59,59,0.9);line-height:1.7;font-size:10px">Hi IF ${hiVal}</div>`:'')
+    const tipX=Math.min(mx+8,W-110),tipY=Math.max(PAD_T,my-10)
+    tip.style.left=tipX+'px';tip.style.top=tipY+'px';tip.style.display='block'
+  }
+  canvas.onmousemove=e=>showHistTip(e.clientX,e.clientY)
+  canvas.ontouchmove=e=>{e.preventDefault();const t=e.touches[0];showHistTip(t.clientX,t.clientY)}
+  canvas.onmouseleave=()=>{if(tip)tip.style.display='none'}
+  canvas.ontouchend=()=>{setTimeout(()=>{if(tip)tip.style.display='none'},1500)}
+
+  // ── Legend — grouped: Averages | Trends ─────────────────────────────
+  const LEGGROUPS=[
+    {title:'Avg',items:[
+      {key:'tssAvg',   label:'TSS avg',   rgb:'59,130,246'},
+      {key:'ifAvg',    label:'IF avg',    rgb:'255,107,53'},
+      {key:'loIfAvg',  label:'Lo IF avg', rgb:'0,212,170'},
+      {key:'hiIfAvg',  label:'Hi IF avg', rgb:'255,59,59'},
+    ]},
+    {title:'Trend',items:[
+      {key:'tssTrend', label:'TSS',       rgb:'59,130,246'},
+      {key:'loIF',     label:'Lo IF',     rgb:'0,212,170'},
+      {key:'hiIF',     label:'Hi IF',     rgb:'255,59,59'},
+    ]}
   ]
   const ld=document.getElementById('histLegend')
-  if(ld){ld.innerHTML=LEG.map(l=>{
-    const on=histLines[l.key]
-    return`<button onclick="toggleHistLine('${l.key}')" style="display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:4px;border:1px solid ${on?`rgba(${l.rgb},0.4)`:'var(--border)'};background:${on?`rgba(${l.rgb},0.08)`:'transparent'};cursor:pointer;opacity:${on?1:0.4};transition:opacity 0.2s"><span style="width:14px;height:2px;background:rgba(${l.rgb},0.9);border-radius:1px;display:inline-block"></span><span style="font-size:9px;font-family:var(--font-display);font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:rgba(${l.rgb},${on?1:0.7})">${l.label}</span></button>`
-  }).join('')}
+  if(ld){ld.innerHTML=LEGGROUPS.map(g=>`<div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:4px"><span style="font-size:8px;font-family:var(--font-display);font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);min-width:34px">${g.title}</span>${g.items.map(l=>{const on=histLines[l.key];return`<button onclick="toggleHistLine('${l.key}')" style="display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:4px;border:1px solid ${on?`rgba(${l.rgb},0.4)`:'var(--border)'};background:${on?`rgba(${l.rgb},0.08)`:'transparent'};cursor:pointer;opacity:${on?1:0.4};transition:opacity 0.2s"><span style="width:${g.title==='Trend'?'16px':'14px'};height:2px;background:rgba(${l.rgb},0.9);border-radius:1px;display:inline-block;${g.title==='Trend'?'background:repeating-linear-gradient(90deg,rgba('+l.rgb+',0.9) 0 4px,transparent 4px 7px)':''}" ></span><span style="font-size:9px;font-family:var(--font-display);font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:rgba(${l.rgb},${on?1:0.7})">${l.label}</span></button>`}).join('')}</div>`).join('')}
 }
 function toggleHistLine(key){histLines[key]=!histLines[key];renderHistChart()}
 function setRange(r){currentRange=r;histOffset=0;renderHistory()}
@@ -1965,6 +2594,8 @@ function renderSettings(){
   document.getElementById('sHiDisplay').textContent=(100-intensityTarget.lo-intensityTarget.mo)+'%'
   const pb=document.getElementById('zonePresetBtns')
   if(pb){pb.innerHTML=ZONE_PRESETS.map(p=>{const a=p.lo===intensityTarget.lo&&p.mo===intensityTarget.mo;return`<button class="btn-sm${a?' active':''}" onclick="setZonePreset(${p.lo},${p.mo},${p.hi})">${p.label}</button>`}).join('')}
+  renderCutoffs()
+  renderCurveConfig()
 }
 function updateHiTarget(){
   const lo=parseInt(document.getElementById('sLoTarget').value)||0
@@ -1981,6 +2612,29 @@ function saveZoneTarget(){
 function saveProfile(){profile={bike:document.getElementById('sBikeFTP').value.trim(),run:document.getElementById('sRunLTP').value.trim(),swim:document.getElementById('sSwimCSS').value.trim()};save();flash('Thresholds saved');renderWeek()}
 function setLoadTier(k){weeklyLoadKey=k;save();renderSettings();renderWeek()}
 function setTSSGoal(v){weeklyTSSGoal=v;save();renderSettings();renderWeek()}
+function saveCutoffs(){
+  const lo=parseFloat(document.getElementById('sLoCut').value)
+  const hi=parseFloat(document.getElementById('sHiCut').value)
+  if(isNaN(lo)||isNaN(hi)||lo<=0||hi<=lo||hi>=50)return
+  loadCutoffs={lo,hi}
+  workouts=workouts.map(w=>{const mc=calcM(w.sport,w.rawTSS,w.ifv);return{...w,adjTSS:mc.adjTSS,lp:mc.lp,ip:mc.ip,m:mc.m}})
+  save()
+  flash('Cutoffs saved · Low < '+(weeklyTSSGoal*lo/100).toFixed(1)+' · High > '+(weeklyTSSGoal*hi/100).toFixed(1)+' adj TSS')
+  render()
+}
+function renderCutoffs(){
+  const lo=document.getElementById('sLoCut')
+  const hi=document.getElementById('sHiCut')
+  if(lo)lo.value=loadCutoffs.lo
+  if(hi)hi.value=loadCutoffs.hi
+  updateCutoffPreview()
+}
+function updateCutoffPreview(){
+  const lo=parseFloat(document.getElementById('sLoCut').value)||loadCutoffs.lo
+  const hi=parseFloat(document.getElementById('sHiCut').value)||loadCutoffs.hi
+  const el=document.getElementById('cutoffPreview')
+  if(el)el.textContent='At '+weeklyTSSGoal+' TSS/week: low < '+(weeklyTSSGoal*lo/100).toFixed(1)+' · high > '+(weeklyTSSGoal*hi/100).toFixed(1)+' adj TSS'
+}
 function exportJSON(){const b=new Blob([JSON.stringify({workouts,profile,weeklyLoadKey,weeklyTSSGoal,intensityTarget},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='mframe_'+today()+'.json';a.click()}
 function exportCSV(){if(!workouts.length)return alert('No data');const h=['Date','Sport','Min','Intensity','RawTSS','AdjTSS','IF','LoadPts','IntPts','M'];const rows=workouts.map(w=>[w.date,w.sport,w.time,w.intensity,w.rawTSS,w.adjTSS,w.ifv.toFixed(2),w.lp,w.ip,w.m]);const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent([h,...rows].map(r=>r.join(',')).join('\n'));a.download='mframe_'+today()+'.csv';a.click()}
 function importJSON(){const f=document.getElementById('importFile').files[0];if(!f)return alert('Select a file');const r=new FileReader();r.onload=e=>{try{const d=JSON.parse(e.target.result);if(d.workouts)workouts=d.workouts;if(d.profile)profile=d.profile;if(d.weeklyLoadKey)weeklyLoadKey=d.weeklyLoadKey;if(d.weeklyTSSGoal)weeklyTSSGoal=d.weeklyTSSGoal;if(d.intensityTarget)intensityTarget=d.intensityTarget;save();render();renderSettings();flash('Imported '+workouts.length+' sessions')}catch{alert('Invalid file')}};r.readAsText(f)}
@@ -2012,8 +2666,10 @@ function importGarmin(){
         st.style.color='var(--red)';return
       }
       const col=n=>hdr.indexOf(n)
+      const colHas=s=>hdr.findIndex(h=>h.includes(s))
       const iType=col('activity type'),iDate=col('date'),iTime=col('time')
       const iPace=col('avg pace'),iTE=col('aerobic te')
+      const iNP=colHas('normalized power'),iAvgPower=col('avg power'),iGarminIF=colHas('intensity factor')
       // Map Garmin activity type → M-FRAME sport
       const toSport=t=>{
         const tl=t.toLowerCase()
@@ -2032,7 +2688,7 @@ function importGarmin(){
       }
       // Aerobic TE → estimated IF (for cycling without power data)
       const teToIF=te=>te>=5?0.97:te>=4?0.90:te>=3?0.82:te>=2?0.74:0.63
-      let added=0,skipped=0,noThresh=0,ignored=0
+      let added=0,skipped=0,noThresh=0,ignored=0,teEst=0
       lines.slice(1).forEach(line=>{
         if(!line.trim())return
         const c=parseCSVLine(line)
@@ -2055,13 +2711,32 @@ function importGarmin(){
           if(!ifv||ifv<=0){noThresh++;return}
           intensity=paceStr
         } else {
-          // Cycling: estimate from Aerobic TE
-          const te=iTE>=0?parseFloat(c[iTE]):NaN
-          if(isNaN(te)||te<=0){skipped++;return}
-          ifv=teToIF(te)
-          // Store estimated watts (FTP × IF, or 200 × IF if no FTP set)
-          const ftp=parseFloat(profile.bike)||200
-          intensity=String(Math.round(ftp*ifv))
+          // Cycling: NP/FTP → Avg Power/FTP → Garmin IF → Aerobic TE (last resort)
+          // Always prefer M-FRAME's own FTP over Garmin's pre-computed IF
+          const ftp=parseFloat(profile.bike)||0
+          const np=iNP>=0?parseFloat(c[iNP]||''):NaN
+          const avgPow=iAvgPower>=0?parseFloat(c[iAvgPower]||''):NaN
+          const garminIFv=iGarminIF>=0?parseFloat(c[iGarminIF]||''):NaN
+          if(!isNaN(np)&&np>0&&ftp>0){
+            // Normalized Power ÷ M-FRAME FTP — most accurate
+            ifv=parseFloat((np/ftp).toFixed(2))
+            intensity=String(Math.round(np))
+          } else if(!isNaN(avgPow)&&avgPow>0&&ftp>0){
+            // Avg Power ÷ M-FRAME FTP — real data, slightly less accurate than NP
+            ifv=parseFloat((avgPow/ftp).toFixed(2))
+            intensity=String(Math.round(avgPow))
+          } else if(!isNaN(garminIFv)&&garminIFv>0.3&&garminIFv<2){
+            // Garmin pre-computed IF — no power meter, Garmin's FTP may differ from Setup
+            ifv=garminIFv
+            intensity=String(Math.round((ftp||200)*ifv))
+          } else {
+            // Last resort: Aerobic TE → estimated IF
+            const te=iTE>=0?parseFloat(c[iTE]||''):NaN
+            if(isNaN(te)||te<=0){skipped++;return}
+            ifv=teToIF(te)
+            intensity=String(Math.round((ftp||200)*ifv))
+            teEst++
+          }
         }
         const time=Math.round(durMin)
         const rawTSS=calcRawTSS(time,ifv)
@@ -2075,6 +2750,7 @@ function importGarmin(){
       if(skipped)parts.push(`${skipped} duplicate${skipped!==1?'s':''} skipped`)
       if(noThresh)parts.push(`${noThresh} skipped — set your run/swim threshold in Setup first`)
       if(ignored)parts.push(`${ignored} non-endurance activities ignored`)
+      if(teEst)parts.push(`${teEst} cycling session${teEst!==1?'s':''} estimated from Aerobic TE — add your bike FTP in Setup for power-based accuracy`)
       st.style.color=added>0?'var(--accent)':'var(--text3)'
       st.innerHTML=parts.join('<br>')
       if(added>0)flash('Imported '+added+' sessions from Garmin')
@@ -2086,7 +2762,7 @@ function clearAll(){if(!confirm('Delete all data?'))return;workouts=[];save();re
 
 // ═══ ROUTING ═════════════════════════════════
 function showTab(t){
-  const TABS=['week','log','history','settings']
+  const TABS=['week','log','history','settings','guide']
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'))
   document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'))
   document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'))
@@ -2097,7 +2773,162 @@ function showTab(t){
   if(t==='week')renderWeek();else if(t==='log')renderLog();else if(t==='history')renderHistory();else if(t==='settings')renderSettings()
 }
 function render(){renderWeek();renderLog();checkOnboarding()}
-window.addEventListener('resize',()=>{if(document.getElementById('tab-week').classList.contains('active')){const ww=getWeekWo();drawFrameCanvas(getDayAggs(ww))};if(document.getElementById('tab-history').classList.contains('active'))renderHistChart()})
+// ═══ EFFICIENCY CURVE ════════════════════════
+function getCurveParams(){
+  const{anchorLowTSS:lt,anchorLowRatio:lr,anchorHighTSS:ht,anchorHighRatio:hr}=curveConfig
+  const b=Math.log(hr/lr)/Math.log(ht/lt)
+  const a=lr/Math.pow(lt,b)
+  return{a,b}
+}
+function getCurveRatio(tss){const{a,b}=getCurveParams();return a*Math.pow(tss,b)}
+function getDotZone(tss,ratio){
+  const optimal=getCurveRatio(tss),dev=(ratio-optimal)/optimal
+  if(Math.abs(dev)<=0.20)return'on'
+  return dev<-0.20?'below':'above'
+}
+function saveCurveConfig(){
+  const lt=parseFloat(document.getElementById('curveLowTSS').value)
+  const lr=parseFloat(document.getElementById('curveLowRatio').value)
+  const ht=parseFloat(document.getElementById('curveHighTSS').value)
+  const hr=parseFloat(document.getElementById('curveHighRatio').value)
+  if(isNaN(lt)||isNaN(lr)||isNaN(ht)||isNaN(hr))return
+  if(lt>=ht||lr>=hr)return
+  curveConfig={anchorLowTSS:lt,anchorLowRatio:lr,anchorHighTSS:ht,anchorHighRatio:hr}
+  save();updateCurvePreview();renderHistory();flash('Efficiency curve updated')
+}
+function updateCurvePreview(){
+  const el=document.getElementById('curvePreview');if(!el)return
+  try{
+    const lt=parseFloat(document.getElementById('curveLowTSS').value)||curveConfig.anchorLowTSS
+    const lr=parseFloat(document.getElementById('curveLowRatio').value)||curveConfig.anchorLowRatio
+    const ht=parseFloat(document.getElementById('curveHighTSS').value)||curveConfig.anchorHighTSS
+    const hr=parseFloat(document.getElementById('curveHighRatio').value)||curveConfig.anchorHighRatio
+    const b=Math.log(hr/lr)/Math.log(ht/lt)
+    const a=lr/Math.pow(lt,b)
+    el.textContent='Curve: ratio = '+a.toFixed(4)+' × TSS ^ '+b.toFixed(4)+'  ·  At 650 TSS → '+(a*Math.pow(650,b)).toFixed(2)
+  }catch(e){el.textContent='Invalid anchor values'}
+}
+function renderCurveConfig(){
+  const c=curveConfig
+  const fields={curveLowTSS:c.anchorLowTSS,curveLowRatio:c.anchorLowRatio,curveHighTSS:c.anchorHighTSS,curveHighRatio:c.anchorHighRatio}
+  Object.entries(fields).forEach(([id,val])=>{const el=document.getElementById(id);if(el)el.value=val})
+  updateCurvePreview()
+}
+function drawEfficiencyCurve(){
+  const canvas=document.getElementById('effCurveCanvas');if(!canvas)return
+  const fmtD=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')
+  const byWeek=new Map()
+  ;[...workouts].sort((a,b)=>a.date.localeCompare(b.date)).forEach(w=>{
+    const d=new Date(w.date+'T12:00:00'),wd=d.getDay(),df=wd===0?-6:1-wd
+    const mn=new Date(d);mn.setDate(d.getDate()+df)
+    const k=fmtD(mn)
+    if(!byWeek.has(k))byWeek.set(k,{key:k,sessions:[]})
+    byWeek.get(k).sessions.push(w)
+  })
+  const weekPts=[]
+  for(const[k,wd]of byWeek){
+    if(wd.sessions.length<2)continue
+    const wkDays=getDayAggs(wd.sessions)
+    const wkTSS=wd.sessions.reduce((s,w)=>s+w.rawTSS,0)
+    const wkLP=wkDays.reduce((s,d)=>s+d.lp,0)
+    const wkIP=wkDays.reduce((s,d)=>s+d.ip,0)
+    if(wkLP===0||wkIP===0)continue
+    weekPts.push({k,tss:wkTSS,lp:wkLP,ip:wkIP,ratio:wkLP/wkIP})
+  }
+  const legendEl=document.getElementById('effCurveLegend')
+  const driftEl=document.getElementById('effCurveDrift')
+  if(weekPts.length<2){
+    canvas.style.display='none'
+    if(legendEl)legendEl.innerHTML='<span style="font-style:italic">Not enough data — need at least 2 weeks with 2+ sessions each.</span>'
+    if(driftEl)driftEl.textContent=''
+    return
+  }
+  canvas.style.display='block'
+  const dpr=window.devicePixelRatio||1
+  const W=Math.max(200,canvas.parentElement.clientWidth-2),H=220
+  canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.width=W+'px';canvas.style.height=H+'px'
+  const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr)
+  const maxTSS=Math.max(1200,...weekPts.map(p=>p.tss))*1.05
+  const maxRatio=3.0
+  const PAD_L=32,PAD_R=10,PAD_T=12,PAD_B=28
+  const cW=W-PAD_L-PAD_R,cH=H-PAD_T-PAD_B
+  const xS=tss=>PAD_L+(tss/maxTSS)*cW
+  const yS=r=>PAD_T+cH-(Math.min(r,maxRatio)/maxRatio)*cH
+  ctx.clearRect(0,0,W,H)
+  // Grid
+  ctx.strokeStyle='#2a3035';ctx.lineWidth=0.5;ctx.setLineDash([])
+  for(let i=1;i<=4;i++){const y=PAD_T+(cH/4)*i;ctx.beginPath();ctx.moveTo(PAD_L,y);ctx.lineTo(PAD_L+cW,y);ctx.stroke()}
+  for(let i=1;i<=4;i++){const x=PAD_L+(cW/4)*i;ctx.beginPath();ctx.moveTo(x,PAD_T);ctx.lineTo(x,PAD_T+cH);ctx.stroke()}
+  // Axis labels + ticks
+  ctx.fillStyle='#4a5560';ctx.font='9px Barlow Condensed,sans-serif'
+  ctx.textAlign='center';ctx.fillText('TSS / week',PAD_L+cW/2,H-4)
+  ctx.save();ctx.translate(10,PAD_T+cH/2);ctx.rotate(-Math.PI/2);ctx.fillText('M ratio',0,0);ctx.restore()
+  ctx.textAlign='right'
+  for(let i=0;i<=4;i++){const r=(maxRatio/4)*i;ctx.fillText(r.toFixed(1),PAD_L-4,yS(r)+3)}
+  ctx.textAlign='center'
+  for(let i=1;i<=4;i++){const t=(maxTSS/4)*i;ctx.fillText(Math.round(t),xS(t),PAD_T+cH+12)}
+  // Band ±20%
+  const STEPS=200
+  ctx.beginPath()
+  for(let i=0;i<=STEPS;i++){const tss=Math.max(1,(maxTSS*i)/STEPS);const u=Math.min(getCurveRatio(tss)*1.2,maxRatio);if(i===0)ctx.moveTo(xS(tss),yS(u));else ctx.lineTo(xS(tss),yS(u))}
+  for(let i=STEPS;i>=0;i--){const tss=Math.max(1,(maxTSS*i)/STEPS);const l=Math.max(getCurveRatio(tss)*0.8,0);ctx.lineTo(xS(tss),yS(l))}
+  ctx.closePath();ctx.fillStyle='rgba(0,212,170,0.06)';ctx.fill()
+  // Curve line
+  ctx.strokeStyle='#00d4aa';ctx.lineWidth=1.5;ctx.setLineDash([6,4])
+  ctx.beginPath()
+  for(let i=0;i<=STEPS;i++){const tss=Math.max(1,(maxTSS*i)/STEPS);const r=getCurveRatio(tss);if(i===0)ctx.moveTo(xS(tss),yS(r));else ctx.lineTo(xS(tss),yS(r))}
+  ctx.stroke();ctx.setLineDash([])
+  // Data points
+  const ptMeta=[]
+  weekPts.forEach(pt=>{
+    const zone=getDotZone(pt.tss,pt.ratio)
+    const col=zone==='on'?'#00d4aa':zone==='below'?'#ff6b35':'#3b82f6'
+    const x=xS(pt.tss),y=yS(pt.ratio)
+    ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2)
+    ctx.fillStyle='#0d0f10';ctx.fill()
+    ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.stroke()
+    ptMeta.push({x,y,tss:pt.tss,ratio:pt.ratio,k:pt.k,zone})
+  })
+  // Legend
+  if(legendEl){
+    const dot=col=>`<span style="display:inline-block;width:8px;height:8px;border-radius:50%;border:1.5px solid ${col};background:#0d0f10;flex-shrink:0"></span>`
+    const dash=col=>`<span style="display:inline-block;width:18px;height:0;border-top:1.5px dashed ${col};flex-shrink:0;vertical-align:middle"></span>`
+    legendEl.innerHTML=`<span style="display:flex;align-items:center;gap:4px">${dot('#00d4aa')} Efficient zone</span>`
+      +`<span style="display:flex;align-items:center;gap:4px">${dot('#ff6b35')} Intensity-dominant (injury risk)</span>`
+      +`<span style="display:flex;align-items:center;gap:4px">${dot('#3b82f6')} Volume-dominant (stagnation)</span>`
+      +`<span style="display:flex;align-items:center;gap:4px">${dash('#00d4aa')} Optimal ratio curve</span>`
+  }
+  // Drift summary
+  if(driftEl){
+    const last4=weekPts.slice(-4)
+    if(last4.length>=2){
+      const on=last4.filter(p=>getDotZone(p.tss,p.ratio)==='on').length
+      const below=last4.filter(p=>getDotZone(p.tss,p.ratio)==='below').length
+      const above=last4.filter(p=>getDotZone(p.tss,p.ratio)==='above').length
+      driftEl.textContent=`Last ${last4.length} weeks: ${on} on curve · ${below} intensity-dominant · ${above} volume-dominant`
+    }else driftEl.textContent=''
+  }
+  // Tooltip
+  const tip=document.getElementById('effCurveTooltip');if(!tip)return
+  const onMove=e=>{
+    const rect=canvas.getBoundingClientRect()
+    const cx=(e.touches?e.touches[0].clientX:e.clientX)-rect.left
+    const cy=(e.touches?e.touches[0].clientY:e.clientY)-rect.top
+    const hit=ptMeta.find(p=>Math.hypot(p.x-cx,p.y-cy)<=8)
+    if(!hit){tip.style.display='none';return}
+    const zl=hit.zone==='on'?'On curve':hit.zone==='below'?'Below — watch intensity':'Above — add intensity'
+    const zc=hit.zone==='on'?'#00d4aa':hit.zone==='below'?'#ff6b35':'#3b82f6'
+    tip.innerHTML=`<div style="font-weight:700;color:#e8eaeb">${hit.k}</div><div style="color:#4a5560">TSS ${hit.tss} · Ratio ${hit.ratio.toFixed(2)}</div><div style="color:${zc}">${zl}</div>`
+    let lx=hit.x+10,ty=hit.y-10
+    if(lx+140>W)lx=hit.x-150
+    if(ty<0)ty=hit.y+10
+    tip.style.left=lx+'px';tip.style.top=ty+'px';tip.style.display='block'
+  }
+  canvas.onmousemove=onMove;canvas.onmouseleave=()=>{tip.style.display='none'}
+  canvas.ontouchmove=e=>{e.preventDefault();onMove(e)};canvas.ontouchend=()=>{tip.style.display='none'}
+}
+
+window.addEventListener('resize',()=>{if(document.getElementById('tab-week').classList.contains('active')){const ww=getWeekWo();drawFrameCanvas(getDayAggs(ww))};if(document.getElementById('tab-history').classList.contains('active')){renderHistChart();drawEfficiencyCurve()}})
 function init(){load();document.getElementById('fDate').value=today();onSportChange();render();renderSettings();document.getElementById('fTime').addEventListener('input',updateLivePreview);setupFrameTooltip()}
 init()
 </script>
@@ -2115,6 +2946,9 @@ init()
   </button>
   <button class="bnav-btn" id="bnav-settings" onclick="showTab('settings')">
     <span class="bnav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v2m0 16v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M2 12h2m16 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></span>Setup
+  </button>
+  <button class="bnav-btn" id="bnav-guide" onclick="showTab('guide')">
+    <span class="bnav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>Guide
   </button>
 </nav>
 </body>
