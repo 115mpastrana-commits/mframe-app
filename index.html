@@ -259,10 +259,29 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
   .bottom-nav{display:none}
 }
 
-@media(min-width:1100px){
-  #appNav{width:240px}
-  .main-content{margin-left:240px;width:calc(100% - 240px)}
-  .container{padding:36px 48px;max-width:760px}
+/* Wave visualizer enhancements */
+.wv-session-card{
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:10px;
+  font-size:10px;
+  transition:border-color 0.2s;
+}
+.wv-session-card:hover{
+  border-color:var(--accent);
+}
+.wv-logged{
+  background:rgba(59,130,246,0.08);
+  border-left:2px solid #3b82f6;
+}
+.wv-planned{
+  background:rgba(255,107,53,0.08);
+  border-left:2px solid #ff6b35;
+}
+.wv-makeup{
+  background:rgba(0,212,170,0.08);
+  border-left:2px solid #00d4aa;
 }
 </style>
 </head>
@@ -431,14 +450,29 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
         <div style="font-size:10px;color:var(--text3);margin-bottom:8px;line-height:1.6" id="valleyHint"></div>
       </div>
 
-      <!-- DUAL WAVE VISUALIZER -->
+            <!-- DUAL WAVE VISUALIZER -->
       <div id="waveViz" style="display:none;margin-bottom:10px">
-        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:4px" id="waveVolRow"></div>
+        <!-- SPORT SELECTOR TABS -->
+        <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+          <button class="btn-sm" onclick="setWaveVisSport('bike')" id="wvSportBike" style="font-size:16px;padding:8px 12px">🚴 Bike</button>
+          <button class="btn-sm" onclick="setWaveVisSport('run')" id="wvSportRun" style="font-size:16px;padding:8px 12px">🏃 Run</button>
+          <button class="btn-sm" onclick="setWaveVisSport('swim')" id="wvSportSwim" style="font-size:16px;padding:8px 12px">🏊 Swim</button>
+        </div>
+
+        <!-- WAVE VISUALIZATION WITH TIME + IF -->
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:8px" id="waveVolRow"></div>
         <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:2px" id="waveIntRow"></div>
-        <div style="display:flex;gap:12px;margin-top:4px;flex-wrap:wrap">
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:8px" id="waveSessionRow"></div>
+
+        <!-- LEGEND -->
+        <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap">
           <span style="font-size:9px;color:var(--vol)">■ Volume wave</span>
           <span style="font-size:9px;color:var(--int)">■ Intensity wave</span>
+          <span style="font-size:9px;color:var(--text3)">T=Time(min) | IF=Intensity</span>
         </div>
+
+        <!-- PER-DAY SESSION DETAILS -->
+        <div id="waveSessions" style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:10px"></div>
       </div>
 
       <!-- PROJECTED M + STATUS -->
@@ -1773,13 +1807,23 @@ function renderDayMRow(plan, ww){
       m=calcDayM(v,plan.intWave[i],false,makeup)
     }
     
-    // ESTIMATE TSS AND IF
+        // ESTIMATE TSS AND IF
     let estTSS='—',estIF='—'
     if(!isPast||isToday){
       if(v!=='rest'){
-        const tssMap={0:0,1:0,2:60,3:85,4:115,5:150,6:180}
-        estTSS=tssMap[m]||'—'
-        estIF=plan.intWave[i]==='high'?'0.92':'0.68'
+        const volLevel=plan.vol[i]
+        const intLevel=plan.intWave[i]
+        
+        const tssLookup={
+          low:{low:40, high:70},
+          mid:{low:80, high:115},
+          high:{low:150, high:180}
+        }
+        
+        if(tssLookup[volLevel]){
+          estTSS=tssLookup[volLevel][intLevel]||'—'
+        }
+        estIF=intLevel==='high'?'0.92':'0.68'
       } else if(makeup&&makeup!=='off'){
         estTSS=makeup==='easy'?50:75
         estIF='0.65'
@@ -1920,7 +1964,8 @@ function renderProjectedM(plan, ww){
   const heroPL=document.getElementById('heroProjLabel')
   if(heroPM){heroPM.textContent=proj>0?'→ '+proj+' proj':'';heroPM.style.color=color}
   if(heroPL){const sl=proj===0?'':proj<14?'Detraining':proj<=18?'Recovery':proj<=24?'Maintaining':proj<=27?'Productive':proj<=29?'Overreaching':'Over limit';heroPL.textContent=sl;heroPL.style.color=msgColor}
-  renderDayMRow(plan,ww)
+   renderDayMRow(plan,ww)
+  updateWaveVis()
 }
 
 function renderValleyHint(plan){
@@ -2961,6 +3006,94 @@ function drawEfficiencyCurve(){
   }
   canvas.onmousemove=onMove;canvas.onmouseleave=()=>{tip.style.display='none'}
   canvas.ontouchmove=e=>{e.preventDefault();onMove(e)};canvas.ontouchend=()=>{tip.style.display='none'}
+}
+
+// ═══ WAVE VISUALIZER ENHANCEMENTS ═══════════════════════
+let waveVisSport='bike'  // Default sport for wave vis
+
+function setWaveVisSport(sport){
+  waveVisSport=sport
+  const bikeBtn=document.getElementById('wvSportBike')
+  const runBtn=document.getElementById('wvSportRun')
+  const swimBtn=document.getElementById('wvSportSwim')
+  if(bikeBtn)bikeBtn.classList.toggle('active',sport==='bike')
+  if(runBtn)runBtn.classList.toggle('active',sport==='run')
+  if(swimBtn)swimBtn.classList.toggle('active',sport==='swim')
+  renderWaveVis()
+}
+
+function renderWaveVis(){
+  const plan=buildFullPlan();if(!plan)return
+  const{mon}=getWeekRange()
+  const waveSessionEl=document.getElementById('waveSessions');if(!waveSessionEl)return
+  
+  waveSessionEl.innerHTML=plan.vol.map((v,i)=>{
+    const d=new Date(mon);d.setDate(mon.getDate()+i)
+    const ds=d.toISOString().split('T')[0]
+    const isPast=ds<today()
+    const isToday=ds===today()
+    
+    // Get logged sessions for this day
+    const dayWorkouts=workouts.filter(w=>w.date===ds&&w.sport===waveVisSport)
+    
+    // Get planned session
+    const makeup=(weekPlan.makeup||{})[i]||null
+    const isRest=v==='rest'
+    const plannedDur=v==='rest'?0:isPast||isToday?null:v==='easy'?45:60
+    const plannedIF=v==='rest'?null:plan.intWave[i]==='high'?0.92:0.68
+    
+    let html=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:10px">`
+    
+    // Day header
+    html+=`<div style="font-family:var(--font-display);font-weight:700;color:var(--text);margin-bottom:6px">${DAYS[i]} ${ds.slice(5)}</div>`
+    
+    // Logged sessions (retrospective)
+    if(dayWorkouts.length>0){
+      html+=`<div style="background:rgba(59,130,246,0.08);border-left:2px solid #3b82f6;padding:6px;margin-bottom:6px;border-radius:4px">`
+      html+=`<div style="font-size:9px;color:var(--vol);font-weight:700;margin-bottom:4px">✓ LOGGED:</div>`
+      dayWorkouts.forEach(w=>{
+        html+=`<div style="font-size:9px;color:var(--text2);line-height:1.6;margin-bottom:3px">${w.time}min @ ${w.ifv.toFixed(2)} IF</div>`
+      })
+      html+=`</div>`
+    }
+    
+    // Planned sessions (prospective)
+    if(!isPast&&!isRest){
+      html+=`<div style="background:rgba(255,107,53,0.08);border-left:2px solid #ff6b35;padding:6px;margin-bottom:6px;border-radius:4px">`
+      html+=`<div style="font-size:9px;color:var(--int);font-weight:700;margin-bottom:4px">📋 PLANNED:</div>`
+      html+=`<div style="font-size:9px;color:var(--text2);line-height:1.6">${plannedDur}min @ ${plannedIF.toFixed(2)} IF</div>`
+      html+=`<button onclick="addSessionToDay('${ds}','${waveVisSport}')" style="margin-top:6px;padding:4px 8px;background:var(--accent);color:#0d0f10;border:none;border-radius:4px;font-size:9px;font-weight:700;cursor:pointer;width:100%">+ Add session</button>`
+      html+=`</div>`
+    }
+    
+    // Rest or makeup day
+    if(isRest&&makeup&&makeup!=='off'){
+      html+=`<div style="background:rgba(0,212,170,0.08);border-left:2px solid #00d4aa;padding:6px;border-radius:4px">`
+      html+=`<div style="font-size:9px;color:var(--accent);font-weight:700">+Makeup day</div>`
+      html+=`<div style="font-size:9px;color:var(--text2);margin-top:3px">${makeup==='easy'?'Easy':makeup==='hard'?'Hard':'Off'}</div>`
+      html+=`</div>`
+    } else if(isRest){
+      html+=`<div style="text-align:center;padding:8px;color:var(--text3);font-size:10px">REST</div>`
+    }
+    
+    html+=`</div>`
+    return html
+  }).join('')
+}
+
+function addSessionToDay(dateStr, sport){
+  document.getElementById('fDate').value=dateStr
+  document.getElementById('fSport').value=sport
+  onSportChange()
+  showTab('log')
+  document.getElementById('fTime').focus()
+  alert(`Add session for ${sport} on ${dateStr}. Once saved, it will appear in the wave visualizer.`)
+}
+
+function updateWaveVis(){
+  const el=document.getElementById('waveViz');if(el)el.style.display='block'
+  renderWaveVis()
+  setWaveVisSport(waveVisSport)
 }
 
 window.addEventListener('resize',()=>{if(document.getElementById('tab-week').classList.contains('active')){const ww=getWeekWo();drawFrameCanvas(getDayAggs(ww))};if(document.getElementById('tab-history').classList.contains('active')){renderHistChart();drawEfficiencyCurve()}})
