@@ -1,5 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>M-frame</title>
+    
+
+  </head>
+    
+  <body>
+  <!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -1447,7 +1458,8 @@ function drawFrameCanvas(days){
   const maxActual=Math.max(...actualTSS,1)
   const maxPlanW=Math.max(...plannedW,1)
   const hasActual=actualTSS.some(v=>v>0)
-  const tssRef=hasActual?maxActual:200
+  // KEY FIX: Scale to weekly goal, not max actual
+  const tssRef=Math.max(weeklyTSSGoal*0.6, maxActual)
   const planRef=hasActual?(tssRef/maxPlanW*0.85):(200/maxPlanW)
   const PAD_L=26,PAD_R=28,PAD_T=12,PAD_B=20
   const cW=W-PAD_L-PAD_R,cH=H-PAD_T-PAD_B
@@ -1455,7 +1467,7 @@ function drawFrameCanvas(days){
   ctx.strokeStyle='rgba(42,48,53,0.9)';ctx.lineWidth=0.5
   for(let g=0;g<=4;g++){const y=PAD_T+cH*(1-g/4);ctx.beginPath();ctx.moveTo(PAD_L,y);ctx.lineTo(W-PAD_R,y);ctx.stroke()}
   ctx.fillStyle='rgba(74,85,96,0.9)';ctx.font='bold 8px Barlow Condensed,sans-serif';ctx.textAlign='right'
-  const tssMax=hasActual?Math.ceil(maxActual/50)*50:200
+  const tssMax=hasActual?Math.ceil(tssRef/50)*50:200
   for(let g=1;g<=4;g++){ctx.fillText(Math.round(tssMax*g/4),PAD_L-3,PAD_T+cH*(1-g/4)+3)}
   // Right axis: IF range labels — left-aligned just inside right edge
   ctx.fillStyle='rgba(255,107,53,0.7)';ctx.textAlign='left';ctx.font='bold 8px Barlow Condensed,sans-serif'
@@ -1743,6 +1755,7 @@ function renderDayMRow(plan, ww){
   const el=document.getElementById('dayMRow');if(!el)return
   const{mon}=getWeekRange()
   const dayAggMap=new Map(getDayAggs(ww).map(d=>[d.date,d]))
+  
   el.innerHTML=plan.vol.map((v,i)=>{
     const d=new Date(mon);d.setDate(mon.getDate()+i)
     const ds=d.toISOString().split('T')[0]
@@ -1750,21 +1763,38 @@ function renderDayMRow(plan, ww){
     const isToday=ds===today()
     const makeup=v==='rest'?(weekPlan.makeup||{})[i]:null
     const dayAgg=dayAggMap.get(ds)
+    
     let m
     if(isPast){
-      m=dayAgg?dayAgg.m:0  // past + no log = 0M always
+      m=dayAgg?dayAgg.m:0
     } else if(isToday&&dayAgg){
       m=dayAgg.m
     } else {
       m=calcDayM(v,plan.intWave[i],false,makeup)
     }
+    
+    // ESTIMATE TSS AND IF
+    let estTSS='—',estIF='—'
+    if(!isPast||isToday){
+      if(v!=='rest'){
+        const tssMap={0:0,1:0,2:60,3:85,4:115,5:150,6:180}
+        estTSS=tssMap[m]||'—'
+        estIF=plan.intWave[i]==='high'?'0.92':'0.68'
+      } else if(makeup&&makeup!=='off'){
+        estTSS=makeup==='easy'?50:75
+        estIF='0.65'
+      }
+    }
+    
     const isFuture=!isPast&&!isToday
     const isMakeup=v==='rest'&&makeup&&makeup!=='off'
     const color=m===0?'var(--text3)':m<=2?'var(--green)':m<=4?'var(--yellow)':'var(--red)'
+    
     return`<div style="text-align:center">
       <div style="font-family:var(--font-display);font-size:14px;font-weight:800;color:${color};opacity:${isFuture?0.55:1}">${m}</div>
+      <div style="font-size:7px;color:var(--text3);line-height:1.1;margin-top:2px">${estTSS}T·${estIF}IF</div>
       <div style="font-size:8px;color:var(--text3)">${DAYS[i]}</div>
-      ${isMakeup?`<div style="font-size:7px;color:rgba(0,212,170,0.7);font-weight:700;letter-spacing:0.03em">vol</div>`:''}</div>`
+      ${isMakeup?`<div style="font-size:7px;color:rgba(0,212,170,0.7);font-weight:700;margin-top:1px">+vol</div>`:''}</div>`
   }).join('')
 }
 
@@ -2152,11 +2182,16 @@ function getWeekRestM(dayAggMap){
   const plan=buildFullPlan();if(!plan)return 0
   const{mon}=getWeekRange()
   const fmtD=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')
+  const today_=today()
   let restM=0
   plan.vol.forEach((v,i)=>{
     if(v==='rest'){
       const ds=fmtD(new Date(mon.getTime()+i*864e5))
-      if(!dayAggMap||!dayAggMap.has(ds)){const makeup=(weekPlan.makeup||{})[i]||null;restM+=calcDayM('rest',plan.intWave[i],false,makeup)}
+      // ONLY count if day is in the PAST (before today)
+      if(ds<today_&&(!dayAggMap||!dayAggMap.has(ds))){
+        const makeup=(weekPlan.makeup||{})[i]||null
+        restM+=calcDayM('rest',plan.intWave[i],false,makeup)
+      }
     }
   })
   return restM
@@ -2952,4 +2987,8 @@ init()
   </button>
 </nav>
 </body>
+</html>
+    
+  </body>
+  
 </html>
