@@ -319,7 +319,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
       <div id="weekComplete" style="margin-top:6px;text-align:center"></div>
     </div>
   </div>
-  <div class="card"><div class="collapse-toggle" onclick="toggleCollapse('compBody','compIcon')"><div style="display:flex;align-items:center;gap:8px"><div class="card-label" style="margin:0">Rule compliance</div><span id="comp4wkBadge" style="font-size:9px;font-family:var(--font-display);font-weight:700;letter-spacing:0.04em;padding:2px 7px;border-radius:4px;display:none"></span></div><span class="collapse-icon open" id="compIcon">&#9662;</span></div><div class="collapse-body open" id="compBody"><div style="height:6px"></div><div id="compPlanRows"></div><div id="compRows"></div><div class="divider"></div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-family:var(--font-display);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3)">M Ratio</span><span style="font-size:9px;color:var(--text3);font-family:var(--font-display);font-weight:600" id="mRatioTarget"></span></div><div style="position:relative;height:8px;border-radius:4px;margin-bottom:4px;margin-top:22px"><div style="position:absolute;inset:0;border-radius:4px;overflow:hidden;background:rgba(42,48,53,0.5)"><div id="mRatioOptimalZone" class="m-ratio-optimal-zone" style="left:0%;width:0%"></div></div><div id="mRatioMarker" style="position:absolute;top:0;bottom:0;width:3px;background:var(--text);border-radius:1.5px;transform:translateX(-50%);left:50%;transition:left 0.4s ease;box-shadow:0 0 0 1px var(--bg);z-index:2;overflow:visible"><span id="mRatioVal" style="position:absolute;bottom:11px;left:50%;transform:translateX(-50%);font-family:var(--font-display);font-size:13px;font-weight:800;white-space:nowrap;color:var(--text);text-shadow:0 0 4px var(--bg),0 0 4px var(--bg);pointer-events:none;line-height:1;transition:color 0.3s">—</span></div></div><div style="display:flex;justify-content:space-between;font-size:8px;color:var(--text3);margin-bottom:4px"><span>0.3 · intensity-heavy</span><span>1.0 · balanced</span><span>3.0 · volume-heavy</span></div><div style="font-size:10px;color:var(--text3);margin-top:2px;line-height:1.4" id="mRatioText"></div></div></div>
+  <div class="card"><div class="collapse-toggle" onclick="toggleCollapse('compBody','compIcon')"><div style="display:flex;align-items:center;gap:8px"><div class="card-label" style="margin:0">Rule compliance</div><span id="comp4wkBadge" style="font-size:9px;font-family:var(--font-display);font-weight:700;letter-spacing:0.04em;padding:2px 7px;border-radius:4px;display:none"></span></div><span class="collapse-icon open" id="compIcon">&#9662;</span></div><div class="collapse-body open" id="compBody"><div style="height:6px"></div><div id="compPlanRows"></div><div id="compRows"></div><div class="divider"></div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-family:var(--font-display);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3)">M Ratio</span><span style="font-size:9px;color:var(--text3);font-family:var(--font-display);font-weight:600" id="mRatioTarget"></span></div><div style="position:relative;height:8px;border-radius:4px;margin-bottom:4px;margin-top:22px"><div style="position:absolute;inset:0;border-radius:4px;overflow:hidden;background:rgba(42,48,53,0.5)"><div id="mRatioOptimalZone" class="m-ratio-optimal-zone" style="left:0%;width:0%"></div></div><div id="mRatioMarker" style="position:absolute;top:0;bottom:0;width:3px;background:var(--text);border-radius:1.5px;transform:translateX(-50%);left:50%;transition:left 0.4s ease;box-shadow:0 0 0 1px var(--bg);z-index:2;overflow:visible"><span id="mRatioVal" style="position:absolute;bottom:11px;left:50%;transform:translateX(-50%);font-family:var(--font-display);font-size:13px;font-weight:800;white-space:nowrap;color:var(--text);text-shadow:0 0 4px var(--bg),0 0 4px var(--bg);pointer-events:none;line-height:1;transition:color 0.3s">—</span></div></div><div style="display:flex;justify-content:space-between;font-size:8px;color:var(--text3);margin-bottom:4px"><span id="mRatioLabelMin"></span><span id="mRatioLabelMid"></span><span id="mRatioLabelMax"></span></div><div style="font-size:10px;color:var(--text3);margin-top:2px;line-height:1.4" id="mRatioText"></div></div></div>
   </div>
 </div>
 
@@ -772,26 +772,32 @@ function renderWeek(){
   for(let w=1;w<=4;w++){const wMon=new Date(mon);wMon.setDate(mon.getDate()-7*w);const wSun=new Date(wMon);wSun.setDate(wMon.getDate()+6);const wWo=workouts.filter(x=>x.date>=fmtD2(wMon)&&x.date<=fmtD2(wSun));if(!wWo.length)continue;comp4total++;const wDays=getDayAggs(wWo);const wHi=wDays.filter(d=>d.avgIF>=0.95).length;let wConsec=false;for(let i=0;i<wDays.length-1;i++){if(wDays[i].avgIF>=0.90&&wDays[i+1].avgIF>=0.90){wConsec=true;break}}if(!wConsec&&wHi<=3)comp4ok++}
   const badge4=document.getElementById('comp4wkBadge');if(badge4&&comp4total>0){const color=comp4ok===comp4total?'var(--accent)':comp4ok>=comp4total/2?'var(--yellow)':'var(--red)';badge4.textContent=comp4ok+'/'+comp4total+' wks';badge4.style.cssText+=`;color:${color};background:${color}18;border:1px solid ${color}44;display:inline`}else if(badge4){badge4.style.display='none'}
   const rValEl=document.getElementById('mRatioVal'),rMark=document.getElementById('mRatioMarker'),rTxt=document.getElementById('mRatioText'),rZone=document.getElementById('mRatioOptimalZone'),rTarget=document.getElementById('mRatioTarget')
-  const optimalRatio=weekTSS>0?getCurveRatio(weekTSS):null
-  const logMinOverall=Math.log(1/3),logMaxOverall=Math.log(3)
-  if(rTarget&&optimalRatio)rTarget.textContent='target '+optimalRatio.toFixed(2)+' @ '+weekTSS+' TSS'
-  else if(rTarget)rTarget.textContent=''
+  const usingProj=plannedTSS>0&&projectedTSS>0
+  const targetTSS=Math.max(1,usingProj?projectedTSS:weeklyTSSGoal)
+  const optimalRatio=getCurveRatio(targetTSS)
+  const barMin=optimalRatio*0.5,barMax=optimalRatio*2.0
+  const logBarMin=Math.log(barMin),logBarMax=Math.log(barMax)
+  if(rTarget)rTarget.textContent='target '+optimalRatio.toFixed(2)+' @ '+targetTSS+' TSS'+(usingProj?' (proj)':' (goal)')
   if(rValEl)rValEl.textContent=ratio>0?ratio:'—'
-  if(rZone&&optimalRatio){
+  if(rZone){
     const minRatio=optimalRatio*0.8,maxRatio=optimalRatio*1.2
-    const minPct=((Math.log(Math.max(1/3,minRatio))-logMinOverall)/(logMaxOverall-logMinOverall))*100
-    const maxPct=((Math.log(Math.min(3,maxRatio))-logMinOverall)/(logMaxOverall-logMinOverall))*100
+    const minPct=((Math.log(Math.max(barMin,minRatio))-logBarMin)/(logBarMax-logBarMin))*100
+    const maxPct=((Math.log(Math.min(barMax,maxRatio))-logBarMin)/(logBarMax-logBarMin))*100
     rZone.style.left=Math.max(0,minPct)+'%';rZone.style.width=Math.min(100,maxPct-minPct)+'%'
   }
   if(rMark&&ratio>0){
-    const logVal=Math.log(Math.max(1/3,Math.min(3,parseFloat(ratio))))
-    const pct=((logVal-logMinOverall)/(logMaxOverall-logMinOverall))*100
+    const logVal=Math.log(Math.max(barMin,Math.min(barMax,parseFloat(ratio))))
+    const pct=((logVal-logBarMin)/(logBarMax-logBarMin))*100
     rMark.style.left=Math.min(97,Math.max(3,pct))+'%'
-    const dev=optimalRatio?((parseFloat(ratio)||0)-optimalRatio)/optimalRatio:0
-    const chipColor=!optimalRatio?'var(--text)':Math.abs(dev)<=0.2?'var(--accent)':dev<-0.2?'var(--accent2)':'var(--vol)'
+    const dev=((parseFloat(ratio)||0)-optimalRatio)/optimalRatio
+    const chipColor=Math.abs(dev)<=0.2?'var(--accent)':dev<-0.2?'var(--accent2)':'var(--vol)'
     if(rValEl)rValEl.style.color=chipColor
   }else if(rMark&&ratio<=0){rMark.style.left='50%'}
-  if(rTxt&&optimalRatio){const dev=((parseFloat(ratio)||0)-optimalRatio)/optimalRatio;if(ratio<=0)rTxt.textContent='Log sessions to see ratio';else if(Math.abs(dev)<=0.2)rTxt.textContent='✓ Efficient — load and intensity well balanced for your TSS';else if(dev<-0.2)rTxt.textContent='↓ Intensity-heavy — your quality minutes outpace your volume';else rTxt.textContent='↑ Volume-heavy — add intensity or reduce easy volume to lift quality'}else if(rTxt&&!optimalRatio)rTxt.textContent=''
+  const lMin=document.getElementById('mRatioLabelMin'),lMid=document.getElementById('mRatioLabelMid'),lMax=document.getElementById('mRatioLabelMax')
+  if(lMin)lMin.textContent=barMin.toFixed(2)+' · sharp'
+  if(lMid)lMid.textContent=optimalRatio.toFixed(2)+' · target'
+  if(lMax)lMax.textContent=barMax.toFixed(2)+' · engine'
+  if(rTxt){const dev=((parseFloat(ratio)||0)-optimalRatio)/optimalRatio;if(ratio<=0)rTxt.textContent='Log sessions to see ratio';else if(Math.abs(dev)<=0.2)rTxt.textContent='✓ Efficient — load and intensity well balanced for your TSS';else if(dev<-0.2)rTxt.textContent='↓ Intensity-heavy — your quality minutes outpace your volume';else rTxt.textContent='↑ Volume-heavy — add intensity or reduce easy volume to lift quality'}
 }
 function getWeekRestM(dayAggMap){const plan=buildFullPlan();if(!plan)return 0;const{mon}=getWeekRange();const fmtD=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');const today_=today();let restM=0;plan.vol.forEach((v,i)=>{if(v==='rest'){const ds=fmtD(new Date(mon.getTime()+i*864e5));if(ds<today_&&(!dayAggMap||!dayAggMap.has(ds))){const makeup=(weekPlan.makeup||{})[i]||'low';restM+=calcDayM('rest',plan.intWave[i],false,makeup)}}});return restM}
 
