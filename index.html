@@ -1,16 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
-  <head>
-    <meta charset="UTF-8">
-    <title>M-Frame Dashboard </title>
-    
-
-  </head>
-    
-  <body>
-  <!DOCTYPE html>
-<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -332,6 +321,13 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
 <div id="tab-history" class="panel">
   <div class="card"><div class="card-label">Weekly TSS + IF</div><div class="range-nav"><button class="range-arrow" onclick="shiftHist(-1)">&#8249;</button><button class="btn-sm" id="rangeBtn7" onclick="setRange('week')">7 days</button><button class="btn-sm" id="rangeBtnM" onclick="setRange('month')">Month</button><button class="btn-sm" id="rangeBtnY" onclick="setRange('year')">Year</button><button class="range-arrow" onclick="shiftHist(1)" id="histFwdBtn">&#8250;</button><span class="range-nav-label" id="rangeLabel"></span></div><div id="histSummary" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"></div><div style="position:relative"><canvas id="histCanvas" height="180" style="width:100%;display:block"></canvas><div id="histTooltip" style="position:absolute;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:11px;pointer-events:none;display:none;min-width:100px;z-index:10"></div></div><div id="histLegend" style="margin-top:8px"></div></div>
 
+  <!-- NEW: M-Score trend chart (Feature 2) -->
+  <div class="expandable-chart" id="mTrendChartSection" style="margin-top:12px">
+    <div class="expandable-header"><span class="expandable-title">📈 M-SCORE TREND (last 12 weeks)</span></div>
+    <canvas id="mTrendCanvas" height="160" style="width:100%;display:block"></canvas>
+    <div id="mTrendInsight" style="font-size:10px;color:var(--text3);margin-top:8px;text-align:center;font-family:var(--font-display);letter-spacing:0.03em"></div>
+  </div>
+
   <div class="hero-board">
     <div class="time-period-select"><select id="historyTimePeriod" onchange="updateHistoryHeroBoard()"><option value="week">Last Week</option><option value="month" selected>Last Month</option><option value="trimester">Last Trimester</option><option value="year">Last Year</option><option value="all">All Data</option></select></div>
     <div class="hero-board-grid">
@@ -372,7 +368,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
 
 <script>
 // ═══════════════════════════════════════════════════════════════════════════
-// M-FRAME - COMPLETE CODE WITH ALL FIXES
+// M-FRAME - COMPLETE CODE WITH ALL FIXES + M TREND CHART + ENHANCED DELTA
 // ═══════════════════════════════════════════════════════════════════════════
 
 let workouts=[],profile={},weeklyLoadKey='moderate',weeklyTSSGoal=650,editId=null,currentRange='week',selectedType=null,weekPlan={restDays:[],valleyVols:{}},intensityTarget={lo:70,mo:20,hi:10},histOffset=0,histLines={tssTrend:true,tssAvg:true,ifAvg:true,loIfAvg:true,hiIfAvg:true,loIF:true,hiIF:true}
@@ -727,7 +723,7 @@ function renderWeek(){
   const fillPercent=Math.min(100,Math.round(loggedTSS/weeklyTSSGoal*100));const targetPercent=Math.min(100,Math.round(projectedTSS/weeklyTSSGoal*100))
   document.getElementById('tssMini').style.width=fillPercent+'%';document.getElementById('tssMiniTarget').style.left=targetPercent+'%'
   ;(()=>{const heroPTSS=document.getElementById('heroProjTSS');if(heroPTSS){if(plannedTSS>0){const projColor=projectedTSS>=weeklyTSSGoal?'var(--accent)':projectedTSS>=weeklyTSSGoal*0.85?'var(--yellow)':'var(--text3)';heroPTSS.textContent='→ '+projectedTSS+' proj';heroPTSS.style.color=projColor}else{heroPTSS.textContent=''}}})()
-  ;(()=>{const fmtD=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');const todayIdx=getDayIdx(today());const lastMon=new Date(mon);lastMon.setDate(mon.getDate()-7);const lastEnd=new Date(lastMon);lastEnd.setDate(lastMon.getDate()+(todayIdx>=0?todayIdx:6));const lwWo=workouts.filter(w=>w.date>=fmtD(lastMon)&&w.date<=fmtD(lastEnd));const lwTSS=lwWo.reduce((s,w)=>s+(w.adjTSS||Math.round(w.rawTSS*sportMult(w.sport))),0);const lwM=getDayAggs(lwWo).reduce((s,d)=>s+d.m,0);const mDelta=document.getElementById('heroMDelta'),tssDelta=document.getElementById('heroTSSDelta');const fmt=(cur,prev)=>{if(!prev&&!cur)return'';const d=cur-prev;const s=d>=0?'↑':'↓';const c=d>=0?'var(--accent)':'var(--red)';return`<span style="color:${c}">${s} ${Math.abs(d)}</span> <span style="color:var(--text3)">vs last wk</span>`};if(mDelta)mDelta.innerHTML=lwWo.length||lwM?fmt(weekM,lwM):'';if(tssDelta)tssDelta.innerHTML=lwWo.length||lwTSS?fmt(weekTSS,lwTSS):''})()
+  ;(()=>{const fmtD=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');const todayIdx=getDayIdx(today());const lastMon=new Date(mon);lastMon.setDate(mon.getDate()-7);const lastEnd=new Date(lastMon);lastEnd.setDate(lastMon.getDate()+(todayIdx>=0?todayIdx:6));const lwWo=workouts.filter(w=>w.date>=fmtD(lastMon)&&w.date<=fmtD(lastEnd));const lwTSS=lwWo.reduce((s,w)=>s+(w.adjTSS||Math.round(w.rawTSS*sportMult(w.sport))),0);const lwM=getDayAggs(lwWo).reduce((s,d)=>s+d.m,0);const mDelta=document.getElementById('heroMDelta'),tssDelta=document.getElementById('heroTSSDelta');const fmt=(cur,prev)=>{if(!prev&&!cur)return'';const d=cur-prev;const s=d>=0?'↑':'↓';const c=d>=0?'var(--accent)':'var(--accent2)';return`<span style="color:${c}">${s} ${Math.abs(d)}</span> <span style="color:var(--text3)">vs last wk</span>`};if(mDelta)mDelta.innerHTML=lwWo.length||lwM?fmt(weekM,lwM):'';if(tssDelta)tssDelta.innerHTML=lwWo.length||lwTSS?fmt(weekTSS,lwTSS):''})()
   document.getElementById('heroIF').textContent=peakIF?peakIF.toFixed(2):'—';document.getElementById('heroIFzone').textContent=peakIF?ifZoneLabel(peakIF):''
   const regime=getTSSRegime(weekTSS);const rEl=document.getElementById('tssRegime');if(rEl){rEl.textContent=regime.label;rEl.style.color=regime.color}
   const totalMin=ww.reduce((s,w)=>s+w.time,0);const hrs=Math.floor(totalMin/60),mins=Math.round(totalMin%60);const tEl=document.getElementById('weekTime');if(tEl)tEl.textContent=totalMin>0?(hrs>0?hrs+'h ':'')+(mins<10&&hrs>0?'0':'')+mins+'m this week':'—'
@@ -826,6 +822,8 @@ function renderHistory(){
   const fwd=document.getElementById('histFwdBtn');if(fwd)fwd.style.opacity=histOffset>=0?'0.3':'1'
   document.getElementById('rangeLabel').textContent=getRangeLabel(currentRange,histOffset);renderHistChart()
   updateHistoryHeroBoard()
+  // NEW: render M-Score trend chart
+  renderMTrendChart()
 }
 function toggleHistoryWeek(header){const body=header.nextElementSibling;if(body)body.classList.toggle('open')}
 function expandAllHistory(){document.querySelectorAll('.history-week-body').forEach(b=>b.classList.add('open'))}
@@ -861,6 +859,50 @@ function renderHistChart(){
 function toggleHistLine(key){histLines[key]=!histLines[key];renderHistChart()}
 function setRange(r){currentRange=r;histOffset=0;renderHistory()}
 function shiftHist(dir){if(dir>0&&histOffset>=0)return;histOffset+=dir;renderHistory()}
+
+// NEW: M-Score trend chart (Feature 2)
+function renderMTrendChart(){
+  const canvas=document.getElementById('mTrendCanvas');if(!canvas)return
+  const fmtW=d=>{const yr=d.getFullYear(),mo=String(d.getMonth()+1).padStart(2,'0'),da=String(d.getDate()).padStart(2,'0');return `${yr}-${mo}-${da}`}
+  const byWeek=new Map()
+  workouts.forEach(w=>{const d=new Date(w.date+'T12:00:00'),wd=d.getDay(),df=wd===0?-6:1-wd;const mn=new Date(d);mn.setDate(d.getDate()+df);const k=fmtW(mn);if(!byWeek.has(k))byWeek.set(k,[]);byWeek.get(k).push(w)})
+  const weeks=Array.from(byWeek.keys()).sort().slice(-12)
+  const weekData=weeks.map(k=>{const sess=byWeek.get(k),days=getDayAggs(sess);const weekM=days.reduce((s,d)=>s+d.m,0)+(k===getWeekRange().start?getWeekRestM(new Map(days.map(d=>[d.date,d]))):0);return{key:k.slice(5),m:weekM}})
+  if(weekData.length<2){canvas.style.display='none';document.getElementById('mTrendInsight').innerHTML='Need at least 2 weeks of data';return}
+  canvas.style.display='block'
+  const dpr=window.devicePixelRatio||1;const W=Math.max(200,canvas.parentElement.clientWidth-32),H=160
+  canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.width=W+'px';canvas.style.height=H+'px'
+  const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr)
+  const maxM=Math.max(30,...weekData.map(w=>w.m),1),PAD_L=40,PAD_R=20,PAD_T=15,PAD_B=25,cW=W-PAD_L-PAD_R,cH=H-PAD_T-PAD_B,n=weekData.length,stepX=cW/(n-1||1)
+  ctx.clearRect(0,0,W,H);ctx.strokeStyle='#2a3035';ctx.lineWidth=0.5
+  for(let i=0;i<=4;i++){const y=PAD_T+cH*(1-i/4);ctx.beginPath();ctx.moveTo(PAD_L,y);ctx.lineTo(W-PAD_R,y);ctx.stroke()}
+  ctx.fillStyle='#8a9399';ctx.font='9px Barlow';ctx.textAlign='right'
+  for(let i=0;i<=4;i++)ctx.fillText(Math.round(maxM*i/4),PAD_L-4,PAD_T+cH*(1-i/4)+3)
+  ctx.beginPath()
+  weekData.forEach((w,i)=>{const x=PAD_L+i*stepX,y=PAD_T+cH*(1-w.m/maxM);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)})
+  ctx.strokeStyle='#00d4aa';ctx.lineWidth=2.5;ctx.stroke()
+  weekData.forEach((w,i)=>{const x=PAD_L+i*stepX,y=PAD_T+cH*(1-w.m/maxM)
+    let zoneColor='#4a5560'
+    if(w.m>=30)zoneColor='#e11d48'
+    else if(w.m>=28)zoneColor='#ea580c'
+    else if(w.m>=25)zoneColor='#65a30d'
+    else if(w.m>=19)zoneColor='#16a34a'
+    else if(w.m>=14)zoneColor='#059669'
+    else if(w.m>=10)zoneColor='#d97706'
+    else if(w.m>=2)zoneColor='#64748b'
+    ctx.beginPath();ctx.arc(x,y,5,0,2*Math.PI);ctx.fillStyle='#0d0f10';ctx.fill();ctx.strokeStyle=zoneColor;ctx.lineWidth=1.5;ctx.stroke()
+    ctx.fillStyle='#e8eaeb';ctx.font='bold 10px Barlow Condensed';ctx.textAlign='center';ctx.fillText(w.m,x,y-6)
+  })
+  ctx.fillStyle='#4a5560';ctx.font='9px Barlow';ctx.textAlign='center'
+  weekData.forEach((w,i)=>ctx.fillText(w.key,PAD_L+i*stepX,H-8))
+  let insight=''
+  if(weekData.length>=2){const last=weekData[weekData.length-1].m,prev=weekData[weekData.length-2].m,delta=last-prev
+    if(delta>0)insight=`↑ Last week M +${delta} · building fitness`
+    else if(delta<0)insight=`↓ Last week M ${delta} · natural regulation after hard week`
+    else insight=`→ M stable · consistent load`
+  }else insight='M-Score trend over last weeks'
+  document.getElementById('mTrendInsight').innerHTML=insight
+}
 
 function renderSettings(){
   document.getElementById('sBikeFTP').value=profile.bike||'';document.getElementById('sRunLTP').value=profile.run||'';document.getElementById('sSwimCSS').value=profile.swim||''
@@ -952,7 +994,7 @@ function showTab(t){
 }
 function render(){renderWeek();renderLog();checkOnboarding()}
 
-window.addEventListener('resize',()=>{if(document.getElementById('tab-week').classList.contains('active')){const ww=getWeekWo();drawFrameCanvas(getDayAggs(ww))};if(document.getElementById('tab-history').classList.contains('active')){renderHistChart();if(paceChartOpen)drawPaceTrendChart();if(efficiencyCurveOpen)drawEfficiencyCurve()}})
+window.addEventListener('resize',()=>{if(document.getElementById('tab-week').classList.contains('active')){const ww=getWeekWo();drawFrameCanvas(getDayAggs(ww))};if(document.getElementById('tab-history').classList.contains('active')){renderHistChart();if(paceChartOpen)drawPaceTrendChart();if(efficiencyCurveOpen)drawEfficiencyCurve();renderMTrendChart()}})
 function init(){load();document.getElementById('fDate').value=today();onSportChange();render();renderSettings();document.getElementById('fTime').addEventListener('input',updateLivePreview);setupFrameTooltip()}
 init()
 </script>
@@ -965,8 +1007,4 @@ init()
   <button class="bnav-btn" id="bnav-guide" onclick="showTab('guide')"><span class="bnav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>Guide</button>
 </nav>
 </body>
-</html>
-    
-  </body>
-  
 </html>
