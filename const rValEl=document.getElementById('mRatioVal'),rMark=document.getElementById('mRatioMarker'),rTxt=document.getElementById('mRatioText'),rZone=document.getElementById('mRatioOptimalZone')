@@ -748,13 +748,20 @@ function renderWeek(){
   if(rMark&&ratio>0&&rZone){
   const rValEl=document.getElementById('mRatioVal'),rMark=document.getElementById('mRatioMarker'),rTxt=document.getElementById('mRatioText'),rZone=document.getElementById('mRatioOptimalZone')
   if(rValEl)rValEl.textContent=ratio>0?ratio:'—'
-  if(rZone){
+  if(rZone&&weekTSS>0){
     const optimalRatio=getCurveRatio(weekTSS);const minRatio=optimalRatio*0.8,maxRatio=optimalRatio*1.2
     const logMinOverall=Math.log(1/3),logMaxOverall=Math.log(3)
     const minPct=((Math.log(Math.max(0.1,minRatio))-logMinOverall)/(logMaxOverall-logMinOverall))*100
     const maxPct=((Math.log(maxRatio)-logMinOverall)/(logMaxOverall-logMinOverall))*100
     rZone.style.left=Math.max(0,minPct)+'%';rZone.style.width=Math.min(100,maxPct-minPct)+'%'
   }
+  if(rMark&&ratio>0){
+    const logMinOverall=Math.log(1/3),logMaxOverall=Math.log(3)
+    const logVal=Math.log(Math.max(1/3,Math.min(3,parseFloat(ratio))))
+    const pct=((logVal-logMinOverall)/(logMaxOverall-logMinOverall))*100
+    rMark.style.left=Math.min(97,Math.max(3,pct))+'%'
+  }
+  if(rTxt){const optimalRatio=weekTSS>0?getCurveRatio(weekTSS):1.2;const dev=((parseFloat(ratio)||0)-optimalRatio)/optimalRatio;if(ratio<=0)rTxt.textContent='';else if(Math.abs(dev)<=0.2)rTxt.textContent=`✓ On curve (${ratio})`;else if(dev<-0.2)rTxt.textContent=`⬇ Intensity-dominant (${ratio})`;else rTxt.textContent=`⬆ Volume-dominant (${ratio})`}
   if(rMark&&ratio>0){
     const logMinOverall=Math.log(1/3),logMaxOverall=Math.log(3)
     const logVal=Math.log(Math.max(1/3,Math.min(3,parseFloat(ratio))))
