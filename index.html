@@ -203,59 +203,180 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
 .onboard-empty-body{font-size:12px;line-height:1.7;margin-bottom:14px}
 .onboard-step{display:flex;align-items:center;gap:10px;text-align:left;padding:8px 12px;background:var(--surface2);border-radius:7px;margin-bottom:6px}
 .onboard-num{font-family:var(--font-display);font-size:18px;font-weight:800;color:var(--accent);min-width:22px}
-  /* COACH TAB STYLES */
-.coach-grade-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;text-align:center}
-.coach-grade-letter{font-family:var(--font-display);font-size:64px;font-weight:800;line-height:1;letter-spacing:0.02em}
-.coach-grade-desc{font-size:13px;color:var(--text2);margin-top:6px;line-height:1.5}
-.coach-identity-dual{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
-.coach-identity-card{background:var(--surface2);border-radius:12px;padding:16px 12px;text-align:center;border:1px solid var(--border)}
-.coach-identity-emoji{font-size:36px;margin-bottom:6px}
-.coach-identity-name{font-family:var(--font-display);font-size:16px;font-weight:800;margin-bottom:4px}
-.coach-identity-tagline{font-size:10px;color:var(--text2);line-height:1.4;font-style:italic}
-.coach-identity-meta{font-size:9px;color:var(--text3);margin-top:6px;text-transform:uppercase;letter-spacing:0.05em}
-.coach-section-title{font-family:var(--font-display);font-size:13px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text2);margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.coach-summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
-.coach-summary-item{background:var(--surface2);border-radius:8px;padding:10px 6px;text-align:center}
-.coach-summary-val{font-family:var(--font-display);font-size:20px;font-weight:800}
-.coach-summary-label{font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-top:3px}
-.coach-comparison-table{width:100%;margin-bottom:16px;border-collapse:collapse}
-.coach-comparison-table td{padding:8px 4px;border-bottom:1px solid var(--border);font-size:12px}
+  /* ═══ COACH TAB — REDESIGNED ═══ */
+/* Period scope tabs */
+.coach-period-tabs{display:flex;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:14px}
+.coach-period-tab{flex:1;padding:7px 6px;font-family:var(--font-display);font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3);background:none;border:none;border-radius:6px;cursor:pointer;transition:all 0.15s}
+.coach-period-tab.active{background:var(--surface);color:var(--accent);box-shadow:0 1px 2px rgba(0,0,0,0.2)}
+.coach-period-tab:hover:not(.active){color:var(--text2)}
+
+/* Hero: Grade + Archetype combined */
+.coach-hero{background:linear-gradient(135deg,var(--surface) 0%,var(--surface2) 100%);border:1px solid var(--border);border-radius:14px;padding:22px 18px;margin-bottom:14px;position:relative;overflow:hidden}
+.coach-hero::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--archetype-color,var(--accent)),var(--archetype-color2,var(--accent2)))}
+.coach-hero-top{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.coach-hero-grade{font-family:var(--font-display);font-size:54px;font-weight:800;line-height:1;letter-spacing:0.02em;color:var(--archetype-color,var(--accent));flex-shrink:0}
+.coach-hero-grade-sub{font-size:9px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-top:2px;font-family:var(--font-display);font-weight:700}
+.coach-hero-right{flex:1;min-width:0}
+.coach-hero-emoji{font-size:28px;line-height:1;margin-bottom:3px}
+.coach-hero-name{font-family:var(--font-display);font-size:18px;font-weight:800;color:var(--text);line-height:1.15}
+.coach-hero-tag{font-size:11px;color:var(--text2);font-style:italic;margin-top:3px;line-height:1.4}
+.coach-hero-meta{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.coach-chip{font-size:9px;font-family:var(--font-display);font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:3px 7px;border-radius:4px;background:rgba(255,255,255,0.04);color:var(--text3);border:1px solid var(--border)}
+.coach-chip strong{color:var(--text);font-weight:800}
+
+/* Recovery pattern strip */
+.coach-pattern-strip{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:14px}
+.coach-pattern-emoji{font-size:22px;flex-shrink:0}
+.coach-pattern-body{flex:1;min-width:0}
+.coach-pattern-title{font-family:var(--font-display);font-size:12px;font-weight:800;letter-spacing:0.04em}
+.coach-pattern-tag{font-size:10px;color:var(--text3);font-style:italic;line-height:1.3;margin-top:1px}
+
+/* Summary pills */
+.coach-summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
+.coach-summary-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 4px;text-align:center}
+.coach-summary-val{font-family:var(--font-display);font-size:20px;font-weight:800;line-height:1}
+.coach-summary-label{font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;font-weight:700}
+
+/* Section title */
+.coach-section-title{font-family:var(--font-display);font-size:12px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--text2);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+
+/* Past self comparison */
+.coach-comparison-table{width:100%;margin-bottom:10px;border-collapse:collapse}
+.coach-comparison-table th{padding:6px 4px;font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3);text-align:center}
+.coach-comparison-table th:first-child{text-align:left}
+.coach-comparison-table td{padding:9px 4px;border-bottom:1px solid var(--border);font-size:12px}
 .coach-comparison-table tr:last-child td{border-bottom:none}
-.coach-comparison-label{color:var(--text3)}
-.coach-comparison-best{font-family:var(--font-display);font-weight:700;color:var(--accent);text-align:center}
-.coach-comparison-current{font-family:var(--font-display);font-weight:700;color:var(--text);text-align:center}
-.coach-comparison-gap{font-family:var(--font-display);font-weight:600;text-align:center}
-.coach-strength-item,.coach-gap-item{padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2);display:flex;align-items:center;gap:10px}
+.coach-comparison-label{color:var(--text3);font-weight:600}
+.coach-comparison-best,.coach-comparison-current{font-family:var(--font-display);font-weight:700;text-align:center}
+.coach-comparison-best{color:var(--accent)}
+.coach-comparison-gap{font-family:var(--font-display);font-weight:700;text-align:center;font-size:11px}
+.coach-comparison-gap.better{color:var(--accent)}
+.coach-comparison-gap.worse{color:var(--accent2)}
+.coach-comparison-gap.same{color:var(--text3)}
+.coach-contrast-note{font-size:12px;color:var(--text2);line-height:1.5;margin-top:10px;padding:10px 12px;background:var(--surface2);border-radius:8px;border-left:3px solid var(--accent)}
+
+/* Strengths & gaps */
+.coach-strength-item,.coach-gap-item{padding:9px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2);display:flex;align-items:flex-start;gap:10px;line-height:1.45}
 .coach-strength-item:last-child,.coach-gap-item:last-child{border-bottom:none}
-.coach-strength-icon{color:var(--green);font-weight:700}
-.coach-gap-icon{color:var(--accent2);font-weight:700}
-.coach-notable-item{background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:6px;font-size:12px;border-left:3px solid}
-.coach-notable-run{border-left-color:#ff6b35}
-.coach-notable-swim{border-left-color:#00d4aa}
-.coach-notable-bike{border-left-color:#3b82f6}
-.coach-prediction-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
-.coach-prediction-item{background:var(--surface2);border-radius:8px;padding:10px;text-align:center}
-.coach-prediction-dist{font-size:10px;color:var(--text3);text-transform:uppercase}
-.coach-prediction-time{font-family:var(--font-display);font-size:18px;font-weight:800}
-.coach-aspiration-selector{background:var(--surface2);border-radius:10px;padding:14px;margin-bottom:16px}
-.coach-goal-setter{background:var(--surface2);border-radius:10px;padding:14px;margin-bottom:16px}
-.coach-roadmap-phase{margin-bottom:16px}
-.coach-roadmap-phase-title{font-family:var(--font-display);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--accent);margin-bottom:8px}
-.coach-roadmap-item{padding:6px 0;font-size:12px;color:var(--text2);border-bottom:1px dashed var(--border)}
+.coach-strength-icon{color:var(--accent);font-weight:800;flex-shrink:0;margin-top:1px}
+.coach-gap-icon{color:var(--accent2);font-weight:800;flex-shrink:0;margin-top:1px}
+
+/* Showcase / notable */
+.coach-notable-item{background:var(--surface2);border-radius:8px;padding:12px 14px;margin-bottom:8px;font-size:12px;border-left:3px solid;display:flex;align-items:center;gap:10px}
+.coach-notable-item:last-child{margin-bottom:0}
+.coach-notable-icon{font-size:20px;flex-shrink:0}
+.coach-notable-body{flex:1;min-width:0}
+.coach-notable-headline{font-family:var(--font-display);font-size:13px;font-weight:800;color:var(--text);line-height:1.2}
+.coach-notable-meta{font-size:10px;color:var(--text3);margin-top:3px}
+.coach-notable-run{border-left-color:var(--int)}
+.coach-notable-swim{border-left-color:var(--accent)}
+.coach-notable-bike{border-left-color:var(--vol)}
+
+/* Predictor - sport toggle */
+.coach-pred-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px;flex-wrap:wrap}
+.coach-sport-toggle{display:flex;gap:2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:3px}
+.coach-sport-btn{padding:5px 10px;font-family:var(--font-display);font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--text3);background:none;border:none;border-radius:5px;cursor:pointer}
+.coach-sport-btn.active{background:var(--surface);color:var(--accent)}
+.coach-prediction-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.coach-prediction-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 8px;text-align:center}
+.coach-prediction-dist{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;font-family:var(--font-display)}
+.coach-prediction-time{font-family:var(--font-display);font-size:20px;font-weight:800;margin-top:4px;line-height:1}
+.coach-prediction-note{font-size:10px;color:var(--text3);line-height:1.5;margin-top:6px}
+
+/* Dream / reality check - combined wish box + goal + roadmap */
+.coach-dream-wrap{background:linear-gradient(135deg,rgba(0,212,170,0.06),rgba(255,107,53,0.04));border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px}
+.coach-dream-label{font-family:var(--font-display);font-size:11px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.coach-dream-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.coach-dream-row input,.coach-dream-row select{width:100%}
+.coach-reality-box{margin-top:12px;padding:12px;background:var(--surface);border-radius:8px;border:1px solid var(--border);font-size:12px;color:var(--text2);line-height:1.55;display:none}
+.coach-reality-box.show{display:block}
+.coach-reality-verdict{font-family:var(--font-display);font-size:14px;font-weight:800;margin-bottom:8px;letter-spacing:0.02em;display:flex;align-items:center;gap:6px}
+.coach-reality-verdict.ok{color:var(--accent)}
+.coach-reality-verdict.stretch{color:var(--yellow)}
+.coach-reality-verdict.unrealistic{color:var(--accent2)}
+.coach-reality-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0}
+.coach-reality-stat{text-align:center;padding:6px 4px;background:var(--surface2);border-radius:6px}
+.coach-reality-stat-val{font-family:var(--font-display);font-size:14px;font-weight:800;color:var(--text)}
+.coach-reality-stat-label{font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:2px;font-weight:700}
+
+/* Roadmap */
+.coach-roadmap-phase{margin-bottom:14px}
+.coach-roadmap-phase:last-child{margin-bottom:0}
+.coach-roadmap-phase-title{font-family:var(--font-display);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.coach-roadmap-phase-title::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.coach-roadmap-item{padding:7px 0;padding-left:14px;font-size:12px;color:var(--text2);border-bottom:1px dashed var(--border);position:relative;line-height:1.5}
+.coach-roadmap-item::before{content:'→';position:absolute;left:0;color:var(--text3);font-weight:700}
 .coach-roadmap-item:last-child{border-bottom:none}
+
+/* Milestones */
 .coach-milestone-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
 .coach-milestone-item:last-child{border-bottom:none}
-.coach-milestone-icon{font-size:24px;min-width:32px;text-align:center;opacity:0.3}
-.coach-milestone-icon.earned{opacity:1}
-.coach-milestone-content{flex:1}
-.coach-milestone-title{font-family:var(--font-display);font-size:14px;font-weight:700}
-.coach-milestone-req{font-size:10px;color:var(--text3);margin-top:2px}
-.coach-milestone-progress{font-size:11px;color:var(--text2);text-align:right;font-family:var(--font-display);font-weight:600}
-.coach-redflag-item{padding:6px 0;font-size:11px;color:var(--text2);display:flex;align-items:center;gap:8px}
-.coach-primary-rec{background:rgba(0,212,170,0.08);border-radius:10px;padding:14px 16px;margin:16px 0;border-left:3px solid var(--accent);font-size:13px;line-height:1.6;color:var(--text)}
-.coach-ghost-box{background:rgba(0,212,170,0.06);border-radius:12px;padding:14px 16px;margin-bottom:16px;border:1px solid rgba(0,212,170,0.2)}
-.coach-actions{display:flex;gap:10px;margin-top:16px}
-css.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}.modal-content{background:var(--surface);border:1px solid var(--border);border-radius:16px;max-width:500px;width:100%;max-height:80vh;overflow-y:auto;padding:20px}.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.modal-title{font-family:var(--font-display);font-size:18px;font-weight:800}.modal-close{cursor:pointer;font-size:24px;color:var(--text3)}
+.coach-milestone-icon{font-size:22px;min-width:34px;text-align:center;opacity:0.35;transition:opacity 0.2s}
+.coach-milestone-icon.earned{opacity:1;filter:drop-shadow(0 0 6px rgba(0,212,170,0.4))}
+.coach-milestone-content{flex:1;min-width:0}
+.coach-milestone-title{font-family:var(--font-display);font-size:13px;font-weight:800;line-height:1.2}
+.coach-milestone-title.earned{color:var(--accent)}
+.coach-milestone-req{font-size:10px;color:var(--text3);margin-top:3px;line-height:1.4}
+.coach-milestone-progress{font-size:10px;font-family:var(--font-display);font-weight:700;text-align:right;letter-spacing:0.04em;text-transform:uppercase;padding:3px 8px;border-radius:4px;background:var(--surface2);color:var(--text3);flex-shrink:0}
+.coach-milestone-progress.earned{background:rgba(0,212,170,0.15);color:var(--accent)}
+
+/* Threshold check */
+.coach-threshold-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.coach-threshold-card:last-child{margin-bottom:0}
+.coach-threshold-icon{font-size:20px;flex-shrink:0}
+.coach-threshold-body{flex:1;min-width:0}
+.coach-threshold-title{font-family:var(--font-display);font-size:12px;font-weight:800;letter-spacing:0.04em}
+.coach-threshold-msg{font-size:11px;color:var(--text2);line-height:1.4;margin-top:2px}
+.coach-threshold-action{font-size:10px;font-family:var(--font-display);font-weight:700;padding:4px 10px;border-radius:5px;text-transform:uppercase;letter-spacing:0.04em;flex-shrink:0}
+.coach-threshold-action.up{background:rgba(0,212,170,0.15);color:var(--accent)}
+.coach-threshold-action.hold{background:rgba(255,204,0,0.12);color:var(--yellow)}
+.coach-threshold-action.down{background:rgba(255,107,53,0.12);color:var(--accent2)}
+
+/* TSS ladder */
+.coach-tss-ladder{display:flex;gap:4px;margin-top:10px;align-items:flex-end;height:50px;padding:0 4px}
+.coach-tss-rung{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:4px 4px 0 0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding-bottom:4px;font-family:var(--font-display);font-size:9px;font-weight:700;color:var(--text3);position:relative;transition:all 0.2s}
+.coach-tss-rung.current{background:var(--accent);color:var(--bg);border-color:var(--accent);box-shadow:0 0 8px rgba(0,212,170,0.4)}
+.coach-tss-rung.mastered{background:rgba(0,212,170,0.25);color:var(--accent);border-color:rgba(0,212,170,0.5)}
+.coach-tss-rung-label{font-size:8px;text-transform:uppercase;letter-spacing:0.04em;margin-top:2px;white-space:nowrap}
+.coach-tss-ladder-caption{font-size:11px;color:var(--text3);text-align:center;margin-top:8px;line-height:1.5}
+
+/* Primary recommendation - reshaped */
+.coach-primary-rec{background:rgba(0,212,170,0.07);border-radius:12px;padding:14px 16px;margin:14px 0;border-left:3px solid var(--accent);font-size:13px;line-height:1.6;color:var(--text)}
+.coach-primary-rec-label{font-family:var(--font-display);font-size:10px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+
+.coach-ghost-box{background:rgba(0,212,170,0.05);border-radius:10px;padding:12px 14px;margin-bottom:14px;border:1px solid rgba(0,212,170,0.2);font-size:12px;line-height:1.5;color:var(--text2)}
+
+/* Actions */
+.coach-actions{display:flex;gap:8px;margin-top:14px}
+.coach-actions .btn-sm{flex:1}
+
+/* Red flags */
+.coach-redflag-item{padding:8px 0;font-size:12px;color:var(--text2);display:flex;align-items:flex-start;gap:10px;line-height:1.4}
+.coach-redflag-item span:first-child{flex-shrink:0;margin-top:1px}
+
+/* Responsive */
+@media(max-width:380px){
+  .coach-summary-grid{grid-template-columns:repeat(2,1fr)}
+  .coach-prediction-grid{grid-template-columns:repeat(3,1fr);gap:5px}
+  .coach-prediction-time{font-size:17px}
+  .coach-hero-grade{font-size:46px}
+  .coach-dream-row{grid-template-columns:1fr}
+}
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay[style*="flex"]{display:flex!important}
+.modal-content{background:var(--surface);border:1px solid var(--border);border-radius:16px;max-width:520px;width:100%;max-height:85vh;overflow-y:auto;padding:20px}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.modal-title{font-family:var(--font-display);font-size:18px;font-weight:800}
+.modal-close{cursor:pointer;font-size:26px;color:var(--text3);line-height:1;padding:0 4px}
+.modal-close:hover{color:var(--text)}
+.modal-archetype-item{background:var(--surface2);border-radius:10px;padding:14px;margin-bottom:8px;border:1px solid var(--border)}
+.modal-archetype-item.match{border-color:var(--accent);box-shadow:0 0 0 1px rgba(0,212,170,0.25)}
+.modal-archetype-header{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.modal-archetype-emoji{font-size:22px}
+.modal-archetype-name{font-family:var(--font-display);font-size:15px;font-weight:800}
+.modal-archetype-tagline{font-size:11px;color:var(--text2);font-style:italic;margin-bottom:6px}
+.modal-archetype-req{font-size:11px;color:var(--text3);line-height:1.5;margin-bottom:6px}
+.modal-archetype-status{font-size:10px;font-family:var(--font-display);font-weight:700;letter-spacing:0.04em;text-transform:uppercase}.modal-content{background:var(--surface);border:1px solid var(--border);border-radius:16px;max-width:500px;width:100%;max-height:80vh;overflow-y:auto;padding:20px}.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.modal-title{font-family:var(--font-display);font-size:18px;font-weight:800}.modal-close{cursor:pointer;font-size:24px;color:var(--text3)}
 .tone-toggle{display:flex;gap:4px;justify-content:flex-end;margin-bottom:12px}
 .tone-btn{padding:4px 12px;font-family:var(--font-display);font-size:11px;font-weight:600;border-radius:6px;cursor:pointer;background:var(--surface2);border:1px solid var(--border);color:var(--text3)}
 .tone-btn.active{background:var(--accent);color:var(--bg);border-color:var(--accent)}
@@ -314,8 +435,8 @@ css.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0
 }
 </style>
 </head>
-html<div class="modal-overlay" id="archetypeModal" onclick="closeModal(event)"><div class="modal-content" onclick="event.stopPropagation()"><div class="modal-header"><span class="modal-title">🏆 Training Archetypes</span><span class="modal-close" onclick="closeModal()">&times;</span></div><div id="modalArchetypeList"></div></div></div>
 <body>
+<div class="modal-overlay" id="archetypeModal" onclick="closeModal(event)"><div class="modal-content" onclick="event.stopPropagation()"><div class="modal-header"><span class="modal-title">🏆 Training Archetypes</span><span class="modal-close" onclick="closeModal()">&times;</span></div><div id="modalArchetypeList"></div></div></div>
 <nav id="appNav">
   <div class="nav-brand"><div class="logo">M<em>-</em>FRAME</div><div class="logo-tagline">volume × intensity</div></div>
   <div class="nav-tabs">
@@ -405,11 +526,36 @@ html<div class="modal-overlay" id="archetypeModal" onclick="closeModal(event)"><
 <!-- COACH TAB -->
 <div id="tab-coach" class="panel">
   <div class="container">
+    <div class="coach-period-tabs">
+      <button class="coach-period-tab" data-period="month" onclick="setCoachPeriod('month')">Month</button>
+      <button class="coach-period-tab" data-period="quarter" onclick="setCoachPeriod('quarter')">3 Months</button>
+      <button class="coach-period-tab" data-period="half" onclick="setCoachPeriod('half')">6 Months</button>
+      <button class="coach-period-tab" data-period="year" onclick="setCoachPeriod('year')">Year</button>
+      <button class="coach-period-tab active" data-period="all" onclick="setCoachPeriod('all')">All</button>
+    </div>
     <div class="tone-toggle">
       <button class="tone-btn active" data-tone="brutal" onclick="setCoachTone('brutal')">🔥 Brutal</button>
       <button class="tone-btn" data-tone="direct" onclick="setCoachTone('direct')">📊 Direct</button>
       <button class="tone-btn" data-tone="encouraging" onclick="setCoachTone('encouraging')">🌱 Encouraging</button>
-      <button class="btn-sm" onclick="refreshCoachAnalysis()" style="margin-left:auto">🔄 Refresh</button>
+      <button class="btn-sm" onclick="refreshCoachAnalysis()" style="margin-left:auto">🔄</button>
+    </div>
+    <div class="card" id="corrPanel" style="margin-bottom:14px">
+      <div class="expandable-header" style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+        <span class="expandable-title">📊 PERFORMANCE CORRELATIONS</span>
+        <span style="font-size:9px;color:var(--text3);font-weight:400;letter-spacing:0.04em">weekly · pearson r</span>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.5">Overlays your weekly M, TSS, avg IF and pace (normalized) so you can see patterns. Pearson r quantifies the linear relationship (−1 to +1).</div>
+      <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
+        <span style="font-size:10px;color:var(--text3);margin-right:2px;font-family:var(--font-display);letter-spacing:0.05em;text-transform:uppercase">Pace:</span>
+        <span class="sport-pill active" data-corrsport="run" onclick="setCorrSport('run')">🏃 Run</span>
+        <span class="sport-pill" data-corrsport="bike" onclick="setCorrSport('bike')">🚴 Bike</span>
+        <span class="sport-pill" data-corrsport="swim" onclick="setCorrSport('swim')">🏊 Swim</span>
+      </div>
+      <div style="position:relative"><canvas id="corrOverlayCanvas" height="200" style="width:100%;display:block"></canvas></div>
+      <div id="corrLegend" style="display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:10px;color:var(--text3);line-height:1.5"></div>
+      <div style="height:12px"></div>
+      <div id="corrMatrix"></div>
+      <div id="corrInsight" style="font-size:11px;color:var(--text3);margin-top:10px;font-style:italic;line-height:1.6"></div>
     </div>
     <div id="coachContent"></div>
   </div>
@@ -665,7 +811,7 @@ function renderDayDetails(plan, ww){
     const isCompleted=isPast&&dayAgg
     if(isPast&&dayAgg){m=dayAgg.m;lp=dayAgg.lp;ip=dayAgg.ip;estTSS=dayAgg.adjTSS;estIF=dayAgg.avgIF;const mult=sportMult(sport);duration=Math.round((estTSS*60)/(estIF*estIF*100*mult));paceDisplay=calculateTargetPace(sport,estIF)}
     else if(isToday&&dayAgg){m=dayAgg.m;lp=dayAgg.lp;ip=dayAgg.ip;estTSS=dayAgg.adjTSS;estIF=dayAgg.avgIF;const mult=sportMult(sport);duration=Math.round((estTSS*60)/(estIF*estIF*100*mult));paceDisplay=calculateTargetPace(sport,estIF)}
-    else{const isFullRest=isRestDay&&makeup==='off';if(isFullRest||isMissed){m=0;lp=0;ip=0;estTSS=0;estIF=0;duration=0;paceDisplay='--'}else{m=calcDayM(vol,intW,false,makeup);const pts=getLoadIntensityPts(effVol,intW,makeup);lp=pts.lp;ip=pts.ip;const result=getEstimatedDurationAndTSS(effVol,intW,makeup,sport);estTSS=result.tss;estIF=getEstimatedIF(intW,sport);duration=result.duration;paceDisplay=calculateTargetPace(sport,estIF)}}
+    else{const isFullRest=isRestDay&&makeup==='off';if(isFullRest||isMissed){m=0;lp=0;ip=0;estTSS=0;estIF=0;duration=0;paceDisplay='--'}else{m=calcDayM(vol,intW,false,makeup);const pts=getLoadIntensityPts(vol,intW,makeup);lp=pts.lp;ip=pts.ip;const result=getEstimatedDurationAndTSS(effVol,intW,makeup,sport);estTSS=result.tss;estIF=getEstimatedIF(intW,sport);duration=result.duration;paceDisplay=calculateTargetPace(sport,estIF)}}
     const color=m===0?'var(--text3)':m<=2?'var(--green)':m<=4?'var(--yellow)':'var(--red)'
     const isFullRest=isRestDay&&makeup==='off';const isFuture=!isPast&&!isToday
     let cls='day-col'+(isToday?' is-today':'')+(isPast&&!isToday?' is-past':'')+(isCompleted?' is-completed':'')+(isMissed?' is-missed':'')
@@ -829,8 +975,9 @@ function renderWeek(){
   const fmtMin=m=>{if(!m)return'0m';const h=Math.floor(m/60),mm=Math.round(m%60);return h>0?h+'h'+(mm?(mm<10?'0':'')+mm+'m':''):mm+'m'};const tEl2=document.getElementById('budgetTotalTime');if(tEl2)tEl2.textContent=totMin>0?fmtMin(totMin)+' logged':''
   const budRows=document.getElementById('budgetZoneRows')
   if(budRows){budRows.innerHTML=[{label:'Low  Z1–2',min:loMin,pct:lp,target:zt.lo,color:'#00d4aa'},{label:'Mod  Z3',min:moMin,pct:mp,target:zt.mo,color:'#ffcc00'},{label:'High Z4+',min:hiMin,pct:hp,target:zt.hi,color:'#ff6b35'}].map(z=>{const delta=totMin>0?z.pct-z.target:null;const absDelta=delta!==null?Math.abs(delta):0;const deltaColor=absDelta<=5?'var(--text3)':delta>0?'var(--yellow)':'var(--red)';const deltaStr=delta===null?'':delta>=0?'+'+delta+'%':delta+'%';return`<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border)"><div style="width:8px;height:8px;border-radius:2px;background:${z.color}"></div><div style="font-size:11px;color:var(--text2);flex:1">${z.label}</div><div style="font-size:14px;font-weight:700;min-width:36px;text-align:right">${totMin>0?fmtMin(z.min):'—'}</div><div style="font-size:10px;color:var(--text3);min-width:28px;text-align:right">${totMin>0?z.pct+'%':'—'}</div><div style="font-size:9px;font-weight:600;min-width:30px;text-align:right;color:${deltaColor}">${deltaStr}</div></div>`}).join('')}
-  const hiDays=days.filter(d=>d.avgIF>=0.95).length;let consecKey=false;for(let i=0;i<days.length-1;i++)if(days[i].avgIF>=0.90&&days[i+1].avgIF>=0.90){consecKey=true;break}
-  const tlp=days.reduce((s,d)=>s+d.lp,0),tip=days.reduce((s,d)=>s+d.ip,0);const ratio=tip>0?(tlp/tip).toFixed(2):0
+  const planFull_=buildFullPlan();const td_=today();const fmtDp_=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');const projWeek_=Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);const ds=fmtDp_(d);const da=weekDayMap.get(ds);const isRD=getRestDays().includes(i);const mk=isRD?(weekPlan.makeup||{})[i]||'low':'';const sp=daySports[i]||'bike';if(da)return{lp:da.lp,ip:da.ip,projIF:da.avgIF};if(ds<td_)return{lp:0,ip:0,projIF:0};if(!planFull_)return{lp:0,ip:0,projIF:0};const v=planFull_.vol[i];const iw=planFull_.intWave[i];if(isRD&&mk==='off')return{lp:0,ip:0,projIF:0};const pts=getLoadIntensityPts(v,iw,mk);const pIF=isRD?getEstimatedIF('low',sp):getEstimatedIF(iw,sp);return{lp:pts.lp,ip:pts.ip,projIF:pIF}});
+  const hiDays=days.filter(d=>d.avgIF>=0.95).length;let consecKey=false;for(let i=0;i<6;i++)if(projWeek_[i].projIF>=0.90&&projWeek_[i+1].projIF>=0.90){consecKey=true;break}
+  const tlp=projWeek_.reduce((s,d)=>s+d.lp,0),tip=projWeek_.reduce((s,d)=>s+d.ip,0);const ratio=tip>0?(tlp/tip).toFixed(2):0
   const loDiff=lp-zt.lo,hiDiff=hp-zt.hi;const loStatus=Math.abs(loDiff)<=8?'rule-ok':loDiff<-8?'rule-fail':'rule-warn';const hiStatus=Math.abs(hiDiff)<=5?'rule-ok':hiDiff>5?'rule-fail':'rule-warn'
   document.getElementById('compRows').innerHTML=`<div class="rule-row"><span>No back-to-back key sessions</span><span class="${consecKey?'rule-fail':'rule-ok'}">${consecKey?'FAIL':'OK'}</span></div><div class="rule-row"><span>Max 3 key days/week</span><span class="${hiDays>3?'rule-fail':hiDays===3?'rule-warn':'rule-ok'}">${hiDays}/3</span></div><div class="rule-row"><span>Low zone (target ${zt.lo}%)</span><span class="${loStatus}">${lp}% ${loDiff>=0?'+':''}${loDiff} vs ${zt.lo}%</span></div><div class="rule-row"><span>High zone (target ${zt.hi}%)</span><span class="${hiStatus}">${hp}% ${hiDiff>=0?'+':''}${hiDiff} vs ${zt.hi}%</span></div>`
   const planRows=document.getElementById('compPlanRows');if(planRows){const planFull=buildFullPlan();let planHtml='';if(planFull){let planConsec=false;for(let i=0;i<6;i++){if(planFull.intWave[i]==='high'&&planFull.vol[i]!=='rest'&&planFull.intWave[i+1]==='high'&&planFull.vol[i+1]!=='rest'){planConsec=true;break}}const planHiDays=planFull.intWave.filter((w,i)=>w==='high'&&planFull.vol[i]!=='rest').length;if(planConsec)planHtml+=`<div style="padding:6px 10px;margin-bottom:5px;background:rgba(255,204,0,0.07);border-radius:6px;border-left:2px solid var(--yellow);font-size:11px;color:var(--yellow)">⚠ Plan has back-to-back hard days — consider separating</div>`;if(planHiDays>3)planHtml+=`<div style="padding:6px 10px;margin-bottom:5px;background:rgba(255,204,0,0.07);border-radius:6px;border-left:2px solid var(--yellow);font-size:11px;color:var(--yellow)">⚠ Plan has ${planHiDays} key days — max recommended is 3</div>`}planRows.innerHTML=planHtml}
@@ -1056,45 +1203,97 @@ function drawEfficiencyCurve(){
 }
 
 function showTab(t){
-  const tabs=['week','log','history','coach','settings'];
+  const tabs=['week','log','history','coach','settings','guide'];
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'))
-  document.getElementById('tab-'+t).classList.add('active');const idx=TABS.indexOf(t);if(idx>=0)document.querySelectorAll('.nav-tab')[idx].classList.add('active')
+  document.getElementById('tab-'+t).classList.add('active');const idx=tabs.indexOf(t);if(idx>=0)document.querySelectorAll('.nav-tab')[idx]?.classList.add('active')
   const bb=document.getElementById('bnav-'+t);if(bb)bb.classList.add('active')
-  if(t==='week')renderWeek();else if(t==='log')renderLog();else if(t==='history')renderHistory();else if(t==='settings')renderSettings()
+  if(t==='week')renderWeek();else if(t==='log')renderLog();else if(t==='history')renderHistory();else if(t==='settings')renderSettings();else if(t==='coach')renderCoachTab()
 }
 function render(){renderWeek();renderLog();checkOnboarding()}
 
 window.addEventListener('resize',()=>{if(document.getElementById('tab-week').classList.contains('active')){const ww=getWeekWo();drawFrameCanvas(getDayAggs(ww))};if(document.getElementById('tab-history').classList.contains('active')){renderHistChart();if(paceChartOpen)drawPaceTrendChart();if(efficiencyCurveOpen)drawEfficiencyCurve();renderMTrendChart()}})
 // ═══════════════════════════════════════════════════════════════════════════
-// COACH TAB - COMPLETE
+// COACH TAB — REDESIGNED
 // ═══════════════════════════════════════════════════════════════════════════
 
 let coachTone = 'brutal';
-let coachSportFocus = 'auto';
+let coachPeriod = 'all'; // 'month' | 'quarter' | 'half' | 'year' | 'all'
+let corrSport = 'run';
+let coachPredSport = 'auto'; // 'auto' | 'run' | 'bike' | 'swim'
 let coachTargetArchetype = 'peak';
-let coachGoal = { primary: null, secondary: null };
+let coachGoal = { primary: null };
 
+// ---- Archetypes ----
+// Each archetype has a gradient palette for the hero card so the identity feels visual & shareable.
+// Ordered by SPECIFICITY so the archetype resolver picks the right one even when conditions overlap.
 const TRAINING_ARCHETYPES = [
-  { key: 'tourist', emoji: '🏖️', name: 'Training Tourist', tagline: 'A casual acquaintance of your own potential.', condition: (c, t, r) => c < 50 || t < 150, desc: 'Very low volume. They say they train, but data shows otherwise.' },
-  { key: 'jedi', emoji: '🧘', name: 'Zone 2 Jedi', tagline: 'Master of the easy mile. Never improves.', condition: (c, t, r) => r < 0.045, desc: 'Does volume but never intensity. Ratio < 0.045. Never actually improves.' },
-  { key: 'monotony', emoji: '🔁', name: 'Monotony Victim', tagline: 'Same thing, same result. Boring, predictable, stagnant.', condition: (c, t, r, mVar) => mVar < 5, desc: 'Never varies M-Score. Always trains the same way. Variation < 5 across 8+ weeks.' },
-  { key: 'peak', emoji: '⭐', name: 'Peak Performer', tagline: 'Maximizing every minute. Earned the right to progress.', condition: (c, t, r) => r >= 0.045 && r <= 0.058, desc: 'Masters the M-Score wave pattern. Irrelevant of volume. Has earned the right to increase TSS.' },
-  { key: 'caterpillar', emoji: '🐛', name: 'The Caterpillar', tagline: 'Has potential. Just needs more time to unlock the next level.', condition: (c, t, r, _, weeksAtTSS) => weeksAtTSS > 2, desc: 'A Peak Performer who has stayed at same TSS level > 2 weeks. Just needs more training time.' },
-  { key: 'burnout', emoji: '☄️', name: 'Burnout Meteor', tagline: 'Beautiful to watch, but about to hit the ground.', condition: (c, t, r, m) => r > 0.058 && m > 24, desc: 'Trains too hard for their TSS level. Heading for a crash.' },
-  { key: 'olympic', emoji: '🥇', name: 'Olympic Standard', tagline: 'Precision is a privilege. You\'ve earned it.', condition: (c, t, r) => t >= 500 && r >= 0.045 && r <= 0.058, desc: 'A Peak Performer who kept increasing TSS. High TSS (500+) with high M quality.' }
+  { key: 'olympic', emoji: '🥇', name: 'Olympic Standard', tagline: 'Precision is a privilege. You\'ve earned it.',
+    colors: ['#ffd700','#ff6b35'],
+    condition: (c, t, r) => t >= 500 && r >= 0.045 && r <= 0.058 && c >= 70,
+    desc: 'High volume (500+ TSS/wk) with optimal M-ratio. The rarest archetype.' },
+  { key: 'burnout', emoji: '☄️', name: 'Burnout Meteor', tagline: 'Beautiful to watch, but about to hit the ground.',
+    colors: ['#ff3b3b','#ff6b35'],
+    condition: (c, t, r, m) => r > 0.060 && m > 24,
+    desc: 'Trains too hard for current TSS capacity. Heading for a crash.' },
+  { key: 'caterpillar', emoji: '🐛', name: 'The Caterpillar', tagline: 'Has potential. Just needs more time in the chrysalis.',
+    colors: ['#8b5cf6','#00d4aa'],
+    condition: (c, t, r, mVar, weeksAtTSS) => r >= 0.045 && r <= 0.058 && weeksAtTSS >= 3 && c >= 60,
+    desc: 'Peak quality, steady TSS for 3+ weeks. Earning the right to progress.' },
+  { key: 'peak', emoji: '⭐', name: 'Peak Performer', tagline: 'Maximizing every minute.',
+    colors: ['#00d4aa','#3b82f6'],
+    condition: (c, t, r) => r >= 0.045 && r <= 0.058 && c >= 60,
+    desc: 'Masters the wave pattern. Volume and intensity are well-matched.' },
+  { key: 'jedi', emoji: '🧘', name: 'Zone 2 Jedi', tagline: 'Master of the easy mile. Never improves.',
+    colors: ['#64748b','#059669'],
+    condition: (c, t, r) => r > 0 && r < 0.040 && t >= 150,
+    desc: 'Plenty of volume, but no intensity. Ratio < 0.040 — adaptation stalls.' },
+  { key: 'monotony', emoji: '🔁', name: 'Monotony Victim', tagline: 'Same week, same result. Boring is a choice.',
+    colors: ['#4a5560','#8a9399'],
+    condition: (c, t, r, mVar) => mVar !== undefined && mVar < 5 && c >= 50,
+    desc: 'M-score barely varies week to week. Adaptation needs stress + recovery.' },
+  { key: 'tourist', emoji: '🏖️', name: 'Training Tourist', tagline: 'A casual acquaintance of your own potential.',
+    colors: ['#d97706','#64748b'],
+    condition: (c, t, r) => c < 50 || t < 150,
+    desc: 'Low volume or low consistency. The engine can\'t grow without fuel.' },
+  { key: 'grinder', emoji: '⚙️', name: 'The Grinder', tagline: 'Shows up every day. Numbers don\'t lie.',
+    colors: ['#3b82f6','#00d4aa'],
+    condition: () => true, // fallback
+    desc: 'Solid, unremarkable, consistent. Ready for the next level when you are.' }
 ];
 
+// ---- Recovery / weekly pattern identities ----
 const RECOVERY_IDENTITIES = [
-  { key: 'wave', emoji: '🌊', name: 'Wave Rider', tagline: 'You train in waves. This is how adaptation happens.', condition: scores => { let w = 0; for (let i = 3; i < scores.length; i++) { const b = scores.slice(i - 3, i); if (b.every(m => m >= 19) && scores[i] >= 14 && scores[i] <= 18) w++; } return w >= 2; } },
-  { key: 'flatline', emoji: '📉', name: 'The Flatliner', tagline: 'You never rest. You never push.', condition: scores => scores.every(m => m >= 19 && m <= 24) && Math.max(...scores) - Math.min(...scores) <= 5 },
-  { key: 'redline', emoji: '🔥', name: 'The Redliner', tagline: 'You\'re one week away from a forced break.', condition: scores => { const h = scores.filter(m => m >= 25).length; const c = scores.some((m, i) => i > 0 && m >= 25 && scores[i - 1] >= 25); return h >= 3 || c; } },
-  { key: 'yoyo', emoji: '🪀', name: 'The Yo-Yo', tagline: 'Inconsistent recovery creates inconsistent fitness.', condition: scores => Math.max(...scores) - Math.min(...scores) >= 10 }
+  { key: 'wave', emoji: '🌊', name: 'Wave Rider', tagline: 'You train in waves. This is how adaptation happens.',
+    condition: scores => { if (scores.length < 4) return false; let w = 0; for (let i = 3; i < scores.length; i++) { const b = scores.slice(i - 3, i); if (b.every(m => m >= 19) && scores[i] >= 14 && scores[i] <= 18) w++; } return w >= 2; } },
+  { key: 'redline', emoji: '🔥', name: 'The Redliner', tagline: 'You\'re one week from a forced break.',
+    condition: scores => { if (!scores.length) return false; const h = scores.filter(m => m >= 25).length; const c = scores.some((m, i) => i > 0 && m >= 25 && scores[i - 1] >= 25); return h >= 3 || c; } },
+  { key: 'yoyo', emoji: '🪀', name: 'The Yo-Yo', tagline: 'Inconsistent recovery creates inconsistent fitness.',
+    condition: scores => scores.length >= 4 && (Math.max(...scores) - Math.min(...scores)) >= 12 },
+  { key: 'flatline', emoji: '📉', name: 'The Flatliner', tagline: 'You never rest. You never push.',
+    condition: scores => scores.length >= 4 && scores.every(m => m >= 18 && m <= 24) && (Math.max(...scores) - Math.min(...scores)) <= 5 },
+  { key: 'builder', emoji: '📈', name: 'The Builder', tagline: 'Steady and rising. The quiet engine.',
+    condition: scores => { if (scores.length < 4) return false; const first = scores.slice(0, Math.floor(scores.length/2)); const last = scores.slice(Math.floor(scores.length/2)); const a1 = first.reduce((s,x)=>s+x,0)/first.length; const a2 = last.reduce((s,x)=>s+x,0)/last.length; return a2 - a1 >= 3; } }
 ];
 
-function getWeeklyData() {
+// ---- Period filter ----
+function getCoachPeriodWorkouts() {
+  if (coachPeriod === 'all') return workouts;
+  const now = new Date(); const start = new Date(now);
+  if (coachPeriod === 'month') start.setMonth(now.getMonth() - 1);
+  else if (coachPeriod === 'quarter') start.setMonth(now.getMonth() - 3);
+  else if (coachPeriod === 'half') start.setMonth(now.getMonth() - 6);
+  else if (coachPeriod === 'year') start.setFullYear(now.getFullYear() - 1);
+  const fmt = d => [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
+  const s = fmt(start);
+  return workouts.filter(w => w.date >= s);
+}
+
+// Weekly data scoped to the selected period
+function getCoachWeeklyData() {
+  const wSubset = getCoachPeriodWorkouts();
   const fd = d => [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
   const bw = new Map();
-  workouts.forEach(w => {
+  wSubset.forEach(w => {
     const d = new Date(w.date + 'T12:00:00'), wd = d.getDay(), df = wd === 0 ? -6 : 1 - wd;
     const mn = new Date(d); mn.setDate(d.getDate() + df);
     const k = fd(mn); if (!bw.has(k)) bw.set(k, []); bw.get(k).push(w);
@@ -1108,193 +1307,865 @@ function getWeeklyData() {
   });
 }
 
+// ---- Grade ----
 function calculateGrade(m, cons, ratio, lrCount, hasSpeed) {
   let score = 0;
   if (m >= 25) score += 40; else if (m >= 22) score += 35; else if (m >= 19) score += 28; else if (m >= 14) score += 20; else score += 10;
   score += cons * 20;
-  if (ratio >= 0.045 && ratio <= 0.058) score += 20; else if (ratio > 0.058) score += 12; else score += 8;
+  if (ratio >= 0.045 && ratio <= 0.058) score += 20; else if (ratio > 0.058) score += 12; else if (ratio > 0) score += 8;
   if (lrCount > 8) score += 10; else if (lrCount > 4) score += 6; else if (lrCount > 0) score += 3;
   if (hasSpeed) score += 10;
-  if (score >= 90) return 'A+'; if (score >= 85) return 'A'; if (score >= 80) return 'A-'; if (score >= 75) return 'B+'; if (score >= 70) return 'B'; if (score >= 65) return 'B-'; if (score >= 60) return 'C+'; if (score >= 55) return 'C'; return 'D';
+  if (score >= 90) return 'A+'; if (score >= 85) return 'A'; if (score >= 80) return 'A-'; if (score >= 75) return 'B+'; if (score >= 70) return 'B'; if (score >= 65) return 'B-'; if (score >= 60) return 'C+'; if (score >= 55) return 'C'; if (score >= 50) return 'C-'; return 'D';
 }
 
-function detectStrengths(data) {
-  const s = [], rw = workouts.filter(w => w.sport === 'run'), runFreq = rw.length / Math.max(1, data.length);
-  if (runFreq >= 3) s.push('Consistent running base (3-4 runs/wk)');
+// ---- Strengths / Gaps (tone-aware) ----
+const TONE_STRINGS = {
+  brutal: {
+    longRunGap: 'You skip long runs. That\'s why the last 5K of a half kills you.',
+    speedGap: 'No speed work = no new ceiling. You\'re not improving.',
+    bikeGap: 'Bike is optional until it isn\'t. Then it\'s too late.',
+    swimGap: 'Two weeks between swims? That\'s not a sport, that\'s a hobby.',
+    cadenceGap: 'Cadence < 165 spm. You\'re overstriding and leaving watts on the table.',
+    restGap: 'You never rest. The gains happen when you stop, not when you grind.',
+    primary: g => g ? `Fix this first: ${g.toLowerCase()}` : 'Pick a race. Build toward it. No more drifting.'
+  },
+  direct: {
+    longRunGap: 'Long run consistency — build to weekly 8–10 mi',
+    speedGap: 'Structured speed work — add intervals or tempo',
+    bikeGap: 'Bike volume — target 2–3 structured rides/wk',
+    swimGap: 'Swim frequency — aim for 2–3 swims/wk',
+    cadenceGap: 'Cadence — work toward 165–175 spm',
+    restGap: 'Recovery structure — include easy days below M 14',
+    primary: g => g ? `Focus area: ${g.toLowerCase()}` : 'Pick a race goal and commit to a 12–16 week build.'
+  },
+  encouraging: {
+    longRunGap: 'The long run is your next unlock — add 0.5 mi each week.',
+    speedGap: 'A weekly interval session will raise your ceiling fast.',
+    bikeGap: 'Even one extra ride/week compounds — don\'t underestimate it.',
+    swimGap: 'Twice-weekly swims keep technique sharp and fatigue low.',
+    cadenceGap: 'Cadence drills will make every pace feel smoother.',
+    restGap: 'Rest is where you grow — protect it.',
+    primary: g => g ? `Start here: ${g.toLowerCase()}. You\'re closer than you think.` : 'Your foundation is strong. Time to pick a race and commit.'
+  }
+};
+
+function detectStrengths(wd) {
+  const rw = workouts.filter(w => w.sport === 'run'), nWeeks = Math.max(1, wd.length);
+  const s = [];
+  const runFreq = rw.length / nWeeks;
+  if (runFreq >= 3) s.push('Consistent running base — 3+ runs/week');
   const te = rw.filter(w => w.te && w.te >= 2.5 && w.te <= 4.5).length;
-  if (te > 5) s.push('Solid aerobic development (TE 2.5-4.5)');
-  const fast = rw.filter(w => w.ifv > 0.90), slow = rw.filter(w => w.ifv < 0.83);
-  if (fast.length > 3 && slow.length > 3) s.push('Good pace progression (fast/recovery distinction)');
+  if (te > 5) s.push('Solid aerobic development (Training Effect 2.5–4.5)');
+  const fast = rw.filter(w => w.ifv > 0.90).length, slow = rw.filter(w => w.ifv < 0.83).length;
+  if (fast > 3 && slow > 3) s.push('Good polarization — clear easy/hard split');
   const cad = rw.filter(w => w.cadence && w.cadence >= 165 && w.cadence <= 175).length;
-  if (cad > 5) s.push('Efficient cadence (165-175 spm)');
+  if (cad > 5) s.push('Efficient running cadence (165–175 spm)');
+  const avgM = wd.reduce((a, b) => a + b.m, 0) / nWeeks;
+  if (avgM >= 22) s.push(`High training stress — ${avgM.toFixed(1)} M/wk avg`);
+  const cons = wd.filter(w => w.sessions >= 3).length / nWeeks;
+  if (cons >= 0.8) s.push('Rock-solid consistency — 3+ sessions most weeks');
   return s.slice(0, 4);
 }
 
-function detectGaps(data) {
-  const g = [], rw = workouts.filter(w => w.sport === 'run'), lr = rw.filter(w => w.distance > 6).length;
-  if (lr < 4) g.push('Long run consistency — build to weekly 8-10 mi');
+function detectGaps(wd) {
+  const g = [], rw = workouts.filter(w => w.sport === 'run'), T = TONE_STRINGS[coachTone] || TONE_STRINGS.direct;
+  const lr = rw.filter(w => w.distance > 6).length;
+  if (lr < 4) g.push(T.longRunGap);
   const sp = rw.filter(w => w.ifv > 0.95 && w.time < 45).length;
-  if (sp < 3) g.push('Structured speed work — add intervals/tempo');
-  const bw = workouts.filter(w => w.sport === 'bike'), bikeFreq = bw.length / Math.max(1, data.length);
-  if (bikeFreq < 1.5) g.push('Bike volume — consider 2-3 structured rides/wk');
-  const sw = workouts.filter(w => w.sport === 'swim'); let gap = false;
-  for (let i = 1; i < sw.length; i++) if ((new Date(sw[i].date) - new Date(sw[i - 1].date)) / 864e5 > 14) gap = true;
-  if (gap) g.push('Swim frequency — aim for 2-3 swims/wk');
+  if (sp < 3) g.push(T.speedGap);
+  const bw = workouts.filter(w => w.sport === 'bike'), nWeeks = Math.max(1, wd.length), bikeFreq = bw.length / nWeeks;
+  if (bikeFreq < 1.5) g.push(T.bikeGap);
+  const sw = workouts.filter(w => w.sport === 'swim').sort((a, b) => a.date.localeCompare(b.date));
+  let gapFound = false;
+  for (let i = 1; i < sw.length; i++) if ((new Date(sw[i].date) - new Date(sw[i - 1].date)) / 864e5 > 14) gapFound = true;
+  if (gapFound || sw.length === 0) g.push(T.swimGap);
+  const restWeeks = wd.filter(w => w.m < 14).length;
+  if (wd.length >= 4 && restWeeks === 0) g.push(T.restGap);
   return g.slice(0, 4);
 }
 
+// ---- Performance predictions ----
+// Riegel's formula: T2 = T1 * (D2/D1)^1.06
+function riegel(t1Sec, d1, d2) { return t1Sec * Math.pow(d2 / d1, 1.06); }
+
+// Race distances in MILES
+const RACE_DISTANCES_MI = { '5k': 3.107, '10k': 6.214, 'half': 13.109, 'full': 26.219 };
+
+// Best recent 1-mile pace (seconds/mile) from workouts
+function getBestRunPace() {
+  const rw = workouts.filter(w => w.sport === 'run' && w.ifv > 0 && w.intensity);
+  if (!rw.length || !profile.run) return null;
+  // Imply pace from IF and LT pace: actual pace_sec = LT_pace_sec / ifv
+  const ltSec = pSec(profile.run); if (!ltSec) return null;
+  // Use the fastest sustained run (IF > 0.93 and time > 10 min) as predictor
+  const candidates = rw.filter(w => w.ifv >= 0.93 && w.time >= 10).sort((a, b) => b.ifv - a.ifv);
+  if (candidates.length) {
+    const w = candidates[0];
+    return ltSec / w.ifv; // sec per mile at that IF
+  }
+  // Fall back to LT pace itself
+  return ltSec;
+}
+
 function getPerformancePredictions() {
-  const rw = workouts.filter(w => w.sport === 'run'), tp = rw.filter(w => w.ifv > 0.95).sort((a, b) => a.ifv - b.ifv)[0];
-  let p5k = '23-24 min', p10k = '50-52 min', phm = '1:50-1:55';
-  if (tp) { const pace = pSec(tp.intensity) / tp.ifv; if (pace > 0) { p5k = formatSecondsToPace(Math.round(pace * 5)); p10k = formatSecondsToPace(Math.round(pace * 10)); phm = formatSecondsToPace(Math.round(pace * 21.1)); } }
-  return { run: { p5k, p10k, phm }, tri: 'Competitive age-group with consistent bike' };
+  const out = { run: { p5k: '—', p10k: '—', phm: '—' }, bike: null, swim: null, tri: '—' };
+  // RUN — use Riegel from best sustained pace
+  const bestPace = getBestRunPace(); // sec/mile at threshold effort
+  if (bestPace) {
+    // Convert threshold pace (sec/mile for ~1hr sustainable) to a 5K time via Riegel.
+    // Reference: at threshold, athlete can hold ~1hr (roughly 10 mi for a 6:00 runner). Use threshold pace as anchor for 10K-equivalent distance.
+    // Simpler: assume the best pace they held for >= 10 min at IF >= 0.93 is near their 10K pace.
+    // Use it directly as a 10K pace reference, then Riegel to 5K and HM.
+    const tenKSec = bestPace * RACE_DISTANCES_MI['10k'];
+    out.run.p5k = formatTime(riegel(tenKSec, RACE_DISTANCES_MI['10k'], RACE_DISTANCES_MI['5k']));
+    out.run.p10k = formatTime(tenKSec);
+    out.run.phm = formatTime(riegel(tenKSec, RACE_DISTANCES_MI['10k'], RACE_DISTANCES_MI['half']));
+  }
+  // BIKE — FTP-based predictions (20-min and 1-hr sustainable power)
+  const ftp = parseFloat(profile.bike);
+  if (ftp) {
+    out.bike = {
+      twentymin: Math.round(ftp * 1.05) + 'w',
+      onehr: Math.round(ftp * 0.95) + 'w',
+      fivemin: Math.round(ftp * 1.18) + 'w'
+    };
+  }
+  // SWIM — CSS-based 400m/1500m
+  const css = pSec(profile.swim);
+  if (css) {
+    // CSS is sec per 100m. For pool meters:
+    const css400 = css * 4;
+    const css1500 = css * 15 * 1.02; // slight slowdown over 1500
+    out.swim = {
+      p400: formatTime(css400),
+      p1500: formatTime(css1500),
+      p100: formatSecondsToPace(css) + '/100'
+    };
+  }
+  // Tri blurb
+  if (bestPace && ftp) out.tri = 'Olympic tri: competitive age-group potential';
+  return out;
 }
 
+// Format seconds → "mm:ss" or "h:mm:ss" if over an hour
+function formatTime(totalSec) {
+  if (!totalSec || totalSec <= 0 || !isFinite(totalSec)) return '—';
+  totalSec = Math.round(totalSec);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+// Parse time string "mm:ss" or "h:mm:ss" → seconds
+function parseTimeToSec(str) {
+  if (!str) return 0;
+  const p = str.trim().split(':').map(Number);
+  if (p.some(isNaN)) return 0;
+  if (p.length === 2) return p[0] * 60 + p[1];
+  if (p.length === 3) return p[0] * 3600 + p[1] * 60 + p[2];
+  return 0;
+}
+
+// ---- Notable performances ----
 function getNotablePerformances() {
-  const rw = workouts.filter(w => w.sport === 'run').sort((a, b) => b.date.localeCompare(a.date)), top = [];
-  const tempo = rw.filter(w => w.ifv > 0.90 && w.time > 20).sort((a, b) => a.ifv - b.ifv)[0];
-  if (tempo) top.push({ type: 'run', date: tempo.date, dist: tempo.distance || '?', pace: tempo.intensity, ctx: 'Strong tempo' });
-  const long = rw.filter(w => w.distance > 5).sort((a, b) => b.distance - a.distance)[0];
-  if (long && long !== tempo) top.push({ type: 'run', date: long.date, dist: long.distance, pace: long.intensity, ctx: 'Long run' });
-  const sw = workouts.filter(w => w.sport === 'swim').sort((a, b) => a.ifv - b.ifv)[0];
-  if (sw) top.push({ type: 'swim', date: sw.date, dist: sw.distance || '?', pace: sw.intensity, ctx: 'Best pace' });
-  const bw = workouts.filter(w => w.sport === 'bike').sort((a, b) => b.distance - a.distance)[0];
-  if (bw) top.push({ type: 'bike', date: bw.date, dist: bw.distance || '?', ctx: 'Longest ride' });
-  return top.slice(0, 4);
+  const out = [];
+  const rw = workouts.filter(w => w.sport === 'run').sort((a, b) => b.date.localeCompare(a.date));
+  // Best tempo (high IF, sustained)
+  const tempo = rw.filter(w => w.ifv >= 0.93 && w.time >= 15).sort((a, b) => b.ifv - a.ifv)[0];
+  if (tempo) out.push({ type: 'run', icon: '🏃', headline: `${tempo.distance || '?'} mi @ ${tempo.intensity}`, meta: `${tempo.date} · Strong tempo (IF ${tempo.ifv.toFixed(2)})`, ctx: 'tempo' });
+  // Longest run
+  const long = rw.filter(w => w.distance > 0).sort((a, b) => b.distance - a.distance)[0];
+  if (long && long !== tempo) out.push({ type: 'run', icon: '🛣️', headline: `${long.distance} mi longest run`, meta: `${long.date} · ${long.intensity} pace`, ctx: 'long' });
+  // Best swim (lowest pace)
+  const sw = workouts.filter(w => w.sport === 'swim' && w.ifv > 0).sort((a, b) => b.ifv - a.ifv)[0];
+  if (sw) out.push({ type: 'swim', icon: '🏊', headline: `${sw.distance || '?'} @ ${sw.intensity}`, meta: `${sw.date} · Best swim pace`, ctx: 'swim' });
+  // Biggest bike
+  const bw = workouts.filter(w => w.sport === 'bike').sort((a, b) => (b.distance || 0) - (a.distance || 0))[0];
+  if (bw) out.push({ type: 'bike', icon: '🚴', headline: `${bw.distance || bw.time + ' min'} longest ride`, meta: `${bw.date} · ${bw.intensity || ''}`.trim(), ctx: 'bike' });
+  return out.filter(Boolean).slice(0, 4);
 }
 
-function generateRoadmap(archetype, sportFocus, goal) {
+// ---- Roadmap ----
+function generateRoadmap(archetypeKey, sportFocus, targetKey) {
   const phases = { immediate: [], medium: [], long: [] };
-  if (sportFocus.includes('run')) { phases.immediate.push('Add 1 interval session (6-8x400m @ 5K pace)'); phases.immediate.push('Build long run +0.5-1 mi/week → 8-10 mi'); }
-  if (sportFocus.includes('swim')) { phases.immediate.push('Swim 2x/week (1 technique, 1 endurance)'); }
-  if (sportFocus.includes('bike')) { phases.medium.push('Bike 2-3x/week with 1 threshold session'); }
-  phases.medium.push('Brick session every 10-14 days');
-  phases.long.push('Periodized 3:1 build:recovery cycles');
-  phases.long.push('Strength training 2x/week');
+  // Tailor by target archetype
+  if (targetKey === 'peak') {
+    phases.immediate.push('Log 3 weeks with ratio in 0.045–0.058 range');
+    phases.immediate.push('Add one interval session per week (6×400m or 4×4min)');
+    phases.medium.push('Build a recovery week every 4th week (reduce M to 14–18)');
+    phases.long.push('Sustain wave pattern: 3 build weeks + 1 recovery, repeat');
+  } else if (targetKey === 'olympic') {
+    phases.immediate.push('Raise weekly TSS toward 500+ over 6–8 weeks');
+    phases.immediate.push('Master current TSS for 2+ weeks before stepping up');
+    phases.medium.push('Add second quality session weekly (intervals + threshold)');
+    phases.long.push('Periodize 3:1 build:recovery at 500+ TSS');
+  } else if (targetKey === 'caterpillar') {
+    phases.immediate.push('Hold current TSS for 2 more weeks — master it');
+    phases.medium.push('Then step TSS up ~15% and hold again');
+    phases.long.push('Repeat the ladder. Progress is compounding.');
+  } else {
+    phases.immediate.push('Re-establish baseline: 3 sessions/week for 2 weeks');
+    phases.medium.push('Introduce one quality session (intervals or tempo)');
+    phases.long.push('Build toward Peak Performer archetype');
+  }
+  // Add sport-specific actions
+  if (sportFocus === 'run' || sportFocus === 'auto') {
+    phases.immediate.push('Long run: build by 0.5–1 mi/week toward 8–10 mi');
+  }
+  if (sportFocus === 'bike') {
+    phases.immediate.push('Bike: 2–3 rides/week with 1 threshold session');
+  }
+  if (sportFocus === 'swim') {
+    phases.immediate.push('Swim: 2×/week (1 technique, 1 endurance)');
+  }
+  phases.medium.push('Brick session every 10–14 days (bike→run)');
+  phases.long.push('Strength training 2×/week — injury-proof the body');
   return phases;
 }
 
+// ---- Threshold check (up / hold / down) ----
+// This implements the "master current TSS before stepping up" logic.
+function analyzeThresholdProgression() {
+  const wd = getCoachWeeklyData();
+  if (wd.length < 3) return null;
+  const recent = wd.slice(-4); // last 4 weeks
+  const currentTSS = profile.tssGoal || weeklyTSSGoal || 650;
+  const recentTSS = recent.map(w => w.tss);
+  const avgRecentTSS = recentTSS.reduce((a, b) => a + b, 0) / recent.length;
+  const recentM = recent.map(w => w.m);
+  const avgRecentM = recentM.reduce((a, b) => a + b, 0) / recent.length;
+  const recentRatios = recent.map(w => w.ratio).filter(r => r > 0);
+  const avgRatio = recentRatios.length ? recentRatios.reduce((a, b) => a + b, 0) / recentRatios.length : 0;
+
+  // Weeks at target (within ±15%)
+  const weeksOnTarget = recent.filter(w => Math.abs(w.tss - currentTSS) / currentTSS < 0.15).length;
+
+  // Mastered: on-target 3+ weeks AND ratio in optimal range AND M in 19–26 range
+  const mastered = weeksOnTarget >= 3 && avgRatio >= 0.045 && avgRatio <= 0.060 && avgRecentM >= 19 && avgRecentM <= 26;
+  // Falling behind: consistently way below target
+  const underperforming = avgRecentTSS < currentTSS * 0.70;
+  // Overreaching: hitting target but M too high / ratio too spicy
+  const overreaching = weeksOnTarget >= 2 && (avgRecentM > 27 || avgRatio > 0.062);
+
+  let action, title, msg;
+  if (mastered) {
+    action = 'up'; title = 'Ready to Level Up';
+    const nextTSS = Math.round(currentTSS * 1.15 / 25) * 25;
+    msg = `You've mastered ${currentTSS} TSS. Ratio optimal, M sustainable. Step up to ${nextTSS} TSS for 3–4 weeks and re-evaluate.`;
+  } else if (overreaching) {
+    action = 'down'; title = 'Pull Back First';
+    msg = `You're hitting ${Math.round(avgRecentTSS)} TSS but ratio/M are running hot. Drop to ${Math.round(currentTSS * 0.85 / 25) * 25} for 2 weeks to consolidate.`;
+  } else if (underperforming) {
+    action = 'down'; title = 'Rebuild Your Base';
+    const suggestedTSS = Math.round(avgRecentTSS * 1.1 / 25) * 25;
+    msg = `You've been averaging ${Math.round(avgRecentTSS)} TSS, well below your ${currentTSS} target. Set a realistic floor at ${suggestedTSS} and build from there.`;
+  } else {
+    action = 'hold'; title = 'Hold This Level';
+    msg = `${weeksOnTarget}/4 weeks on target. Keep ${currentTSS} TSS until you string together 3 consecutive weeks with a 0.045–0.058 ratio.`;
+  }
+  return { action, title, msg, currentTSS, avgRecentTSS: Math.round(avgRecentTSS), weeksOnTarget, nextLadder: buildTSSLadder(currentTSS, avgRecentTSS, mastered) };
+}
+
+function buildTSSLadder(currentTSS, avgActual, mastered) {
+  // Build a 5-rung ladder centered on current TSS
+  const step = Math.max(50, Math.round(currentTSS * 0.15 / 25) * 25);
+  const base = Math.round(currentTSS / step) * step;
+  const rungs = [-2, -1, 0, 1, 2].map(d => base + d * step);
+  return rungs.map(r => ({
+    tss: r,
+    current: r === base,
+    mastered: r < base && mastered, // simplistic: past rungs considered mastered if current is mastered
+    label: r <= 200 ? 'Rehab' : r <= 400 ? 'Base' : r <= 600 ? 'Build' : r <= 800 ? 'Peak' : 'Elite'
+  }));
+}
+
+// ---- Threshold pace check (run/bike/swim thresholds drifted?) ----
 function suggestThresholdUpdates() {
   const suggestions = {};
-  const runWorkouts = workouts.filter(w => w.sport === 'run' && w.ifv > 0.95);
+  const runWorkouts = workouts.filter(w => w.sport === 'run' && w.ifv > 0.95 && w.time > 10);
   if (runWorkouts.length > 0 && profile.run) {
     const best = runWorkouts.sort((a, b) => b.ifv - a.ifv)[0];
     const currentLTP = pSec(profile.run), impliedLTP = pSec(best.intensity) / best.ifv;
-    if (impliedLTP < currentLTP * 0.95) suggestions.run = { current: formatSecondsToPace(currentLTP), suggested: formatSecondsToPace(Math.round(impliedLTP)), improvement: Math.round((1 - impliedLTP / currentLTP) * 100) + '% faster' };
+    if (impliedLTP > 0 && impliedLTP < currentLTP * 0.97) {
+      suggestions.run = {
+        current: formatSecondsToPace(currentLTP) + '/mi',
+        suggested: formatSecondsToPace(Math.round(impliedLTP)) + '/mi',
+        improvement: Math.round((1 - impliedLTP / currentLTP) * 100) + '% faster'
+      };
+    }
   }
-  const bikeWorkouts = workouts.filter(w => w.sport === 'bike' && w.ifv > 0.90);
+  const bikeWorkouts = workouts.filter(w => w.sport === 'bike' && w.ifv > 0.90 && w.time > 15);
   if (bikeWorkouts.length > 0 && profile.bike) {
     const best = bikeWorkouts.sort((a, b) => b.ifv - a.ifv)[0];
     const currentFTP = parseFloat(profile.bike), impliedFTP = parseFloat(best.intensity) / best.ifv;
-    if (impliedFTP > currentFTP * 1.05) suggestions.bike = { current: currentFTP + 'w', suggested: Math.round(impliedFTP) + 'w', improvement: Math.round((impliedFTP / currentFTP - 1) * 100) + '% higher' };
+    if (!isNaN(impliedFTP) && impliedFTP > currentFTP * 1.03) {
+      suggestions.bike = {
+        current: currentFTP + 'w',
+        suggested: Math.round(impliedFTP) + 'w',
+        improvement: Math.round((impliedFTP / currentFTP - 1) * 100) + '% higher'
+      };
+    }
+  }
+  const swimWorkouts = workouts.filter(w => w.sport === 'swim' && w.ifv > 0.95);
+  if (swimWorkouts.length > 0 && profile.swim) {
+    const best = swimWorkouts.sort((a, b) => b.ifv - a.ifv)[0];
+    const currentCSS = pSec(profile.swim), impliedCSS = pSec(best.intensity) / best.ifv;
+    if (impliedCSS > 0 && impliedCSS < currentCSS * 0.97) {
+      suggestions.swim = {
+        current: formatSecondsToPace(currentCSS) + '/100',
+        suggested: formatSecondsToPace(Math.round(impliedCSS)) + '/100',
+        improvement: Math.round((1 - impliedCSS / currentCSS) * 100) + '% faster'
+      };
+    }
   }
   return suggestions;
 }
 
+// ---- Personalized efficiency curve (power-law fit) ----
 function calculatePersonalizedCurveParams() {
-  const wd = getWeeklyData().filter(w => w.sessions >= 3); if (wd.length < 4) return null;
-  const points = wd.map(w => ({ tss: w.tss, ratio: w.ratio }));
-  const logPoints = points.map(p => ({ x: Math.log(p.tss), y: Math.log(p.ratio) }));
-  const n = logPoints.length, sumX = logPoints.reduce((s, p) => s + p.x, 0), sumY = logPoints.reduce((s, p) => s + p.y, 0);
-  const sumXY = logPoints.reduce((s, p) => s + p.x * p.y, 0), sumX2 = logPoints.reduce((s, p) => s + p.x * p.x, 0);
-  const b = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX), logA = (sumY - b * sumX) / n, a = Math.exp(logA);
-  return { anchorLowTSS: Math.round(Math.min(...points.map(p => p.tss))), anchorLowRatio: Number((a * Math.pow(Math.min(...points.map(p => p.tss)), b)).toFixed(3)), anchorHighTSS: Math.round(Math.max(...points.map(p => p.tss))), anchorHighRatio: Number((a * Math.pow(Math.max(...points.map(p => p.tss)), b)).toFixed(3)), formula: `ratio = ${a.toFixed(4)} × TSS ^ ${b.toFixed(4)}`, athleteType: b > 0.3 ? 'Volume-Responsive' : b > 0.15 ? 'Balanced' : 'Intensity-Responsive' };
+  const wd = getCoachWeeklyData().filter(w => w.sessions >= 3 && w.tss > 50 && w.ratio > 0);
+  if (wd.length < 4) return null;
+  const logPoints = wd.map(p => ({ x: Math.log(p.tss), y: Math.log(p.ratio) }));
+  const n = logPoints.length;
+  const sumX = logPoints.reduce((s, p) => s + p.x, 0);
+  const sumY = logPoints.reduce((s, p) => s + p.y, 0);
+  const sumXY = logPoints.reduce((s, p) => s + p.x * p.y, 0);
+  const sumX2 = logPoints.reduce((s, p) => s + p.x * p.x, 0);
+  const denom = n * sumX2 - sumX * sumX;
+  if (Math.abs(denom) < 1e-9) return null;
+  const b = (n * sumXY - sumX * sumY) / denom;
+  const logA = (sumY - b * sumX) / n;
+  const a = Math.exp(logA);
+  const minTSS = Math.min(...wd.map(p => p.tss));
+  const maxTSS = Math.max(...wd.map(p => p.tss));
+  return {
+    anchorLowTSS: Math.round(minTSS),
+    anchorLowRatio: Number((a * Math.pow(minTSS, b)).toFixed(3)),
+    anchorHighTSS: Math.round(maxTSS),
+    anchorHighRatio: Number((a * Math.pow(maxTSS, b)).toFixed(3)),
+    formula: `ratio ≈ ${a.toFixed(4)} × TSS^${b.toFixed(3)}`,
+    exponent: b,
+    athleteType: b > 0.25 ? 'Volume-Responsive' : b > 0.1 ? 'Balanced' : b > -0.1 ? 'Intensity-Responsive' : 'Declining (review threshold)',
+    dataPoints: n
+  };
 }
 
-function setCoachTone(t) { coachTone = t; document.querySelectorAll('.tone-btn').forEach(b => b.classList.remove('active')); document.querySelector(`.tone-btn[data-tone="${t}"]`)?.classList.add('active'); save(); renderCoachTab(); }
-function refreshCoachAnalysis() { renderCoachTab(); flash('Coach analysis refreshed'); }
-function setTargetArchetype(k) { coachTargetArchetype = k; save(); renderCoachTab(); }
-
-function renderCoachTab() {
-  const wd = getWeeklyData();
-  if (wd.length < 3) { document.getElementById('coachContent').innerHTML = '<div class="card"><div class="onboard-empty"><div class="onboard-empty-icon">🧠</div><div class="onboard-empty-title">Need more data</div><div class="onboard-empty-body">Log at least 3 weeks with 3+ sessions each for coach insights.</div></div></div>'; return; }
-  const mets = { avgM: wd.reduce((a, b) => a + b.m, 0) / wd.length, avgTSS: wd.reduce((a, b) => a + b.tss, 0) / wd.length, avgRatio: wd.reduce((a, b) => a + b.ratio, 0) / wd.length, cons: (wd.filter(w => w.sessions >= 3).length / wd.length) * 100, mVar: Math.max(...wd.map(w => w.m)) - Math.min(...wd.map(w => w.m)), weeksAtTSS: wd.filter(w => Math.abs(w.tss - wd[wd.length - 1].tss) < 50).length };
-  const archetype = TRAINING_ARCHETYPES.find(a => a.condition?.(mets.cons, mets.avgTSS, mets.avgRatio, mets.mVar, mets.weeksAtTSS)) || TRAINING_ARCHETYPES[0];
-  const recovery = RECOVERY_IDENTITIES.find(r => r.condition(wd.map(w => w.m))) || RECOVERY_IDENTITIES[1];
-  const strengths = detectStrengths(wd), gaps = detectGaps(wd), best = wd.reduce((a, b) => b.m > a.m ? b : a), recent = wd.slice(-4), curM = recent.reduce((a, b) => a + b.m, 0) / recent.length;
-  const grade = calculateGrade(mets.avgM, mets.cons / 100, mets.avgRatio, workouts.filter(w => w.sport === 'run' && w.distance > 6).length, workouts.filter(w => w.sport === 'run' && w.ifv > 0.95).length > 2);
-  const pred = getPerformancePredictions(), notable = getNotablePerformances();
-  const focus = coachSportFocus === 'auto' ? dominantSport(workouts) : coachSportFocus;
-  const roadmap = generateRoadmap(archetype.key, focus, coachGoal.primary);
-  const ghost = !workouts.some(w => w.date === today()) && workouts.length ? (() => { const lw = [...workouts].sort((a, b) => b.date.localeCompare(a.date))[0], h = Math.round((new Date() - new Date(lw.date + 'T12:00:00')) / 36e5); return { hours: h, workout: lw, onTrack: h < 36 }; })() : null;
-  const thresholdSuggestions = suggestThresholdUpdates();
-  const personalCurve = calculatePersonalizedCurveParams();
-
-  let html = `
-    <div class="coach-grade-card"><div class="coach-grade-letter" style="color:${grade.includes('A') ? 'var(--accent)' : grade.includes('B') ? 'var(--yellow)' : 'var(--text)'}">${grade}</div><div class="coach-grade-desc">${mets.avgM > 24 ? 'Peak fitness.' : 'Solid foundation.'} ${gaps[0] || 'Keep building.'}</div></div>
-    <div class="coach-identity-dual"><div class="coach-identity-card"><div class="coach-identity-emoji">${archetype.emoji}</div><div class="coach-identity-name">${archetype.name}</div><div class="coach-identity-tagline">"${archetype.tagline}"</div><div class="coach-identity-meta">TSS: ${Math.round(mets.avgTSS)}/wk · Ratio: ${mets.avgRatio.toFixed(3)}</div></div><div class="coach-identity-card"><div class="coach-identity-emoji">${recovery.emoji}</div><div class="coach-identity-name">${recovery.name}</div><div class="coach-identity-tagline">"${recovery.tagline}"</div></div></div>
-    <div class="coach-summary-grid"><div class="coach-summary-item"><div class="coach-summary-val">${workouts.filter(w => w.sport === 'run').length}</div><div class="coach-summary-label">🏃 Runs</div></div><div class="coach-summary-item"><div class="coach-summary-val">${workouts.filter(w => w.sport === 'bike').length}</div><div class="coach-summary-label">🚴 Rides</div></div><div class="coach-summary-item"><div class="coach-summary-val">${workouts.filter(w => w.sport === 'swim').length}</div><div class="coach-summary-label">🏊 Swims</div></div><div class="coach-summary-item"><div class="coach-summary-val">${Math.round(mets.cons)}%</div><div class="coach-summary-label">Consistency</div></div></div>
-    <div class="card"><div class="coach-section-title">📈 Best You vs. Current You</div><table class="coach-comparison-table"><tr><td class="coach-comparison-label">M-Score</td><td class="coach-comparison-best">${best.m}</td><td class="coach-comparison-current">${Math.round(curM)}</td><td class="coach-comparison-gap" style="color:${best.m > curM ? 'var(--accent2)' : 'var(--accent)'}">${best.m > curM ? '-' + Math.round(best.m - curM) : '+' + Math.round(curM - best.m)}</td></tr><tr><td class="coach-comparison-label">TSS</td><td class="coach-comparison-best">${best.tss}</td><td class="coach-comparison-current">${Math.round(recent.reduce((a, b) => a + b.tss, 0) / recent.length)}</td><td class="coach-comparison-gap">—</td></tr></table><div style="font-size:12px;color:var(--text2);margin-top:12px">You're ${best.m > curM ? Math.round((1 - curM / best.m) * 100) + '% off your peak. The engine is the same. The gas tank is smaller.' : 'at your peak. Keep the momentum.'}</div></div>
-    <div class="card"><div class="coach-section-title">💪 Key Strengths</div>${strengths.map(s => `<div class="coach-strength-item"><span class="coach-strength-icon">✓</span>${s}</div>`).join('')}</div>
-    <div class="card"><div class="coach-section-title">⚠️ Areas for Improvement</div>${gaps.map(g => `<div class="coach-gap-item"><span class="coach-gap-icon">○</span>${g}</div>`).join('')}</div>
-    <div class="card"><div class="coach-section-title">🏅 Notable Performances</div>${notable.map(n => `<div class="coach-notable-item coach-notable-${n.type}"><strong>${n.date}</strong> · ${n.dist} ${n.type === 'run' ? 'mi' : n.type === 'swim' ? 'yd' : 'mi'} · ${n.pace || ''} · ${n.ctx}</div>`).join('')}</div>
-    <div class="card"><div class="coach-section-title">🎯 Performance Predictions</div><div class="coach-prediction-grid"><div class="coach-prediction-item"><div class="coach-prediction-dist">5K</div><div class="coach-prediction-time">${pred.run.p5k}</div></div><div class="coach-prediction-item"><div class="coach-prediction-dist">10K</div><div class="coach-prediction-time">${pred.run.p10k}</div></div><div class="coach-prediction-item"><div class="coach-prediction-dist">Half Marathon</div><div class="coach-prediction-time">${pred.run.phm}</div></div></div><div style="font-size:11px;color:var(--text3);margin-top:8px">Triathlon: ${pred.tri}</div></div>
-    <div class="coach-aspiration-selector"><div class="coach-section-title" style="margin-bottom:8px">🎯 I Want to Become</div><select id="targetArchetypeSelect" class="form-input" onchange="setTargetArchetype(this.value)">${TRAINING_ARCHETYPES.map(a => `<option value="${a.key}" ${a.key === coachTargetArchetype ? 'selected' : ''}>${a.emoji} ${a.name}</option>`).join('')}</select><div style="font-size:11px;color:var(--text3);margin-top:8px" id="targetGapAnalysis"></div></div>
-    <div class="coach-goal-setter"><div class="coach-section-title" style="margin-bottom:8px">🏁 Goal Setter</div><select id="goalType" class="form-input" style="margin-bottom:8px"><option value="5k">5K</option><option value="10k">10K</option><option value="half">Half Marathon</option><option value="oly">Olympic Tri</option></select><input type="text" id="goalTime" class="form-input" placeholder="Target time (e.g. 21:30)" style="margin-bottom:8px"><button class="btn-primary" onclick="analyzeGoal()">Analyze Goal</button><div id="goalAnalysis" style="margin-top:12px;font-size:12px;color:var(--text2)"></div></div>
-    <div class="card"><div class="coach-section-title">📋 Your Roadmap to ${TRAINING_ARCHETYPES.find(a => a.key === coachTargetArchetype)?.name || 'Peak Performer'}</div><div class="coach-roadmap-phase"><div class="coach-roadmap-phase-title">Immediate (4 wks)</div>${roadmap.immediate.map(r => `<div class="coach-roadmap-item">• ${r}</div>`).join('')}</div><div class="coach-roadmap-phase"><div class="coach-roadmap-phase-title">Medium (1-3 mo)</div>${roadmap.medium.map(r => `<div class="coach-roadmap-item">• ${r}</div>`).join('')}</div><div class="coach-roadmap-phase"><div class="coach-roadmap-phase-title">Long-Term (3-6 mo)</div>${roadmap.long.map(r => `<div class="coach-roadmap-item">• ${r}</div>`).join('')}</div></div>
-    <div class="card"><div class="coach-section-title">🏆 Milestones to ${TRAINING_ARCHETYPES.find(a => a.key === coachTargetArchetype)?.name || 'Olympic Standard'}</div>
-      ${[{ icon: '🎯', title: 'Consistent', req: '3+ sessions/wk', earned: mets.cons >= 70 }, { icon: '⭐', title: 'Quality', req: 'Ratio > 0.048', earned: mets.avgRatio > 0.048 }, { icon: '💫', title: 'Efficient', req: 'Ratio > 0.050 + M 19-24', earned: mets.avgRatio > 0.050 && mets.avgM >= 19 }, { icon: '🚀', title: 'Breakthrough', req: 'M 25+ for 2 wks', earned: wd.filter(w => w.m >= 25).length >= 2 }, { icon: '🏆', title: coachTargetArchetype === 'olympic' ? 'Olympic' : 'Goal', req: coachTargetArchetype === 'olympic' ? 'TSS 500+' : 'Target achieved', earned: coachTargetArchetype === 'olympic' ? mets.avgTSS >= 500 : !!coachGoal.primary }].map(m => `<div class="coach-milestone-item"><div class="coach-milestone-icon ${m.earned ? 'earned' : ''}">${m.earned ? '✓' : m.icon}</div><div class="coach-milestone-content"><div class="coach-milestone-title">${m.title}</div><div class="coach-milestone-req">${m.req}</div></div><div class="coach-milestone-progress">${m.earned ? 'Achieved' : '☆'}</div></div>`).join('')}
-    </div>
-    ${Object.keys(thresholdSuggestions).length > 0 ? `<div class="card"><div class="coach-section-title">🔧 Threshold Check</div>${Object.entries(thresholdSuggestions).map(([sport, sug]) => `<div style="padding:8px 0;border-bottom:1px solid var(--border)"><strong>${sport.toUpperCase()}</strong>: Current ${sug.current} → Suggested ${sug.suggested} (${sug.improvement})</div>`).join('')}<div style="font-size:11px;color:var(--text3);margin-top:8px">Your fitness has improved. Consider updating thresholds in Setup.</div></div>` : ''}
-    ${personalCurve ? `<div class="card"><div class="coach-section-title">📊 Your Personalized Efficiency Curve</div><div style="font-size:12px;color:var(--text2);margin-bottom:8px"><strong>${personalCurve.athleteType}</strong> · ${personalCurve.formula}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px"><div>Low Anchor: ${personalCurve.anchorLowTSS} TSS → ${personalCurve.anchorLowRatio} ratio</div><div>High Anchor: ${personalCurve.anchorHighTSS} TSS → ${personalCurve.anchorHighRatio} ratio</div></div><div style="font-size:10px;color:var(--text3);margin-top:10px">Apply these values in Setup → Efficiency Curve for personalized tracking.</div></div>` : ''}
-    <div class="card"><div class="coach-section-title">🩺 Recovery & Red Flags</div><div class="coach-redflag-item"><span>✓</span> Easy days with HR <140</div>${wd.some((w, i) => i > 0 && w.m >= 25 && wd[i - 1].m >= 25) ? '<div class="coach-redflag-item"><span>⚠️</span> Back-to-back hard weeks detected</div>' : ''}</div>
-    <div class="coach-primary-rec">🧠 <strong>Primary Recommendation:</strong> ${gaps[0] ? `Focus on ${gaps[0].toLowerCase()}` : 'Pick a goal race and build a 12-16 week plan. Your foundation is strong.'}</div>
-    ${ghost ? `<div class="coach-ghost-box"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span>🛌</span><span style="font-family:var(--font-display);font-weight:700">REST DAY WISDOM</span></div><div>${ghost.hours}hrs into recovery from ${ghost.workout.time}min ${ghost.workout.sport}. ${ghost.onTrack ? 'You\'re on track. Don\'t rush back.' : 'Take the full recovery window.'}</div></div>` : ''}
-    <div class="coach-actions"><button class="btn-sm" onclick="showArchetypeModal()" style="flex:1">📖 View All Archetypes</button><button class="btn-sm" onclick="copyCoachShare()" style="flex:1">📋 Share Analysis</button></div>
-    <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:12px">Based on ${wd.length} weeks · ${workouts.length} sessions</div>
-  `;
-  document.getElementById('coachContent').innerHTML = html;
-  updateTargetGap();
+// ---- Archetype resolver ----
+function resolveArchetype(mets) {
+  // Try in order; first match wins. Fallback 'grinder' always matches.
+  for (const a of TRAINING_ARCHETYPES) {
+    try {
+      if (a.condition(mets.cons, mets.avgTSS, mets.avgRatio, mets.mVar, mets.weeksAtTSS, mets.avgM)) return a;
+    } catch (e) { /* skip */ }
+  }
+  return TRAINING_ARCHETYPES[TRAINING_ARCHETYPES.length - 1];
 }
 
-function updateTargetGap() {
-  const wd = getWeeklyData(); if (!wd.length) return;
-  const mets = { avgM: wd.reduce((a, b) => a + b.m, 0) / wd.length, avgTSS: wd.reduce((a, b) => a + b.tss, 0) / wd.length, avgRatio: wd.reduce((a, b) => a + b.ratio, 0) / wd.length };
-  const ta = TRAINING_ARCHETYPES.find(a => a.key === coachTargetArchetype), el = document.getElementById('targetGapAnalysis');
-  if (!el) return;
-  let gap = '';
-  if (coachTargetArchetype === 'olympic') gap = mets.avgTSS < 500 ? `Need ${500 - Math.round(mets.avgTSS)} more TSS/week` : 'You have the volume! Maintain structure.';
-  else if (coachTargetArchetype === 'peak') gap = mets.avgRatio > 0.058 ? 'Slightly reduce intensity to optimize ratio' : 'You\'re there! Maintain the wave.';
-  else gap = 'Adjust training to match this archetype.';
-  el.textContent = `Current → ${ta?.emoji} ${ta?.name}: ${gap}`;
+function resolveRecovery(scores) {
+  for (const r of RECOVERY_IDENTITIES) {
+    try { if (r.condition(scores)) return r; } catch (e) {}
+  }
+  return { emoji: '🔄', name: 'Still Forming', tagline: 'Keep logging to reveal your pattern.' };
 }
 
+// ---- Controls ----
+function setCoachTone(t) { coachTone = t; document.querySelectorAll('.tone-btn').forEach(b => b.classList.remove('active')); document.querySelector(`.tone-btn[data-tone="${t}"]`)?.classList.add('active'); renderCoachTab(); }
+function setCoachPeriod(p) { coachPeriod = p; document.querySelectorAll('.coach-period-tab').forEach(b => b.classList.remove('active')); document.querySelector(`.coach-period-tab[data-period="${p}"]`)?.classList.add('active'); renderCoachTab(); }
+function setCorrSport(s){corrSport=s;document.querySelectorAll('[data-corrsport]').forEach(p=>p.classList.toggle('active',p.dataset.corrsport===s));renderCorrelations()}
+function pearsonR(xs,ys){const n=xs.length;if(n<3)return{r:null,n};const mx=xs.reduce((a,b)=>a+b,0)/n,my=ys.reduce((a,b)=>a+b,0)/n;let num=0,dx=0,dy=0;for(let i=0;i<n;i++){const a=xs[i]-mx,b=ys[i]-my;num+=a*b;dx+=a*a;dy+=b*b}const den=Math.sqrt(dx*dy);return{r:den>0?num/den:null,n}}
+function aggregateWeeklyForCorr(wos,sport){const byWeek=new Map();const fd=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');wos.forEach(w=>{const d=new Date(w.date+'T12:00:00'),wd=d.getDay(),df=wd===0?-6:1-wd;const mn=new Date(d);mn.setDate(d.getDate()+df);const k=fd(mn);if(!byWeek.has(k))byWeek.set(k,[]);byWeek.get(k).push(w)});const out=[];for(const[k,sessions]of byWeek){const days=getDayAggs(sessions);const mSum=days.reduce((s,d)=>s+d.m,0);const adjSum=sessions.reduce((s,w)=>s+(w.adjTSS||Math.round(w.rawTSS*sportMult(w.sport))),0);const wifSum=sessions.reduce((s,w)=>s+w.ifv*(w.adjTSS||Math.round(w.rawTSS*sportMult(w.sport))),0);const avgIF=adjSum>0?wifSum/adjSum:null;const sportW=sessions.filter(w=>w.sport===sport);let meanPace=null;if(sportW.length){const paces=[];sportW.forEach(w=>{if(sport==='bike'){const ftp=parseFloat(profile.bike)||200;paces.push(w.ifv*ftp)}else if(sport==='run'){const lt=pSec(profile.run);if(lt)paces.push(lt/w.ifv)}else{const css=pSec(profile.swim);if(css)paces.push(css/w.ifv)}});if(paces.length)meanPace=paces.reduce((a,b)=>a+b,0)/paces.length}out.push({week:k,m:mSum,tss:adjSum,avgIF,meanPace})}return out.sort((a,b)=>a.week.localeCompare(b.week))}
+function drawCorrOverlay(weeks){const canvas=document.getElementById('corrOverlayCanvas');if(!canvas)return;const dpr=window.devicePixelRatio||1;const W=canvas.offsetWidth||canvas.parentElement.offsetWidth||360,H=200;canvas.width=W*dpr;canvas.height=H*dpr;const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);if(weeks.length<2){ctx.fillStyle='#4a5560';ctx.font='11px Barlow Condensed,sans-serif';ctx.textAlign='center';ctx.fillText('Need ≥ 2 weeks of data in this period',W/2,H/2);return}const PAD_L=10,PAD_R=10,PAD_T=14,PAD_B=22;const cW=W-PAD_L-PAD_R,cH=H-PAD_T-PAD_B;const paceInvert=corrSport!=='bike';const series=[{key:'m',color:'#00d4aa'},{key:'tss',color:'#3b82f6'},{key:'avgIF',color:'#ffcc00'},{key:'meanPace',color:'#ff6b35',invert:paceInvert}];ctx.strokeStyle='rgba(42,48,53,0.9)';ctx.lineWidth=0.5;for(let i=0;i<=4;i++){const y=PAD_T+cH*i/4;ctx.beginPath();ctx.moveTo(PAD_L,y);ctx.lineTo(PAD_L+cW,y);ctx.stroke()}const n=weeks.length;const xS=i=>PAD_L+(n>1?cW*i/(n-1):cW/2);series.forEach(s=>{const vals=weeks.map(w=>w[s.key]).filter(v=>v!=null&&!isNaN(v));if(vals.length<2)return;const mn=Math.min(...vals),mx=Math.max(...vals);const range=mx-mn||1;const yS=v=>{const norm=(v-mn)/range;const adj=s.invert?1-norm:norm;return PAD_T+cH*(1-adj)};ctx.beginPath();ctx.strokeStyle=s.color;ctx.lineWidth=2;let first=true;weeks.forEach((w,i)=>{const v=w[s.key];if(v==null||isNaN(v)){first=true;return}const x=xS(i),y=yS(v);if(first){ctx.moveTo(x,y);first=false}else ctx.lineTo(x,y)});ctx.stroke();weeks.forEach((w,i)=>{const v=w[s.key];if(v==null||isNaN(v))return;ctx.beginPath();ctx.fillStyle=s.color;ctx.arc(xS(i),yS(v),2.5,0,Math.PI*2);ctx.fill()})});ctx.fillStyle='#4a5560';ctx.font='9px Barlow Condensed,sans-serif';ctx.textAlign='center';const labelIdxs=n<=6?weeks.map((_,i)=>i):[0,Math.floor(n/4),Math.floor(n/2),Math.floor(3*n/4),n-1];labelIdxs.forEach(i=>{const d=new Date(weeks[i].week+'T12:00:00');const lbl=(d.getMonth()+1)+'/'+d.getDate();ctx.fillText(lbl,xS(i),H-7)})}
+function rColorStr(r){const a=Math.abs(r);return a>=0.7?'var(--accent)':a>=0.4?'var(--yellow)':'var(--text3)'}
+function renderCorrelations(){const panel=document.getElementById('corrPanel');if(!panel)return;document.querySelectorAll('[data-corrsport]').forEach(p=>p.classList.toggle('active',p.dataset.corrsport===corrSport));const wos=getCoachPeriodWorkouts();const weeks=aggregateWeeklyForCorr(wos,corrSport);drawCorrOverlay(weeks);const fmtPace=(sport,v)=>{if(v==null)return'—';if(sport==='bike')return Math.round(v)+'w';return formatSecondsToPace(Math.round(v))+(sport==='run'?'/mi':'/100m')};const leg=document.getElementById('corrLegend');if(leg){const mVals=weeks.map(w=>w.m).filter(v=>v!=null),tssVals=weeks.map(w=>w.tss).filter(v=>v!=null),ifVals=weeks.map(w=>w.avgIF).filter(v=>v!=null&&v>0),pVals=weeks.map(w=>w.meanPace).filter(v=>v!=null);const cell=(color,label,lo,hi)=>`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:12px;height:2px;background:${color};display:inline-block;border-radius:1px"></span><span style="color:var(--text2);font-weight:700">${label}</span><span style="color:var(--text3)">${lo} → ${hi}</span></span>`;leg.innerHTML=[mVals.length?cell('#00d4aa','M',Math.min(...mVals),Math.max(...mVals)):'',tssVals.length?cell('#3b82f6','TSS',Math.min(...tssVals),Math.max(...tssVals)):'',ifVals.length?cell('#ffcc00','IF',Math.min(...ifVals).toFixed(2),Math.max(...ifVals).toFixed(2)):'',pVals.length?cell('#ff6b35','Pace',fmtPace(corrSport,Math.min(...pVals)),fmtPace(corrSport,Math.max(...pVals))):''].filter(Boolean).join('')}const paceInvert=corrSport!=='bike';const labels={m:'M',tss:'TSS',avgIF:'IF',meanPace:'Pace'};const keys=['m','tss','avgIF','meanPace'];const pairR={};for(let i=0;i<keys.length;i++)for(let j=i+1;j<keys.length;j++){const k1=keys[i],k2=keys[j];const pairs=weeks.filter(w=>w[k1]!=null&&w[k2]!=null&&!isNaN(w[k1])&&!isNaN(w[k2]));if(pairs.length<3){pairR[k1+'_'+k2]={r:null,n:pairs.length};continue}const xs=pairs.map(p=>p[k1]),ys=pairs.map(p=>p[k2]);let pr=pearsonR(xs,ys);if(paceInvert&&(k1==='meanPace'||k2==='meanPace')&&pr.r!=null)pr={r:-pr.r,n:pr.n};pairR[k1+'_'+k2]=pr}const mat=document.getElementById('corrMatrix');if(mat){const header='<tr><th style="padding:4px 6px"></th>'+keys.map(k=>`<th style="padding:4px 6px;color:var(--text3);font-family:var(--font-display);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;text-align:center">${labels[k]}</th>`).join('')+'</tr>';const rows=[];for(let i=0;i<keys.length;i++){const cells=[`<td style="padding:4px 6px;color:var(--text3);font-family:var(--font-display);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em">${labels[keys[i]]}</td>`];for(let j=0;j<keys.length;j++){if(j<=i){cells.push('<td style="padding:4px 6px;background:rgba(42,48,53,0.25);border-radius:4px"></td>');continue}const key=keys[i]+'_'+keys[j];const pr=pairR[key];if(!pr||pr.r==null)cells.push(`<td style="padding:6px;text-align:center;font-size:10px;color:var(--text3);background:var(--surface2);border-radius:4px">—<div style="font-size:8px;margin-top:2px">n=${pr?pr.n:0}</div></td>`);else{const c=rColorStr(pr.r);const bg=Math.abs(pr.r)>=0.7?'rgba(0,212,170,0.08)':Math.abs(pr.r)>=0.4?'rgba(255,204,0,0.06)':'var(--surface2)';cells.push(`<td style="padding:6px;text-align:center;font-size:13px;font-weight:800;color:${c};background:${bg};border-radius:4px">${pr.r>=0?'+':''}${pr.r.toFixed(2)}<div style="font-size:8px;color:var(--text3);font-weight:500;margin-top:2px">n=${pr.n}</div></td>`)}}rows.push('<tr>'+cells.join('')+'</tr>')}mat.innerHTML=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:separate;border-spacing:3px">${header}${rows.join('')}</table></div><div style="font-size:9px;color:var(--text3);margin-top:6px;display:flex;gap:10px;flex-wrap:wrap"><span><span style="display:inline-block;width:8px;height:8px;background:var(--accent);border-radius:2px;vertical-align:middle"></span> |r| ≥ 0.7 strong</span><span><span style="display:inline-block;width:8px;height:8px;background:var(--yellow);border-radius:2px;vertical-align:middle"></span> 0.4 – 0.7 moderate</span><span><span style="display:inline-block;width:8px;height:8px;background:var(--text3);border-radius:2px;vertical-align:middle"></span> < 0.4 weak</span>${paceInvert?'<span style="color:var(--text3)">· pace sign flipped so +r means faster pace</span>':''}</div>`}const insight=document.getElementById('corrInsight');if(insight){const entries=Object.entries(pairR).filter(([,v])=>v.r!=null);entries.sort((a,b)=>Math.abs(b[1].r)-Math.abs(a[1].r));if(!entries.length)insight.textContent='Not enough overlapping weeks yet — need ≥ 3 weeks with both metrics to compute r.';else{const top=entries[0];const[k1,k2]=top[0].split('_');const r=top[1].r;const strength=Math.abs(r)>=0.7?'Strong':Math.abs(r)>=0.4?'Moderate':'Weak';const dir=r>=0?'positive':'negative';const ifPace=pairR['avgIF_meanPace'];const mPace=pairR['m_meanPace'];const parts=[`${strength} ${dir} link — ${labels[k1]} vs ${labels[k2]}: r = ${r>=0?'+':''}${r.toFixed(2)} (n=${top[1].n}).`];if(ifPace&&ifPace.r!=null&&(k1!=='avgIF'||k2!=='meanPace'))parts.push(`IF↔Pace r = ${ifPace.r>=0?'+':''}${ifPace.r.toFixed(2)}.`);if(mPace&&mPace.r!=null&&(k1!=='m'||k2!=='meanPace'))parts.push(`M↔Pace r = ${mPace.r>=0?'+':''}${mPace.r.toFixed(2)}.`);insight.textContent=parts.join(' ')}}}
+function setCoachPredSport(s) { coachPredSport = s; renderCoachTab(); }
+function refreshCoachAnalysis() { renderCoachTab(); flash('Coach refreshed'); }
+function setTargetArchetype(k) { coachTargetArchetype = k; renderCoachTab(); }
+
+// ---- Goal analysis (dream → reality) ----
 function analyzeGoal() {
-  const type = document.getElementById('goalType').value, time = document.getElementById('goalTime').value.trim();
-  if (!time) { document.getElementById('goalAnalysis').innerHTML = 'Enter a target time.'; return; }
-  coachGoal = { primary: { type, time } }; save();
+  const type = document.getElementById('goalType').value;
+  const time = document.getElementById('goalTime').value.trim();
+  const box = document.getElementById('goalRealityBox');
+  if (!box) return;
+
+  if (!time) {
+    box.classList.add('show');
+    box.innerHTML = `<div class="coach-reality-verdict stretch">⚠️ Enter a target time</div><div>Format: <code>mm:ss</code> (e.g. <code>21:30</code>) or <code>h:mm:ss</code> for longer distances.</div>`;
+    return;
+  }
+
   const pred = getPerformancePredictions();
-  let cur = ''; if (type === '5k') cur = pred.run.p5k; else if (type === '10k') cur = pred.run.p10k; else cur = '~' + pred.run.phm;
-  const curSec = pSec(cur), goalSec = pSec(time);
-  if (!curSec || !goalSec) { document.getElementById('goalAnalysis').innerHTML = 'Invalid time format.'; return; }
-  const gap = goalSec - curSec, gapPct = (gap / curSec) * 100, feasible = goalSec > 0 && gapPct < 15, weeks = Math.ceil(Math.abs(gapPct) / 1.5);
-  document.getElementById('goalAnalysis').innerHTML = `Current: ${cur} · Target: ${time}<br>Gap: ${gap > 0 ? '+' : ''}${Math.round(gap / 60)}:${String(Math.abs(Math.round(gap % 60))).padStart(2, '0')} (${gapPct.toFixed(1)}%)<br>${feasible ? '✅ Achievable' : '⚠️ Ambitious'} · ~${weeks} weeks`;
+  let curStr = '', dist = 0, isRun = true, curSec = 0;
+
+  if (type === '5k') { curStr = pred.run.p5k; dist = RACE_DISTANCES_MI['5k']; }
+  else if (type === '10k') { curStr = pred.run.p10k; dist = RACE_DISTANCES_MI['10k']; }
+  else if (type === 'half') { curStr = pred.run.phm; dist = RACE_DISTANCES_MI['half']; }
+  else if (type === 'ftp') {
+    // FTP goal: time field holds watts
+    const targetFTP = parseFloat(time);
+    const currentFTP = parseFloat(profile.bike) || 0;
+    if (!targetFTP || !currentFTP) {
+      box.classList.add('show');
+      box.innerHTML = `<div class="coach-reality-verdict stretch">⚠️ Set your FTP in Setup first</div>`;
+      return;
+    }
+    const deltaPct = ((targetFTP - currentFTP) / currentFTP) * 100;
+    const verdictClass = deltaPct <= 5 ? 'ok' : deltaPct <= 12 ? 'stretch' : 'unrealistic';
+    const verdictTxt = deltaPct <= 5 ? '✅ Achievable' : deltaPct <= 12 ? '🔥 Ambitious' : '⚠️ Long game';
+    const weeks = Math.max(4, Math.ceil(Math.abs(deltaPct) * 2));
+    coachGoal = { primary: { type, time: targetFTP + 'w', targetSec: 0 } };
+    box.classList.add('show');
+    box.innerHTML = `
+      <div class="coach-reality-verdict ${verdictClass}">${verdictTxt}</div>
+      <div class="coach-reality-stats">
+        <div class="coach-reality-stat"><div class="coach-reality-stat-val">${currentFTP}w</div><div class="coach-reality-stat-label">Current</div></div>
+        <div class="coach-reality-stat"><div class="coach-reality-stat-val">${targetFTP}w</div><div class="coach-reality-stat-label">Target</div></div>
+        <div class="coach-reality-stat"><div class="coach-reality-stat-val">+${Math.round(deltaPct)}%</div><div class="coach-reality-stat-label">Gap</div></div>
+      </div>
+      <div>${deltaPct <= 5 ? 'Well within reach. Stay consistent for ~' + weeks + ' weeks.' : deltaPct <= 12 ? 'A real stretch — plan for ~' + weeks + ' weeks of focused threshold work.' : 'This is a multi-season goal. Plan 6+ months with periodized build/recovery.'}</div>
+    `;
+    renderCoachTab();
+    return;
+  }
+
+  curSec = parseTimeToSec(curStr);
+  const goalSec = parseTimeToSec(time);
+
+  if (!curSec || !goalSec) {
+    box.classList.add('show');
+    box.innerHTML = `<div class="coach-reality-verdict stretch">⚠️ Invalid time format</div><div>Use <code>mm:ss</code> (e.g. <code>21:30</code>) for 5K/10K or <code>h:mm:ss</code> (e.g. <code>1:35:00</code>) for half marathon.</div>`;
+    return;
+  }
+
+  const gapSec = curSec - goalSec; // positive = goal is faster
+  const gapPct = (gapSec / curSec) * 100;
+  coachGoal = { primary: { type, time, targetSec: goalSec } };
+
+  let verdictClass, verdictTxt, weeks, guidance;
+  if (gapPct <= 2) { verdictClass = 'ok'; verdictTxt = '✅ You\'re already there'; weeks = 4; guidance = 'You\'re close to this time today. Focus on consistency and race tactics.'; }
+  else if (gapPct <= 8) { verdictClass = 'ok'; verdictTxt = '✅ Achievable'; weeks = Math.ceil(gapPct * 1.5); guidance = `Realistic in ~${weeks} weeks with structured speed work and a race-specific taper.`; }
+  else if (gapPct <= 15) { verdictClass = 'stretch'; verdictTxt = '🔥 Ambitious'; weeks = Math.ceil(gapPct * 2); guidance = `A stretch goal. Plan for ~${weeks} weeks of periodized training with clear build and recovery phases.`; }
+  else { verdictClass = 'unrealistic'; verdictTxt = '⚠️ Long game'; weeks = Math.max(26, Math.ceil(gapPct * 2.5)); guidance = `This is a multi-season goal. Pick an interim target first — maybe a ${Math.round((curSec - gapSec * 0.4))} sec / ${Math.round(curSec/60)}:${String(Math.round(curSec%60)).padStart(2,'0')} benchmark before chasing ${time}.`; }
+
+  const gapMin = Math.floor(Math.abs(gapSec) / 60), gapS = Math.abs(gapSec) % 60;
+  const gapDisplay = `${gapSec >= 0 ? '-' : '+'}${gapMin}:${String(Math.round(gapS)).padStart(2, '0')}`;
+
+  box.classList.add('show');
+  box.innerHTML = `
+    <div class="coach-reality-verdict ${verdictClass}">${verdictTxt}</div>
+    <div class="coach-reality-stats">
+      <div class="coach-reality-stat"><div class="coach-reality-stat-val">${curStr}</div><div class="coach-reality-stat-label">Today</div></div>
+      <div class="coach-reality-stat"><div class="coach-reality-stat-val">${time}</div><div class="coach-reality-stat-label">Goal</div></div>
+      <div class="coach-reality-stat"><div class="coach-reality-stat-val" style="color:${gapSec > 0 ? 'var(--accent2)' : 'var(--accent)'}">${gapDisplay}</div><div class="coach-reality-stat-label">${gapSec > 0 ? 'To go' : 'Ahead'}</div></div>
+    </div>
+    <div>${guidance}</div>
+  `;
   renderCoachTab();
 }
 
+// ---- Copy share ----
 function copyCoachShare() {
-  const wd = getWeeklyData(); if (!wd.length) return;
-  const mets = { avgM: wd.reduce((a, b) => a + b.m, 0) / wd.length, avgTSS: wd.reduce((a, b) => a + b.tss, 0) / wd.length, avgRatio: wd.reduce((a, b) => a + b.ratio, 0) / wd.length };
-  const archetype = TRAINING_ARCHETYPES.find(a => a.condition?.(mets.cons * 100, mets.avgTSS, mets.avgRatio)) || TRAINING_ARCHETYPES[0];
-  const recovery = RECOVERY_IDENTITIES.find(r => r.condition(wd.map(w => w.m))) || RECOVERY_IDENTITIES[1];
-  const grade = calculateGrade(mets.avgM, (wd.filter(w => w.sessions >= 3).length / wd.length) * 100, mets.avgRatio, 0, false);
-  const text = `🧠 M-FRAME COACH\n${archetype.emoji} ${archetype.name} · ${recovery.emoji} ${recovery.name}\nGrade: ${grade}\nM:${Math.round(mets.avgM)} · TSS:${Math.round(mets.avgTSS)} · Ratio:${mets.avgRatio.toFixed(3)}\n"${archetype.tagline}"`;
-  navigator.clipboard?.writeText(text).then(() => flash('Analysis copied!'));
+  const wd = getCoachWeeklyData(); if (!wd.length) { flash('Not enough data'); return; }
+  const nWeeks = wd.length;
+  const mets = {
+    avgM: wd.reduce((a, b) => a + b.m, 0) / nWeeks,
+    avgTSS: wd.reduce((a, b) => a + b.tss, 0) / nWeeks,
+    avgRatio: wd.reduce((a, b) => a + b.ratio, 0) / nWeeks,
+    cons: (wd.filter(w => w.sessions >= 3).length / nWeeks) * 100,
+    mVar: Math.max(...wd.map(w => w.m)) - Math.min(...wd.map(w => w.m)),
+    weeksAtTSS: wd.filter((w, i) => i >= wd.length - 4 && Math.abs(w.tss - wd[wd.length - 1].tss) / Math.max(wd[wd.length - 1].tss, 1) < 0.15).length
+  };
+  const archetype = resolveArchetype(mets);
+  const recovery = resolveRecovery(wd.map(w => w.m));
+  const grade = calculateGrade(mets.avgM, mets.cons / 100, mets.avgRatio, workouts.filter(w => w.sport === 'run' && w.distance > 6).length, workouts.filter(w => w.sport === 'run' && w.ifv > 0.95).length > 2);
+  const text = `🧠 M-FRAME COACH\nGrade: ${grade}\n${archetype.emoji} ${archetype.name} — "${archetype.tagline}"\n${recovery.emoji} ${recovery.name}\nM: ${Math.round(mets.avgM)}/wk · TSS: ${Math.round(mets.avgTSS)} · Ratio: ${mets.avgRatio.toFixed(3)}\nConsistency: ${Math.round(mets.cons)}%`;
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(text).then(() => flash('Copied! Share with a friend.')).catch(() => flash('Copy failed'));
+  } else { flash('Clipboard not available'); }
 }
 
-function closeModal(e) { if (!e || e.target.classList.contains('modal-overlay')) document.getElementById('archetypeModal').style.display = 'none'; }
+// ---- Modal ----
+function closeModal(e) { if (!e || (e.target && e.target.classList && e.target.classList.contains('modal-overlay')) || !e.target) { document.getElementById('archetypeModal').style.display = 'none'; } }
 function showArchetypeModal() {
-  const m = document.getElementById('archetypeModal'), l = document.getElementById('modalArchetypeList'), wd = getWeeklyData();
-  const mets = wd.length ? { avgM: wd.reduce((a, b) => a + b.m, 0) / wd.length, avgTSS: wd.reduce((a, b) => a + b.tss, 0) / wd.length, avgRatio: wd.reduce((a, b) => a + b.ratio, 0) / wd.length, cons: wd.filter(w => w.sessions >= 3).length / wd.length } : null;
+  const m = document.getElementById('archetypeModal'), l = document.getElementById('modalArchetypeList'), wd = getCoachWeeklyData();
+  const nW = Math.max(1, wd.length);
+  const mets = wd.length ? {
+    avgM: wd.reduce((a, b) => a + b.m, 0) / nW,
+    avgTSS: wd.reduce((a, b) => a + b.tss, 0) / nW,
+    avgRatio: wd.reduce((a, b) => a + b.ratio, 0) / nW,
+    cons: (wd.filter(w => w.sessions >= 3).length / nW) * 100,
+    mVar: Math.max(...wd.map(w => w.m)) - Math.min(...wd.map(w => w.m)),
+    weeksAtTSS: wd.filter((w, i) => i >= wd.length - 4 && wd.length && Math.abs(w.tss - wd[wd.length - 1].tss) / Math.max(wd[wd.length - 1].tss, 1) < 0.15).length
+  } : null;
+  const myArchetype = mets ? resolveArchetype(mets) : null;
   l.innerHTML = TRAINING_ARCHETYPES.map(a => {
-    let st = '', sc = '';
-    if (mets) { const m = mets.avgM, t = mets.avgTSS, r = mets.avgRatio, c = mets.cons * 100, mVar = Math.max(...wd.map(w => w.m)) - Math.min(...wd.map(w => w.m)), weeksAtTSS = wd.filter(w => Math.abs(w.tss - wd[wd.length - 1].tss) < 50).length, ok = a.condition?.(c, t, r, mVar, weeksAtTSS) ?? false; st = ok ? '✓ You match this' : '☆ Not you'; sc = ok ? 'color:var(--accent)' : 'color:var(--text3)'; }
-    return `<div class="modal-archetype-item"><div class="modal-archetype-header"><span class="modal-archetype-emoji">${a.emoji}</span><span class="modal-archetype-name">${a.name}</span></div><div class="modal-archetype-tagline">"${a.tagline}"</div><div class="modal-archetype-req">${a.desc}</div><div class="modal-archetype-status" style="${sc}">${st}</div></div>`;
+    const isMe = myArchetype && myArchetype.key === a.key;
+    const status = isMe ? '★ This is you right now' : 'Not your current archetype';
+    const statusColor = isMe ? 'color:var(--accent)' : 'color:var(--text3)';
+    return `<div class="modal-archetype-item ${isMe ? 'match' : ''}"><div class="modal-archetype-header"><span class="modal-archetype-emoji">${a.emoji}</span><span class="modal-archetype-name">${a.name}</span></div><div class="modal-archetype-tagline">"${a.tagline}"</div><div class="modal-archetype-req">${a.desc}</div><div class="modal-archetype-status" style="${statusColor}">${status}</div></div>`;
   }).join('');
   m.style.display = 'flex';
 }
 
-function saveCoachPrefs() { coachSportFocus = document.getElementById('coachSportFocus').value; coachTone = document.getElementById('coachDefaultTone').value; save(); flash('Coach preferences saved'); renderCoachTab(); }
+// ---- Main render ----
+function renderCoachTab() {
+  const container = document.getElementById('coachContent');
+  if (!container) return;
+  const wd = getCoachWeeklyData();
+  if (wd.length < 2) {
+    container.innerHTML = `<div class="card"><div class="onboard-empty"><div class="onboard-empty-icon">🧠</div><div class="onboard-empty-title">Need more data</div><div class="onboard-empty-body">Log at least 2 weeks with 3+ sessions to unlock coach insights. Try switching the period filter to <strong>All</strong>.</div></div></div>`;
+    return;
+  }
+
+  const wSubset = getCoachPeriodWorkouts();
+  const nW = wd.length;
+  const mets = {
+    avgM: wd.reduce((a, b) => a + b.m, 0) / nW,
+    avgTSS: wd.reduce((a, b) => a + b.tss, 0) / nW,
+    avgRatio: wd.reduce((a, b) => a + b.ratio, 0) / nW,
+    cons: (wd.filter(w => w.sessions >= 3).length / nW) * 100,
+    mVar: Math.max(...wd.map(w => w.m)) - Math.min(...wd.map(w => w.m)),
+    weeksAtTSS: wd.filter((w, i) => i >= wd.length - 4 && Math.abs(w.tss - wd[wd.length - 1].tss) / Math.max(wd[wd.length - 1].tss, 1) < 0.15).length
+  };
+
+  const archetype = resolveArchetype(mets);
+  const recovery = resolveRecovery(wd.map(w => w.m));
+  const strengths = detectStrengths(wd);
+  const gaps = detectGaps(wd);
+  const best = wd.reduce((a, b) => b.m > a.m ? b : a);
+  const recent = wd.slice(-4);
+  const curM = recent.reduce((a, b) => a + b.m, 0) / Math.max(1, recent.length);
+  const curTSS = recent.reduce((a, b) => a + b.tss, 0) / Math.max(1, recent.length);
+  const bestTSS = wd.reduce((a, b) => b.tss > a.tss ? b : a).tss;
+
+  const grade = calculateGrade(
+    mets.avgM, mets.cons / 100, mets.avgRatio,
+    wSubset.filter(w => w.sport === 'run' && w.distance > 6).length,
+    wSubset.filter(w => w.sport === 'run' && w.ifv > 0.95).length > 2
+  );
+
+  const pred = getPerformancePredictions();
+  const notable = getNotablePerformances();
+  const focus = coachPredSport === 'auto' ? dominantSport(wSubset) : coachPredSport;
+  const roadmap = generateRoadmap(archetype.key, focus, coachTargetArchetype);
+  const thresholdAnalysis = analyzeThresholdProgression();
+  const thresholdSuggestions = suggestThresholdUpdates();
+  const personalCurve = calculatePersonalizedCurveParams();
+  const T = TONE_STRINGS[coachTone] || TONE_STRINGS.direct;
+
+  const ghost = !workouts.some(w => w.date === today()) && workouts.length
+    ? (() => { const lw = [...workouts].sort((a, b) => b.date.localeCompare(a.date))[0]; const h = Math.round((new Date() - new Date(lw.date + 'T12:00:00')) / 36e5); return { hours: h, workout: lw, onTrack: h < 36 }; })()
+    : null;
+
+  // Period label
+  const periodLabel = { month: 'last month', quarter: 'last 3 months', half: 'last 6 months', year: 'last year', all: 'all time' }[coachPeriod];
+
+  const gradeColor = grade.startsWith('A') ? 'var(--accent)' : grade.startsWith('B') ? 'var(--yellow)' : grade.startsWith('C') ? 'var(--accent2)' : 'var(--red)';
+
+  // ---- Build predictor HTML based on sport focus ----
+  let predictorHTML = '';
+  if (focus === 'run') {
+    predictorHTML = `
+      <div class="coach-prediction-grid">
+        <div class="coach-prediction-item"><div class="coach-prediction-dist">5K</div><div class="coach-prediction-time">${pred.run.p5k}</div></div>
+        <div class="coach-prediction-item"><div class="coach-prediction-dist">10K</div><div class="coach-prediction-time">${pred.run.p10k}</div></div>
+        <div class="coach-prediction-item"><div class="coach-prediction-dist">Half</div><div class="coach-prediction-time">${pred.run.phm}</div></div>
+      </div>
+      <div class="coach-prediction-note">Based on Riegel's formula from your best sustained run (IF ≥ 0.93, ≥ 10 min). Updates as you log faster efforts.</div>`;
+  } else if (focus === 'bike') {
+    if (pred.bike) {
+      predictorHTML = `
+        <div class="coach-prediction-grid">
+          <div class="coach-prediction-item"><div class="coach-prediction-dist">5 min</div><div class="coach-prediction-time">${pred.bike.fivemin}</div></div>
+          <div class="coach-prediction-item"><div class="coach-prediction-dist">20 min</div><div class="coach-prediction-time">${pred.bike.twentymin}</div></div>
+          <div class="coach-prediction-item"><div class="coach-prediction-dist">1 hour</div><div class="coach-prediction-time">${pred.bike.onehr}</div></div>
+        </div>
+        <div class="coach-prediction-note">Estimated sustainable power at common durations, derived from your FTP (${profile.bike || '—'}w).</div>`;
+    } else {
+      predictorHTML = `<div class="coach-prediction-note">Set your FTP in Setup to see bike predictions.</div>`;
+    }
+  } else if (focus === 'swim') {
+    if (pred.swim) {
+      predictorHTML = `
+        <div class="coach-prediction-grid">
+          <div class="coach-prediction-item"><div class="coach-prediction-dist">100</div><div class="coach-prediction-time">${pred.swim.p100}</div></div>
+          <div class="coach-prediction-item"><div class="coach-prediction-dist">400</div><div class="coach-prediction-time">${pred.swim.p400}</div></div>
+          <div class="coach-prediction-item"><div class="coach-prediction-dist">1500</div><div class="coach-prediction-time">${pred.swim.p1500}</div></div>
+        </div>
+        <div class="coach-prediction-note">Estimated race times based on your CSS (${profile.swim || '—'}/100).</div>`;
+    } else {
+      predictorHTML = `<div class="coach-prediction-note">Set your CSS in Setup to see swim predictions.</div>`;
+    }
+  } else {
+    predictorHTML = `<div class="coach-prediction-note">Log more workouts to unlock predictions.</div>`;
+  }
+
+  // ---- Goal options based on focus ----
+  const goalOptions = focus === 'bike'
+    ? `<option value="ftp">FTP (watts)</option><option value="5k">5K Run</option><option value="10k">10K Run</option>`
+    : focus === 'swim'
+    ? `<option value="5k">5K Run</option><option value="10k">10K Run</option><option value="ftp">FTP</option>`
+    : `<option value="5k">5K</option><option value="10k">10K</option><option value="half">Half Marathon</option><option value="ftp">FTP (watts)</option>`;
+
+  // ---- Threshold ladder HTML ----
+  let thresholdHTML = '';
+  if (thresholdAnalysis) {
+    const ta = thresholdAnalysis;
+    thresholdHTML = `
+      <div class="card">
+        <div class="coach-section-title">⚡ Threshold Check — are you training at the right level?</div>
+        <div class="coach-threshold-card">
+          <div class="coach-threshold-icon">${ta.action === 'up' ? '🚀' : ta.action === 'down' ? '🛑' : '⏸️'}</div>
+          <div class="coach-threshold-body">
+            <div class="coach-threshold-title">${ta.title}</div>
+            <div class="coach-threshold-msg">${ta.msg}</div>
+          </div>
+          <div class="coach-threshold-action ${ta.action}">${ta.action === 'up' ? 'Step up' : ta.action === 'down' ? 'Pull back' : 'Hold'}</div>
+        </div>
+        <div class="coach-tss-ladder">
+          ${ta.nextLadder.map((r, i) => {
+            const heightPct = 30 + i * 14;
+            const cls = r.current ? 'current' : r.mastered ? 'mastered' : '';
+            return `<div class="coach-tss-rung ${cls}" style="height:${heightPct}%"><span>${r.tss}</span><span class="coach-tss-rung-label">${r.label}</span></div>`;
+          }).join('')}
+        </div>
+        <div class="coach-tss-ladder-caption">Master each level (3+ weeks with optimal ratio) before stepping up. Rushing the ladder leads to injury.</div>
+      </div>`;
+  }
+
+  // ---- Threshold-pace suggestions HTML ----
+  let thresholdPaceHTML = '';
+  if (Object.keys(thresholdSuggestions).length > 0) {
+    thresholdPaceHTML = `
+      <div class="card">
+        <div class="coach-section-title">🔧 Threshold pace / power updates</div>
+        ${Object.entries(thresholdSuggestions).map(([sport, sug]) => `
+          <div class="coach-threshold-card">
+            <div class="coach-threshold-icon">${sport === 'run' ? '🏃' : sport === 'bike' ? '🚴' : '🏊'}</div>
+            <div class="coach-threshold-body">
+              <div class="coach-threshold-title">${sport.toUpperCase()}</div>
+              <div class="coach-threshold-msg">Current ${sug.current} → Suggested <strong style="color:var(--accent)">${sug.suggested}</strong> (${sug.improvement})</div>
+            </div>
+          </div>
+        `).join('')}
+        <div style="font-size:11px;color:var(--text3);margin-top:10px;line-height:1.5">Your recent performance is outrunning your saved thresholds. Update them in Setup → Sport thresholds for accurate zones.</div>
+      </div>`;
+  }
+
+  // ---- Efficiency curve HTML ----
+  let curveHTML = '';
+  if (personalCurve) {
+    curveHTML = `
+      <div class="card">
+        <div class="coach-section-title">📊 Your efficiency curve <span style="color:var(--yellow);font-size:10px;font-weight:700;margin-left:auto">EXPERIMENTAL</span></div>
+        <div style="font-size:13px;color:var(--text);font-family:var(--font-display);font-weight:800;margin-bottom:4px">${personalCurve.athleteType}</div>
+        <div style="font-size:11px;color:var(--text3);font-family:monospace;margin-bottom:10px">${personalCurve.formula}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px;color:var(--text2)">
+          <div style="padding:8px;background:var(--surface2);border-radius:6px"><strong style="color:var(--text)">Low:</strong> ${personalCurve.anchorLowTSS} TSS → ${personalCurve.anchorLowRatio} ratio</div>
+          <div style="padding:8px;background:var(--surface2);border-radius:6px"><strong style="color:var(--text)">High:</strong> ${personalCurve.anchorHighTSS} TSS → ${personalCurve.anchorHighRatio} ratio</div>
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:10px;line-height:1.5">Fit from ${personalCurve.dataPoints} weeks of your own data. ${personalCurve.exponent > 0.2 ? 'Your ratio rises sharply with volume — you respond well to TSS increases.' : personalCurve.exponent > 0 ? 'Your ratio rises gently with volume — a balanced adaptation pattern.' : 'Your ratio is flat or falling with volume — check threshold values or consider intensity instead.'}</div>
+      </div>`;
+  }
+
+  // ---- MAIN HTML ----
+  let html = `
+    <div class="coach-hero" style="--archetype-color:${archetype.colors[0]};--archetype-color2:${archetype.colors[1]}">
+      <div class="coach-hero-top">
+        <div>
+          <div class="coach-hero-grade">${grade}</div>
+          <div class="coach-hero-grade-sub">${periodLabel}</div>
+        </div>
+        <div class="coach-hero-right">
+          <div class="coach-hero-emoji">${archetype.emoji}</div>
+          <div class="coach-hero-name">${archetype.name}</div>
+          <div class="coach-hero-tag">"${archetype.tagline}"</div>
+          <div class="coach-hero-meta">
+            <span class="coach-chip">M <strong>${mets.avgM.toFixed(1)}</strong>/wk</span>
+            <span class="coach-chip">TSS <strong>${Math.round(mets.avgTSS)}</strong></span>
+            <span class="coach-chip">Ratio <strong>${mets.avgRatio.toFixed(3)}</strong></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="coach-pattern-strip">
+      <div class="coach-pattern-emoji">${recovery.emoji}</div>
+      <div class="coach-pattern-body">
+        <div class="coach-pattern-title">${recovery.name}</div>
+        <div class="coach-pattern-tag">${recovery.tagline}</div>
+      </div>
+    </div>
+
+    <div class="coach-summary-grid">
+      <div class="coach-summary-item"><div class="coach-summary-val">${wSubset.filter(w => w.sport === 'run').length}</div><div class="coach-summary-label">🏃 Runs</div></div>
+      <div class="coach-summary-item"><div class="coach-summary-val">${wSubset.filter(w => w.sport === 'bike').length}</div><div class="coach-summary-label">🚴 Rides</div></div>
+      <div class="coach-summary-item"><div class="coach-summary-val">${wSubset.filter(w => w.sport === 'swim').length}</div><div class="coach-summary-label">🏊 Swims</div></div>
+      <div class="coach-summary-item"><div class="coach-summary-val">${Math.round(mets.cons)}%</div><div class="coach-summary-label">Consistent</div></div>
+    </div>
+
+    <div class="card">
+      <div class="coach-section-title">📈 Best You vs. Current You</div>
+      <table class="coach-comparison-table">
+        <tr><th></th><th>Peak</th><th>Last 4 wks</th><th>Delta</th></tr>
+        <tr>
+          <td class="coach-comparison-label">M-Score</td>
+          <td class="coach-comparison-best">${Math.round(best.m)}</td>
+          <td class="coach-comparison-current">${Math.round(curM)}</td>
+          <td class="coach-comparison-gap ${best.m - curM > 3 ? 'worse' : curM - best.m > 0 ? 'better' : 'same'}">${curM >= best.m ? '+' + Math.round(curM - best.m) : '-' + Math.round(best.m - curM)}</td>
+        </tr>
+        <tr>
+          <td class="coach-comparison-label">TSS</td>
+          <td class="coach-comparison-best">${Math.round(bestTSS)}</td>
+          <td class="coach-comparison-current">${Math.round(curTSS)}</td>
+          <td class="coach-comparison-gap ${bestTSS - curTSS > bestTSS * 0.1 ? 'worse' : curTSS - bestTSS > 0 ? 'better' : 'same'}">${curTSS >= bestTSS ? '+' + Math.round(curTSS - bestTSS) : '-' + Math.round(bestTSS - curTSS)}</td>
+        </tr>
+      </table>
+      <div class="coach-contrast-note">${
+        best.m > curM + 3
+          ? (coachTone === 'brutal' ? `You were ${Math.round((1 - curM / best.m) * 100)}% better ${Math.round((wd.length - wd.indexOf(best)) * 7 / 30)} months ago. The engine is the same. The gas tank is smaller.`
+             : coachTone === 'encouraging' ? `Your peak was ${Math.round(best.m)} M — that version is still inside you. Rebuilding is faster than building the first time.`
+             : `Current M is ${Math.round((1 - curM / best.m) * 100)}% off peak. Gap closeable in 4–6 weeks of consistent volume.`)
+          : (coachTone === 'brutal' ? 'You\'re at your best right now. Don\'t blow it.'
+             : coachTone === 'encouraging' ? 'You\'re at or above your previous peak. This is your new normal — honor it with rest.'
+             : 'Current fitness matches peak. Maintain wave pattern with regular recovery.')
+      }</div>
+    </div>
+
+    ${strengths.length ? `<div class="card"><div class="coach-section-title">💪 Key Strengths</div>${strengths.map(s => `<div class="coach-strength-item"><span class="coach-strength-icon">✓</span><span>${s}</span></div>`).join('')}</div>` : ''}
+
+    ${gaps.length ? `<div class="card"><div class="coach-section-title">⚠️ Areas for Improvement</div>${gaps.map(g => `<div class="coach-gap-item"><span class="coach-gap-icon">○</span><span>${g}</span></div>`).join('')}</div>` : ''}
+
+    ${notable.length ? `<div class="card"><div class="coach-section-title">🏅 Showcase</div>${notable.map(n => `<div class="coach-notable-item coach-notable-${n.type}"><span class="coach-notable-icon">${n.icon}</span><div class="coach-notable-body"><div class="coach-notable-headline">${n.headline}</div><div class="coach-notable-meta">${n.meta}</div></div></div>`).join('')}</div>` : ''}
+
+    <div class="card">
+      <div class="coach-pred-header">
+        <div class="coach-section-title" style="margin:0">🎯 Performance Predictor</div>
+        <div class="coach-sport-toggle">
+          <button class="coach-sport-btn ${focus === 'run' || (coachPredSport === 'auto' && focus === 'run') ? 'active' : ''}" onclick="setCoachPredSport('run')">🏃 Run</button>
+          <button class="coach-sport-btn ${focus === 'bike' ? 'active' : ''}" onclick="setCoachPredSport('bike')">🚴 Bike</button>
+          <button class="coach-sport-btn ${focus === 'swim' ? 'active' : ''}" onclick="setCoachPredSport('swim')">🏊 Swim</button>
+        </div>
+      </div>
+      ${predictorHTML}
+    </div>
+
+    <div class="coach-dream-wrap">
+      <div class="coach-dream-label">✨ Dream Goal → Reality Check → Path</div>
+      <div class="coach-dream-row">
+        <select id="goalType" class="form-input">${goalOptions}</select>
+        <input type="text" id="goalTime" class="form-input" placeholder="${focus === 'bike' ? 'e.g. 280' : 'e.g. 21:30'}" value="${coachGoal.primary?.time || ''}">
+      </div>
+      <button class="btn-primary" onclick="analyzeGoal()" style="width:100%">Run reality check</button>
+      <div class="coach-reality-box ${coachGoal.primary ? 'show' : ''}" id="goalRealityBox"></div>
+    </div>
+
+    <div class="card">
+      <div class="coach-section-title">🎯 I want to become...</div>
+      <select id="targetArchetypeSelect" class="form-input" onchange="setTargetArchetype(this.value)">
+        ${TRAINING_ARCHETYPES.filter(a => a.key !== 'tourist' && a.key !== 'monotony' && a.key !== 'burnout' && a.key !== 'jedi').map(a => `<option value="${a.key}" ${a.key === coachTargetArchetype ? 'selected' : ''}>${a.emoji} ${a.name}</option>`).join('')}
+      </select>
+      <div style="font-size:11px;color:var(--text3);margin-top:10px;line-height:1.5" id="targetGapAnalysis"></div>
+    </div>
+
+    <div class="card">
+      <div class="coach-section-title">🗺️ Roadmap to ${TRAINING_ARCHETYPES.find(a => a.key === coachTargetArchetype)?.name || 'Peak Performer'}</div>
+      <div class="coach-roadmap-phase">
+        <div class="coach-roadmap-phase-title">Next 4 weeks</div>
+        ${roadmap.immediate.map(r => `<div class="coach-roadmap-item">${r}</div>`).join('')}
+      </div>
+      <div class="coach-roadmap-phase">
+        <div class="coach-roadmap-phase-title">1–3 months</div>
+        ${roadmap.medium.map(r => `<div class="coach-roadmap-item">${r}</div>`).join('')}
+      </div>
+      <div class="coach-roadmap-phase">
+        <div class="coach-roadmap-phase-title">3–6 months</div>
+        ${roadmap.long.map(r => `<div class="coach-roadmap-item">${r}</div>`).join('')}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="coach-section-title">🏆 Milestones</div>
+      ${[
+        { icon: '🎯', title: 'Consistent', req: '3+ sessions/wk for 4 weeks', earned: mets.cons >= 75 },
+        { icon: '⭐', title: 'Quality ratio', req: 'Weekly ratio ≥ 0.045 for 2 wks', earned: wd.slice(-2).every(w => w.ratio >= 0.045) },
+        { icon: '💫', title: 'Sustained fitness', req: 'M 19–26 with ratio in range', earned: mets.avgM >= 19 && mets.avgM <= 26 && mets.avgRatio >= 0.045 && mets.avgRatio <= 0.058 },
+        { icon: '🚀', title: 'Breakthrough week', req: 'M ≥ 25 in a single week', earned: wd.some(w => w.m >= 25) },
+        { icon: coachTargetArchetype === 'olympic' ? '🥇' : '🏆', title: coachTargetArchetype === 'olympic' ? 'Olympic volume' : 'Goal crushed',
+          req: coachTargetArchetype === 'olympic' ? '500+ TSS avg for 3 weeks' : (coachGoal.primary ? 'Hit target time in ' + coachGoal.primary.type.toUpperCase() : 'Set a goal above first'),
+          earned: coachTargetArchetype === 'olympic' ? wd.slice(-3).every(w => w.tss >= 500) : false }
+      ].map(m => `
+        <div class="coach-milestone-item">
+          <div class="coach-milestone-icon ${m.earned ? 'earned' : ''}">${m.earned ? '✓' : m.icon}</div>
+          <div class="coach-milestone-content">
+            <div class="coach-milestone-title ${m.earned ? 'earned' : ''}">${m.title}</div>
+            <div class="coach-milestone-req">${m.req}</div>
+          </div>
+          <div class="coach-milestone-progress ${m.earned ? 'earned' : ''}">${m.earned ? 'Earned' : '—'}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    ${thresholdHTML}
+    ${thresholdPaceHTML}
+    ${curveHTML}
+
+    ${(() => {
+      const b2b = wd.some((w, i) => i > 0 && w.m >= 25 && wd[i - 1].m >= 25);
+      const noRest = wd.length >= 4 && !wd.some(w => w.m < 14);
+      if (!b2b && !noRest) return '';
+      return `<div class="card"><div class="coach-section-title">🩺 Recovery flags</div>${b2b ? '<div class="coach-redflag-item"><span>⚠️</span><span>Back-to-back hard weeks detected — schedule a recovery week with M 10–14.</span></div>' : ''}${noRest ? '<div class="coach-redflag-item"><span>⚠️</span><span>No recovery weeks in recent history — your M never drops below 14. Adaptation stalls without rest.</span></div>' : ''}</div>`;
+    })()}
+
+    <div class="coach-primary-rec">
+      <div class="coach-primary-rec-label">🧠 Primary recommendation</div>
+      ${T.primary(gaps[0])}
+    </div>
+
+    ${ghost ? `<div class="coach-ghost-box"><span style="font-family:var(--font-display);font-weight:800">🛌 REST DAY WISDOM &nbsp;</span>${ghost.hours}hrs since ${ghost.workout.time}-min ${ghost.workout.sport}. ${ghost.onTrack ? 'On track. Don\'t rush back — growth happens now.' : 'Take the full window. Stacking fatigue kills progress.'}</div>` : ''}
+
+    <div class="coach-actions">
+      <button class="btn-sm" onclick="showArchetypeModal()">📖 All archetypes</button>
+      <button class="btn-sm" onclick="copyCoachShare()">📋 Share</button>
+    </div>
+
+    <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:14px">Based on ${wd.length} weeks · ${wSubset.length} sessions · ${periodLabel}</div>
+  `;
+
+  container.innerHTML = html;
+  updateTargetGap();
+}
+
+function updateTargetGap() {
+  const wd = getCoachWeeklyData(); if (!wd.length) return;
+  const nW = wd.length;
+  const mets = {
+    avgM: wd.reduce((a, b) => a + b.m, 0) / nW,
+    avgTSS: wd.reduce((a, b) => a + b.tss, 0) / nW,
+    avgRatio: wd.reduce((a, b) => a + b.ratio, 0) / nW,
+    cons: (wd.filter(w => w.sessions >= 3).length / nW) * 100
+  };
+  const ta = TRAINING_ARCHETYPES.find(a => a.key === coachTargetArchetype);
+  const el = document.getElementById('targetGapAnalysis');
+  if (!el || !ta) return;
+  let gap;
+  if (coachTargetArchetype === 'olympic') {
+    gap = mets.avgTSS < 500 ? `Need +${500 - Math.round(mets.avgTSS)} TSS/week and 70%+ consistency.` : 'You have the volume! Hold the wave and the structure.';
+  } else if (coachTargetArchetype === 'peak') {
+    if (mets.avgRatio > 0.058) gap = 'Your ratio is hot — reduce intensity or add Z2 volume.';
+    else if (mets.avgRatio < 0.045) gap = 'Add one interval session per week to raise the ratio.';
+    else gap = 'You\'re there. Maintain the wave pattern.';
+  } else if (coachTargetArchetype === 'caterpillar') {
+    gap = mets.weeksAtTSS >= 3 ? 'Conditions met — you\'re in the chrysalis.' : 'Hold current TSS for 2 more weeks.';
+  } else {
+    gap = 'Adjust training to match this archetype\'s conditions.';
+  }
+  el.innerHTML = `Current → <strong style="color:${ta.colors ? ta.colors[0] : 'var(--accent)'}">${ta.emoji} ${ta.name}</strong>: ${gap}`;
+}
+
+function saveCoachPrefs() { renderCoachTab(); }
 function init(){load();document.getElementById('fDate').value=today();onSportChange();render();renderSettings();document.getElementById('fTime').addEventListener('input',updateLivePreview);setupFrameTooltip()}
 init()
 </script>
