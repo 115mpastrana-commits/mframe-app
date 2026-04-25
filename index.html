@@ -475,6 +475,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
       <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;font-weight:600">1 · Set rest days (pick 2)</div>
       <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:12px" id="restDayPicker"></div>
       <div id="valleyOrderSection" style="display:none"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;font-weight:600">2 · Order valley volumes <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">(tap days to cycle)</span></div><div style="font-size:10px;color:var(--text3);margin-bottom:8px;line-height:1.6" id="valleyHint"></div></div>
+      <div id="hiTypeSection" style="display:none;margin-bottom:12px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;font-weight:600">3 · Characterize high-intensity days <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">(tap to cycle)</span></div><div style="font-size:10px;color:var(--text3);margin-bottom:8px;line-height:1.6">Short = Z5–6 VO2max · Long = Z4 Threshold · Tempo = Z3 Tempo. IF auto-translates per sport zone.</div><div id="hiTypeGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div></div>
       <div id="waveViz" style="display:none;margin-bottom:10px"><div style="display:flex;gap:12px;margin-bottom:6px;flex-wrap:wrap"><span style="font-size:9px;color:var(--vol)">■ Volume (click to cycle)</span><span style="font-size:9px;color:var(--int)">■ Intensity (click to cycle)</span><span style="font-size:9px;color:var(--text3)">T=Time(min) | IF=Intensity</span></div><div class="wave-row" id="waveVolRow"></div><div class="wave-row" id="waveIntRow"></div></div>
       <div id="projMSection" style="display:none;background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px">
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><span style="font-size:11px;color:var(--text3)">Projected week M</span><span style="font-family:var(--font-display);font-size:22px;font-weight:800;transition:color 0.3s" id="projMVal">0</span></div>
@@ -590,7 +591,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
 let workouts=[],profile={},weeklyLoadKey='moderate',weeklyTSSGoal=650,editId=null,currentRange='week',selectedType=null,weekPlan={restDays:[],valleyVols:{}},intensityTarget={lo:70,mo:20,hi:10},histOffset=0,histLines={tssTrend:true,tssAvg:true,ifAvg:true,loIfAvg:true,hiIfAvg:true,loIF:true,hiIF:true}
 let loadCutoffs={lo:8.333,hi:16.666}
 let curveConfig={anchorLowTSS:300,anchorLowRatio:0.8,anchorHighTSS:1000,anchorHighRatio:1.5}
-let dayIntensity={},daySports={},historySport='run',filteredWorkoutsCache=[]
+let dayIntensity={},daySports={},dayHiType={},historySport='run',filteredWorkoutsCache=[]
 let paceChartOpen=false,efficiencyCurveOpen=false
 let paceLinesVisible={mean:true,high:true,low:true}
 
@@ -608,8 +609,8 @@ function getLoadPts(adj){const base=weeklyTSSGoal;const loCut=base*(loadCutoffs.
 function getIntPts(sport,ifv){if(sport==='run')return ifv<0.83?1:ifv<0.90?2:3;if(sport==='bike')return ifv<0.76?1:ifv<0.91?2:3;if(sport==='swim')return ifv<0.93?1:ifv<0.98?2:3;return ifv<0.80?1:ifv<0.90?2:3}
 function calcM(sport,rawTSS,ifv){const adj=Math.round(rawTSS*sportMult(sport));const lp=getLoadPts(adj),ip=getIntPts(sport,ifv);return{m:Math.min(lp+ip,6),adjTSS:adj,lp,ip}}
 function getDayAggs(list){const map=new Map();list.forEach(w=>{if(!map.has(w.date))map.set(w.date,{date:w.date,rawTSS:0,adjTSS:0,wIF:0,sessions:[]});const e=map.get(w.date);e.rawTSS+=w.rawTSS;e.adjTSS+=w.adjTSS||Math.round(w.rawTSS*sportMult(w.sport));e.wIF+=w.ifv*(w.adjTSS||w.rawTSS);e.sessions.push(w)});const out=[];for(const[,e]of map){const avgIF=e.adjTSS>0?e.wIF/e.adjTSS:0.5;const peakSess=e.sessions.reduce((a,b)=>b.ifv>a.ifv?b:a);const domSess=e.sessions.reduce((a,b)=>b.rawTSS>a.rawTSS?b:a);const adj=Math.round(e.rawTSS*sportMult(domSess.sport));const lp=getLoadPts(adj);const ip=getIntPts(peakSess.sport,peakSess.ifv);out.push({date:e.date,rawTSS:e.rawTSS,adjTSS:e.adjTSS,avgIF,peakIF:peakSess.ifv,m:Math.min(lp+ip,6),lp,ip,sessions:e.sessions,cnt:e.sessions.length})}return out.sort((a,b)=>a.date.localeCompare(b.date))}
-function save(){const wk=getWeekRange().start;localStorage.setItem('mf6',JSON.stringify({workouts,profile,weeklyLoadKey,weeklyTSSGoal,weekPlan,weekPlanWeek:wk,intensityTarget,loadCutoffs,curveConfig,dayIntensity,daySports}))}
-function load(){const raw=localStorage.getItem('mf6')||localStorage.getItem('mframe5')||localStorage.getItem('mframe4')||localStorage.getItem('mframe3')||'{}';const d=JSON.parse(raw);workouts=(d.workouts||[]).map(w=>{if(!w.adjTSS)w.adjTSS=Math.round(w.rawTSS*sportMult(w.sport));return w});profile=d.profile||{};weeklyLoadKey=d.weeklyLoadKey||'moderate';weeklyTSSGoal=d.weeklyTSSGoal||650;intensityTarget=d.intensityTarget||{lo:70,mo:20,hi:10};loadCutoffs=d.loadCutoffs||{lo:8.333,hi:16.666};curveConfig=d.curveConfig||{anchorLowTSS:300,anchorLowRatio:0.8,anchorHighTSS:1000,anchorHighRatio:1.5};dayIntensity=d.dayIntensity||{};daySports=d.daySports||{};const wk=getWeekRange().start;const saved=d.weekPlanWeek===wk?(d.weekPlan||{}):{};weekPlan={restDays:saved.restDays||[],valleyVols:saved.valleyVols||{},makeup:saved.makeup||{}}}
+function save(){const wk=getWeekRange().start;localStorage.setItem('mf6',JSON.stringify({workouts,profile,weeklyLoadKey,weeklyTSSGoal,weekPlan,weekPlanWeek:wk,intensityTarget,loadCutoffs,curveConfig,dayIntensity,daySports,dayHiType}))}
+function load(){const raw=localStorage.getItem('mf6')||localStorage.getItem('mframe5')||localStorage.getItem('mframe4')||localStorage.getItem('mframe3')||'{}';const d=JSON.parse(raw);workouts=(d.workouts||[]).map(w=>{if(!w.adjTSS)w.adjTSS=Math.round(w.rawTSS*sportMult(w.sport));return w});profile=d.profile||{};weeklyLoadKey=d.weeklyLoadKey||'moderate';weeklyTSSGoal=d.weeklyTSSGoal||650;intensityTarget=d.intensityTarget||{lo:70,mo:20,hi:10};loadCutoffs=d.loadCutoffs||{lo:8.333,hi:16.666};curveConfig=d.curveConfig||{anchorLowTSS:300,anchorLowRatio:0.8,anchorHighTSS:1000,anchorHighRatio:1.5};dayIntensity=d.dayIntensity||{};daySports=d.daySports||{};dayHiType=d.dayHiType||{};const wk=getWeekRange().start;const saved=d.weekPlanWeek===wk?(d.weekPlan||{}):{};weekPlan={restDays:saved.restDays||[],valleyVols:saved.valleyVols||{},makeup:saved.makeup||{}}}
 function nyDate(d){const parts=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(d||new Date());const get=t=>parts.find(p=>p.type===t).value;return get('year')+'-'+get('month')+'-'+get('day')}
 function today(){return nyDate()}
 function getWeekRange(){const t=today(),p=t.split('-').map(Number);const mon=new Date(p[0],p[1]-1,p[2],12,0,0);const day=mon.getDay(),diff=day===0?-6:1-day;mon.setDate(mon.getDate()+diff);const fmtD=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');return{start:fmtD(mon),end:fmtD(new Date(mon.getTime()+6*864e5)),mon}}
@@ -640,7 +641,7 @@ function calculatePlannedTSS(){
   const plan=buildFullPlan();if(!plan)return 0
   const{mon}=getWeekRange();const today_=today()
   let planned=0
-  for(let i=0;i<7;i++){const d=new Date(mon);d.setDate(mon.getDate()+i);const ds=d.toISOString().split('T')[0];if(ds>=today_){const isRestDay=getRestDays().includes(i);const makeup=isRestDay?(weekPlan.makeup||{})[i]||'low':'';const effVol=getEffectiveVolume(plan.vol[i],i);if(!(isRestDay&&makeup==='off')){const sport=daySports[i]||'bike';const result=getEstimatedDurationAndTSS(effVol,plan.intWave[i],makeup,sport);planned+=result.tss}}}
+  for(let i=0;i<7;i++){const d=new Date(mon);d.setDate(mon.getDate()+i);const ds=d.toISOString().split('T')[0];if(ds>=today_){const isRestDay=getRestDays().includes(i);const makeup=isRestDay?(weekPlan.makeup||{})[i]||'low':'';const effVol=getEffectiveVolume(plan.vol[i],i);if(!(isRestDay&&makeup==='off')){const sport=daySports[i]||'bike';const iw=plan.intWave[i];const hiType=iw==='high'?resolveHiType(i,plan):null;const result=getEstimatedDurationAndTSS(effVol,iw,makeup,sport,hiType);planned+=result.tss}}}
   return planned
 }
 
@@ -756,17 +757,32 @@ function getLoadIntensityPts(vol, intW, makeup=null){
   if(vol==='rest'){if(makeup==='off')return{lp:0,ip:0};if(makeup==='low')return{lp:1,ip:1};if(makeup==='mid')return{lp:2,ip:1};if(makeup==='high')return{lp:3,ip:1};return{lp:1,ip:1}}
   const lpMap={mid:2,high:3},ipMap={low:1,mid:2,high:3};return{lp:lpMap[vol]||2,ip:ipMap[intW]||1}
 }
-function getEstimatedDurationAndTSS(vol, intW, makeup=null, sport='bike'){
+function getEstimatedDurationAndTSS(vol, intW, makeup=null, sport='bike', hiType=null){
   const pctMap={rest_low:0.06,rest_mid:0.08,rest_high:0.12,mid_low:0.12,mid_mid:0.16,mid_high:0.18,high_low:0.23,high_mid:0.25,high_high:0.28}
-  let key;if(vol==='rest'){if(makeup==='off')return{tss:0,duration:0};if(makeup==='low')key='rest_low';else if(makeup==='mid')key='rest_mid';else if(makeup==='high')key='rest_high';else key='rest_low'}else{key=`${vol}_${intW}`}
-  const targetPct=pctMap[key]||0.12;const targetAdjustedTSS=Math.round(weeklyTSSGoal*targetPct);if(targetAdjustedTSS===0)return{tss:0,duration:0}
-  const ifv=getEstimatedIF(intW,sport);const mult=sportMult(sport);const targetRawTSS=targetAdjustedTSS/mult;const duration=Math.round((targetRawTSS*60)/(ifv*ifv*100))
+  let key
+  if(makeup==='off')return{tss:0,duration:0}
+  if(makeup==='low'||makeup==='mid'||makeup==='high')key=`rest_${makeup}`
+  else if(vol==='rest')key='rest_low'
+  else key=`${vol}_${intW}`
+  let targetPct=pctMap[key]||0.12
+  if(intW==='high'&&hiType){const hiMult={short:0.55,long:1.0,tempo:0.95};targetPct*=(hiMult[hiType]||1.0)}
+  const targetAdjustedTSS=Math.round(weeklyTSSGoal*targetPct);if(targetAdjustedTSS===0)return{tss:0,duration:0}
+  const ifv=getEstimatedIF(intW,sport,hiType);const mult=sportMult(sport);const targetRawTSS=targetAdjustedTSS/mult;const duration=Math.round((targetRawTSS*60)/(ifv*ifv*100))
   return{tss:targetAdjustedTSS,duration}
 }
-function getEstimatedIF(intW, sport='bike'){
-  const ifMap={bike:{low:0.68,mid:0.80,high:0.92},run:{low:0.83,mid:0.90,high:1.00},swim:{low:0.93,mid:0.98,high:1.05}}
+function getEstimatedIF(intW, sport='bike', hiType=null){
+  if(intW==='high'&&hiType){const hiMap={bike:{short:1.15,long:1.00,tempo:0.88},run:{short:1.10,long:0.95,tempo:0.85},swim:{short:1.05,long:1.00,tempo:0.95}};const v=hiMap[sport]?.[hiType];if(v)return v}
+  const ifMap={bike:{low:0.68,mid:0.85,high:1.00},run:{low:0.78,mid:0.85,high:0.95},swim:{low:0.90,mid:0.95,high:1.00}}
   return ifMap[sport]?.[intW]||ifMap.bike[intW]||0.68
 }
+function resolveHiType(dayIdx, plan){
+  if(dayHiType[dayIdx])return dayHiType[dayIdx]
+  if(!plan||!plan.intWave)return 'long'
+  const highDays=plan.intWave.map((v,i)=>v==='high'?i:-1).filter(i=>i>=0)
+  const pos=highDays.indexOf(dayIdx);if(pos<0)return 'long'
+  return(['short','long','tempo'])[pos]||'long'
+}
+function cycleHiType(dayIdx,e){if(e)e.stopPropagation();const plan=buildFullPlan();const cur=resolveHiType(dayIdx,plan);const types=['short','long','tempo'];const nextIdx=(types.indexOf(cur)+1)%3;dayHiType={...dayHiType,[dayIdx]:types[nextIdx]};save();renderWeek()}
 function formatSecondsToPace(seconds){if(!seconds||seconds<=0)return'--:--';const mins=Math.floor(seconds/60),secs=Math.round(seconds%60);return`${mins}:${secs.toString().padStart(2,'0')}`}
 function calculateTargetPace(sport, ifv){
   if(!ifv||ifv<=0)return'--'
@@ -779,9 +795,9 @@ function getSportEmoji(sport){return sport==='bike'?'🚴':sport==='run'?'🏃':
 function cycleSport(dayIdx){const sports=['bike','run','swim'];const cur=daySports[dayIdx]||'bike';const nextIdx=(sports.indexOf(cur)+1)%3;daySports[dayIdx]=sports[nextIdx];save();renderWeek()}
 function cycleRestMakeup(dayIdx,e){if(e)e.stopPropagation();const m={...weekPlan.makeup};const cur=m[dayIdx]||'low';const cycle=['off','low','mid','high'];const nextIdx=(cycle.indexOf(cur)+1)%4;m[dayIdx]=cycle[nextIdx];weekPlan.makeup=m;save();renderWeek()}
 function cycleValleyVol(dayIdx){const plan=buildFullPlan();if(!plan)return;const cur=plan.vol[dayIdx]||'mid';const next=cur==='mid'?'high':'mid';const vv={...getValleyVols()};vv[dayIdx]=next;weekPlan.valleyVols=vv;save();renderWeek()}
-function cycleIntensity(dayIdx){const isRestDay=getRestDays().includes(dayIdx);if(isRestDay)return;const intensities=['low','mid','high'];const cur=dayIntensity[dayIdx]||(buildFullPlan()?.intWave[dayIdx]||'low');const nextIdx=(intensities.indexOf(cur)+1)%3;dayIntensity[dayIdx]=intensities[nextIdx];save();renderWeek()}
+function cycleIntensity(dayIdx){const isRestDay=getRestDays().includes(dayIdx);if(isRestDay)return;const intensities=['low','high'];const cur=dayIntensity[dayIdx]||(buildFullPlan()?.intWave[dayIdx]||'low');const curIdx=intensities.indexOf(cur);const nextIdx=(curIdx<0?0:(curIdx+1)%2);dayIntensity[dayIdx]=intensities[nextIdx];save();renderWeek()}
 function toggleRestDay(dayIdx){let rd=[...getRestDays()];if(rd.includes(dayIdx))rd=rd.filter(d=>d!==dayIdx);else if(rd.length<2)rd.push(dayIdx);else rd=[rd[1],dayIdx];weekPlan.restDays=rd;weekPlan.valleyVols={};dayIntensity={};save();renderWeek()}
-function clearWeekPlan(){weekPlan={restDays:[],valleyVols:{},makeup:{}};dayIntensity={};daySports={};save();renderWeek()}
+function clearWeekPlan(){weekPlan={restDays:[],valleyVols:{},makeup:{}};dayIntensity={};daySports={};dayHiType={};save();renderWeek()}
 
 function renderRestDayPicker(){
   const el=document.getElementById('restDayPicker');if(!el)return;const rd=getRestDays()
@@ -794,7 +810,7 @@ function renderWaveViz(plan){
   const volColors={off:'rgba(138,147,153,0.3)',low:'rgba(59,130,246,0.4)',mid:'rgba(59,130,246,0.65)',high:'rgba(59,130,246,0.9)'}
   const volH={off:4,low:8,mid:14,high:22};const intColors={low:'rgba(255,107,53,0.3)',mid:'rgba(255,107,53,0.6)',high:'rgba(255,107,53,0.9)'}
   volRow.innerHTML=plan.vol.map((v,i)=>{const isRestDay=rd.includes(i);const effV=getEffectiveVolume(v,i);return`<div class="wave-cell"><div class="wave-bar-vol" style="height:${volH[effV]||8}px;background:${volColors[effV]||'#1e2427'}" onclick="${isRestDay?`cycleRestMakeup(${i},event)`:`cycleValleyVol(${i})`}" title="${isRestDay?'Click to cycle: Off→Low→Mid→High':'Click to cycle volume'}"></div></div>`}).join('')
-  intRow.innerHTML=plan.intWave.map((v,i)=>{const isRestDay=rd.includes(i);const isDisabled=isRestDay;return`<div class="wave-cell"><div class="wave-bar-int ${isDisabled?'disabled':''}" style="height:${v==='high'?10:v==='mid'?8:6}px;background:${intColors[v]}" onclick="${!isDisabled?`cycleIntensity(${i})`:''}" title="${isDisabled?'Rest day — intensity locked to Low':'Click to cycle: Low↔Mid↔High'}"></div></div>`}).join('')
+  intRow.innerHTML=plan.intWave.map((v,i)=>{const isRestDay=rd.includes(i);const isDisabled=isRestDay;let h=v==='low'?6:v==='mid'?8:10;let bg=intColors[v];if(v==='high'){const t=resolveHiType(i,plan);h=t==='short'?20:t==='long'?14:10;const hiBg={short:'rgba(255,59,59,0.9)',long:'rgba(255,107,53,0.9)',tempo:'rgba(255,204,0,0.9)'};bg=hiBg[t]||intColors.high}return`<div class="wave-cell"><div class="wave-bar-int ${isDisabled?'disabled':''}" style="height:${h}px;background:${bg}" onclick="${!isDisabled?`cycleIntensity(${i})`:''}" title="${isDisabled?'Rest day — intensity locked to Low':'Click to toggle: Low ↔ High (use Step 3 for high-day type)'}"></div></div>`}).join('')
 }
 function renderDayDetails(plan, ww){
   const el=document.getElementById('dayDetailsGrid');if(!el)return
@@ -811,7 +827,7 @@ function renderDayDetails(plan, ww){
     const isCompleted=isPast&&dayAgg
     if(isPast&&dayAgg){m=dayAgg.m;lp=dayAgg.lp;ip=dayAgg.ip;estTSS=dayAgg.adjTSS;estIF=dayAgg.avgIF;const mult=sportMult(sport);duration=Math.round((estTSS*60)/(estIF*estIF*100*mult));paceDisplay=calculateTargetPace(sport,estIF)}
     else if(isToday&&dayAgg){m=dayAgg.m;lp=dayAgg.lp;ip=dayAgg.ip;estTSS=dayAgg.adjTSS;estIF=dayAgg.avgIF;const mult=sportMult(sport);duration=Math.round((estTSS*60)/(estIF*estIF*100*mult));paceDisplay=calculateTargetPace(sport,estIF)}
-    else{const isFullRest=isRestDay&&makeup==='off';if(isFullRest||isMissed){m=0;lp=0;ip=0;estTSS=0;estIF=0;duration=0;paceDisplay='--'}else{m=calcDayM(vol,intW,false,makeup);const pts=getLoadIntensityPts(vol,intW,makeup);lp=pts.lp;ip=pts.ip;const result=getEstimatedDurationAndTSS(effVol,intW,makeup,sport);estTSS=result.tss;estIF=getEstimatedIF(intW,sport);duration=result.duration;paceDisplay=calculateTargetPace(sport,estIF)}}
+    else{const isFullRest=isRestDay&&makeup==='off';if(isFullRest||isMissed){m=0;lp=0;ip=0;estTSS=0;estIF=0;duration=0;paceDisplay='--'}else{m=calcDayM(vol,intW,false,makeup);const pts=getLoadIntensityPts(vol,intW,makeup);lp=pts.lp;ip=pts.ip;const hiType=intW==='high'?resolveHiType(i,plan):null;const result=getEstimatedDurationAndTSS(effVol,intW,makeup,sport,hiType);estTSS=result.tss;estIF=getEstimatedIF(intW,sport,hiType);duration=result.duration;paceDisplay=calculateTargetPace(sport,estIF)}}
     const color=m===0?'var(--text3)':m<=2?'var(--green)':m<=4?'var(--yellow)':'var(--red)'
     const isFullRest=isRestDay&&makeup==='off';const isFuture=!isPast&&!isToday
     let cls='day-col'+(isToday?' is-today':'')+(isPast&&!isToday?' is-past':'')+(isCompleted?' is-completed':'')+(isMissed?' is-missed':'')
@@ -852,7 +868,24 @@ function renderProjectedM(plan, ww){
   renderDayDetails(plan,ww)
 }
 function renderValleyHint(plan){const sec=document.getElementById('valleyOrderSection'),hint=document.getElementById('valleyHint');if(!sec||!plan){if(sec)sec.style.display='none';return}sec.style.display='block';const v3=plan.valley3.map(i=>DAYS[i]).join('·'),v2=plan.valley2.map(i=>DAYS[i]).join('·');hint.textContent=`3-day valley (${v3}): Mid·Mid·High in any order. 2-day valley (${v2}): Mid·High in any order. Tap any valley day to cycle its volume.`}
-function renderPlanner(ww){renderRestDayPicker();const plan=buildFullPlan();renderWaveViz(plan);renderValleyHint(plan);renderProjectedM(plan,ww);const vo=document.getElementById('valleyOrderSection');if(vo)vo.style.display=(plan?'block':'none')}
+function renderHiTypeSection(plan){
+  const sec=document.getElementById('hiTypeSection'),grid=document.getElementById('hiTypeGrid')
+  if(!sec||!grid)return
+  if(!plan){sec.style.display='none';return}
+  const highDays=plan.intWave.map((v,i)=>v==='high'?i:-1).filter(i=>i>=0)
+  if(!highDays.length){sec.style.display='none';return}
+  sec.style.display='block'
+  const typeColors={short:'#ff3b3b',long:'#ff6b35',tempo:'#ffcc00'}
+  const typeLabels={short:'Short',long:'Long',tempo:'Tempo'}
+  const typeZones={short:'Z5–6 VO2max',long:'Z4 Threshold',tempo:'Z3 Tempo'}
+  grid.innerHTML=highDays.map(i=>{
+    const t=resolveHiType(i,plan)
+    const sport=daySports[i]||'bike'
+    const ifv=getEstimatedIF('high',sport,t)
+    return`<div onclick="cycleHiType(${i},event)" style="text-align:center;padding:8px 4px;border-radius:7px;cursor:pointer;border:1.5px solid ${typeColors[t]};background:var(--surface2)"><div style="font-family:var(--font-display);font-size:11px;font-weight:700;color:var(--text3)">${DAYS[i]} ${getSportEmoji(sport)}</div><div style="font-size:11px;font-weight:800;color:${typeColors[t]};margin-top:3px">${typeLabels[t]}</div><div style="font-size:9px;color:var(--text3);margin-top:1px">${typeZones[t]} · IF ${ifv.toFixed(2)}</div></div>`
+  }).join('')
+}
+function renderPlanner(ww){renderRestDayPicker();const plan=buildFullPlan();renderWaveViz(plan);renderValleyHint(plan);renderHiTypeSection(plan);renderProjectedM(plan,ww);const vo=document.getElementById('valleyOrderSection');if(vo)vo.style.display=(plan?'block':'none')}
 
 function drawFrameCanvas(days){
   const canvas=document.getElementById('frameCanvas');if(!canvas)return
@@ -874,7 +907,7 @@ function drawFrameCanvas(days){
   for(let i=0;i<7;i++){
     const cx=PAD_L+barW*i+barW/2;const bLeft=cx-barInner/2;const dDay=new Date(mon);dDay.setDate(mon.getDate()+i);const dStr=dDay.toISOString().split('T')[0]
     const plan=buildFullPlan();let plannedTSS=0
-    if(plan&&dStr>=today()){const isRestDay=getRestDays().includes(i);const makeup=isRestDay?(weekPlan.makeup||{})[i]||'low':'';const effVol=getEffectiveVolume(plan.vol[i],i);if(!(isRestDay&&makeup==='off')){const sport=daySports[i]||'bike';const result=getEstimatedDurationAndTSS(effVol,plan.intWave[i],makeup,sport);plannedTSS=result.tss}}
+    if(plan&&dStr>=today()){const isRestDay=getRestDays().includes(i);const makeup=isRestDay?(weekPlan.makeup||{})[i]||'low':'';const effVol=getEffectiveVolume(plan.vol[i],i);if(!(isRestDay&&makeup==='off')){const sport=daySports[i]||'bike';const iw=plan.intWave[i];const hiType=iw==='high'?resolveHiType(i,plan):null;const result=getEstimatedDurationAndTSS(effVol,iw,makeup,sport,hiType);plannedTSS=result.tss}}
     if(plannedTSS>0){const pH=Math.max(2,(plannedTSS/tssRef)*cH);const pY=PAD_T+cH-pH;ctx.save();ctx.strokeStyle='rgba(59,130,246,0.4)';ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.strokeRect(bLeft+1,pY,barInner-2,pH);ctx.restore()}
     if(actualTSS[i]>0){const tH=Math.max(2,(actualTSS[i]/tssRef)*cH);const tY=PAD_T+cH-tH;ctx.fillStyle=i===todayIdx?'rgba(59,130,246,0.8)':'rgba(59,130,246,0.5)';ctx.beginPath();ctx.roundRect(bLeft,tY,barInner,tH,2);ctx.fill();ctx.fillStyle='rgba(59,130,246,0.9)';ctx.font='bold 8px Barlow Condensed,sans-serif';ctx.textAlign='center';ctx.fillText(actualTSS[i],cx,tY-2)}
     if(mScores[i]>0){const mCol=mScores[i]<=2?'#00d4aa':mScores[i]<=3?'#ffcc00':mScores[i]<=4?'#ff6b35':'#ff3b3b';ctx.fillStyle=mCol;ctx.font='bold 9px Barlow Condensed,sans-serif';ctx.textAlign='center';ctx.fillText('M'+mScores[i],cx,PAD_T+cH+12)}
@@ -975,7 +1008,7 @@ function renderWeek(){
   const fmtMin=m=>{if(!m)return'0m';const h=Math.floor(m/60),mm=Math.round(m%60);return h>0?h+'h'+(mm?(mm<10?'0':'')+mm+'m':''):mm+'m'};const tEl2=document.getElementById('budgetTotalTime');if(tEl2)tEl2.textContent=totMin>0?fmtMin(totMin)+' logged':''
   const budRows=document.getElementById('budgetZoneRows')
   if(budRows){budRows.innerHTML=[{label:'Low  Z1–2',min:loMin,pct:lp,target:zt.lo,color:'#00d4aa'},{label:'Mod  Z3',min:moMin,pct:mp,target:zt.mo,color:'#ffcc00'},{label:'High Z4+',min:hiMin,pct:hp,target:zt.hi,color:'#ff6b35'}].map(z=>{const delta=totMin>0?z.pct-z.target:null;const absDelta=delta!==null?Math.abs(delta):0;const deltaColor=absDelta<=5?'var(--text3)':delta>0?'var(--yellow)':'var(--red)';const deltaStr=delta===null?'':delta>=0?'+'+delta+'%':delta+'%';return`<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border)"><div style="width:8px;height:8px;border-radius:2px;background:${z.color}"></div><div style="font-size:11px;color:var(--text2);flex:1">${z.label}</div><div style="font-size:14px;font-weight:700;min-width:36px;text-align:right">${totMin>0?fmtMin(z.min):'—'}</div><div style="font-size:10px;color:var(--text3);min-width:28px;text-align:right">${totMin>0?z.pct+'%':'—'}</div><div style="font-size:9px;font-weight:600;min-width:30px;text-align:right;color:${deltaColor}">${deltaStr}</div></div>`}).join('')}
-  const planFull_=buildFullPlan();const td_=today();const fmtDp_=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');const projWeek_=Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);const ds=fmtDp_(d);const da=weekDayMap.get(ds);const isRD=getRestDays().includes(i);const mk=isRD?(weekPlan.makeup||{})[i]||'low':'';const sp=daySports[i]||'bike';if(da)return{lp:da.lp,ip:da.ip,projIF:da.avgIF};if(ds<td_)return{lp:0,ip:0,projIF:0};if(!planFull_)return{lp:0,ip:0,projIF:0};const v=planFull_.vol[i];const iw=planFull_.intWave[i];if(isRD&&mk==='off')return{lp:0,ip:0,projIF:0};const pts=getLoadIntensityPts(v,iw,mk);const pIF=isRD?getEstimatedIF('low',sp):getEstimatedIF(iw,sp);return{lp:pts.lp,ip:pts.ip,projIF:pIF}});
+  const planFull_=buildFullPlan();const td_=today();const fmtDp_=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');const projWeek_=Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);const ds=fmtDp_(d);const da=weekDayMap.get(ds);const isRD=getRestDays().includes(i);const mk=isRD?(weekPlan.makeup||{})[i]||'low':'';const sp=daySports[i]||'bike';if(da)return{lp:da.lp,ip:da.ip,projIF:da.avgIF};if(ds<td_)return{lp:0,ip:0,projIF:0};if(!planFull_)return{lp:0,ip:0,projIF:0};const v=planFull_.vol[i];const iw=planFull_.intWave[i];if(isRD&&mk==='off')return{lp:0,ip:0,projIF:0};const pts=getLoadIntensityPts(v,iw,mk);const hiType=iw==='high'?resolveHiType(i,planFull_):null;const pIF=isRD?getEstimatedIF('low',sp):getEstimatedIF(iw,sp,hiType);return{lp:pts.lp,ip:pts.ip,projIF:pIF}});
   const hiDays=days.filter(d=>d.avgIF>=0.95).length;let consecKey=false;for(let i=0;i<6;i++)if(projWeek_[i].projIF>=0.90&&projWeek_[i+1].projIF>=0.90){consecKey=true;break}
   const tlp=projWeek_.reduce((s,d)=>s+d.lp,0),tip=projWeek_.reduce((s,d)=>s+d.ip,0);const ratio=tip>0?(tlp/tip).toFixed(2):0
   const loDiff=lp-zt.lo,hiDiff=hp-zt.hi;const loStatus=Math.abs(loDiff)<=8?'rule-ok':loDiff<-8?'rule-fail':'rule-warn';const hiStatus=Math.abs(hiDiff)<=5?'rule-ok':hiDiff>5?'rule-fail':'rule-warn'
@@ -1813,6 +1846,7 @@ function showArchetypeModal() {
 function renderCoachTab() {
   const container = document.getElementById('coachContent');
   if (!container) return;
+  renderCorrelations();
   const wd = getCoachWeeklyData();
   if (wd.length < 2) {
     container.innerHTML = `<div class="card"><div class="onboard-empty"><div class="onboard-empty-icon">🧠</div><div class="onboard-empty-title">Need more data</div><div class="onboard-empty-body">Log at least 2 weeks with 3+ sessions to unlock coach insights. Try switching the period filter to <strong>All</strong>.</div></div></div>`;
