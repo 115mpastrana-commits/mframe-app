@@ -546,17 +546,49 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
         <span style="font-size:9px;color:var(--text3);font-weight:400;letter-spacing:0.04em">weekly · pearson r</span>
       </div>
       <div style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.5">Overlays your weekly M, TSS, avg IF and pace (normalized) so you can see patterns. Pearson r quantifies the linear relationship (−1 to +1).</div>
-      <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
+      <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;align-items:center">
         <span style="font-size:10px;color:var(--text3);margin-right:2px;font-family:var(--font-display);letter-spacing:0.05em;text-transform:uppercase">Pace:</span>
         <span class="sport-pill active" data-corrsport="run" onclick="setCorrSport('run')">🏃 Run</span>
         <span class="sport-pill" data-corrsport="bike" onclick="setCorrSport('bike')">🚴 Bike</span>
         <span class="sport-pill" data-corrsport="swim" onclick="setCorrSport('swim')">🏊 Swim</span>
       </div>
-      <div style="position:relative"><canvas id="corrOverlayCanvas" height="200" style="width:100%;display:block"></canvas></div>
+      <div id="corrLayerToggles" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;font-size:10px;color:var(--text3);align-items:center">
+        <label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="togZones" checked onchange="renderCorrelations()" style="margin:0"> M-zone shading</label>
+        <label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="togTop20" checked onchange="renderCorrelations()" style="margin:0"> Top 20% pace <span style="font-size:8px;color:var(--yellow);background:rgba(255,204,0,0.12);border:1px solid rgba(255,204,0,0.25);padding:1px 4px;border-radius:3px;letter-spacing:0.04em;text-transform:uppercase">Exp</span></label>
+        <label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="togLpIp" checked onchange="renderCorrelations()" style="margin:0"> LP/IP ratio <span style="font-size:8px;color:var(--yellow);background:rgba(255,204,0,0.12);border:1px solid rgba(255,204,0,0.25);padding:1px 4px;border-radius:3px;letter-spacing:0.04em;text-transform:uppercase">Exp</span></label>
+        <label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="togPb" checked onchange="renderCorrelations()" style="margin:0"> PB pace</label>
+        <label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="togWoW" checked onchange="renderCorrelations()" style="margin:0"> Weekly Δ</label>
+      </div>
+      <div style="position:relative"><canvas id="corrOverlayCanvas" height="230" style="width:100%;display:block"></canvas></div>
       <div id="corrLegend" style="display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:10px;color:var(--text3);line-height:1.5"></div>
-      <div style="height:12px"></div>
-      <div id="corrMatrix"></div>
+
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+          <span style="font-family:var(--font-display);font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text2)">Rolling 8-week Correlation with Pace</span>
+          <span style="font-size:9px;color:var(--text3);font-weight:400">Tests consistency over time</span>
+        </div>
+        <div style="position:relative"><canvas id="corrRollingCanvas" height="110" style="width:100%;display:block"></canvas></div>
+        <div id="corrRollingCurrent" style="font-size:10px;color:var(--text3);margin-top:6px;display:flex;gap:14px;flex-wrap:wrap"></div>
+      </div>
+
+      <div style="margin-top:14px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+          <span style="font-family:var(--font-display);font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text2)">Correlation matrix</span>
+          <span style="font-size:9px;color:var(--text3);font-weight:400">Shows relationship strength</span>
+        </div>
+        <div id="corrMatrix"></div>
+      </div>
+
+      <div style="margin-top:14px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+          <span style="font-family:var(--font-display);font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text2)">Lagged <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0.02em">(predicting future Top 20% pace)</span></span>
+          <span style="font-size:9px;color:var(--text3);font-weight:400">Tests if M predicts future performance</span>
+        </div>
+        <div id="corrLagMatrix"></div>
+      </div>
+
       <div id="corrInsight" style="font-size:11px;color:var(--text3);margin-top:10px;font-style:italic;line-height:1.6"></div>
+      <div id="corrAutoInsight" style="margin-top:10px;padding:10px 12px;background:var(--surface2);border-left:3px solid var(--accent);border-radius:6px;font-size:11px;color:var(--text2);line-height:1.6;display:none"></div>
     </div>
     <div id="coachContent"></div>
   </div>
@@ -758,14 +790,13 @@ function getLoadIntensityPts(vol, intW, makeup=null){
   const lpMap={mid:2,high:3},ipMap={low:1,mid:2,high:3};return{lp:lpMap[vol]||2,ip:ipMap[intW]||1}
 }
 function getEstimatedDurationAndTSS(vol, intW, makeup=null, sport='bike', hiType=null){
-  const pctMap={rest_low:0.06,rest_mid:0.08,rest_high:0.12,mid_low:0.12,mid_mid:0.16,mid_high:0.18,high_low:0.23,high_mid:0.25,high_high:0.28}
+  const volPct={rest_low:0.06,rest_mid:0.10,rest_high:0.18,low:0.10,mid:0.18,high:0.28}
   let key
   if(makeup==='off')return{tss:0,duration:0}
   if(makeup==='low'||makeup==='mid'||makeup==='high')key=`rest_${makeup}`
   else if(vol==='rest')key='rest_low'
-  else key=`${vol}_${intW}`
-  let targetPct=pctMap[key]||0.12
-  if(intW==='high'&&hiType){const hiMult={short:0.55,long:1.0,tempo:0.95};targetPct*=(hiMult[hiType]||1.0)}
+  else key=vol
+  const targetPct=volPct[key]||0.18
   const targetAdjustedTSS=Math.round(weeklyTSSGoal*targetPct);if(targetAdjustedTSS===0)return{tss:0,duration:0}
   const ifv=getEstimatedIF(intW,sport,hiType);const mult=sportMult(sport);const targetRawTSS=targetAdjustedTSS/mult;const duration=Math.round((targetRawTSS*60)/(ifv*ifv*100))
   return{tss:targetAdjustedTSS,duration}
@@ -1175,9 +1206,12 @@ function exportJSON(){const b=new Blob([JSON.stringify({workouts,profile,weeklyL
 function exportCSV(){if(!workouts.length)return alert('No data');const h=['Date','Sport','Min','Intensity','RawTSS','AdjTSS','IF','LoadPts','IntPts','M'];const rows=workouts.map(w=>[w.date,w.sport,w.time,w.intensity,w.rawTSS,w.adjTSS||Math.round(w.rawTSS*sportMult(w.sport)),w.ifv.toFixed(2),w.lp,w.ip,w.m]);const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent([h,...rows].map(r=>r.join(',')).join('\n'));a.download='mframe_'+today()+'.csv';a.click()}
 function importJSON(){const f=document.getElementById('importFile').files[0];if(!f)return alert('Select a file');const r=new FileReader();r.onload=e=>{try{const d=JSON.parse(e.target.result);if(d.workouts){workouts=d.workouts.map(w=>{if(!w.adjTSS)w.adjTSS=Math.round(w.rawTSS*sportMult(w.sport));return w})}if(d.profile)profile=d.profile;if(d.weeklyLoadKey)weeklyLoadKey=d.weeklyLoadKey;if(d.weeklyTSSGoal)weeklyTSSGoal=d.weeklyTSSGoal;if(d.intensityTarget)intensityTarget=d.intensityTarget;if(d.loadCutoffs)loadCutoffs=d.loadCutoffs;if(d.curveConfig)curveConfig=d.curveConfig;save();render();renderSettings();flash('Imported '+workouts.length+' sessions')}catch{alert('Invalid file')}};r.readAsText(f)}
 function parseCSVLine(l){const o=[];let c='',q=false;for(let i=0;i<l.length;i++){const ch=l[i];if(ch==='"')q=!q;else if(ch===','&&!q){o.push(c.trim());c=''}else c+=ch}o.push(c.trim());return o}
+function parseGarminDate(raw){if(!raw)return'';const s=raw.trim().split(/[ T]/)[0];if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;const m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2}|\d{4})$/);if(!m)return'';let a=parseInt(m[1]),b=parseInt(m[2]),y=parseInt(m[3]);if(y<100)y+=2000;let mo,d;if(a>12&&b<=12){mo=b;d=a}else{mo=a;d=b}if(mo<1||mo>12||d<1||d>31)return'';return y+'-'+String(mo).padStart(2,'0')+'-'+String(d).padStart(2,'0')}
 function importGarmin(){
   const f=document.getElementById('importGarminFile').files[0],st=document.getElementById('garminImportStatus');if(!f){st.textContent='Select a CSV file first.';st.style.color='var(--red)';return}
-  const r=new FileReader();r.onload=e=>{try{const lines=e.target.result.trim().split('\n').filter(l=>l.trim());if(lines.length<2){st.textContent='File appears empty.';st.style.color='var(--red)';return}
+  if(/\.numbers$/i.test(f.name)){st.innerHTML='Apple Numbers files aren\'t supported.<br>In Numbers: <b>File → Export To → CSV</b>, then upload that.';st.style.color='var(--red)';return}
+  if(/\.xlsx?$/i.test(f.name)){st.innerHTML='Excel files aren\'t supported.<br>In Excel: <b>File → Save As → CSV</b>, then upload that.';st.style.color='var(--red)';return}
+  const r=new FileReader();r.onload=e=>{try{const lines=e.target.result.trim().split(/\r?\n/).filter(l=>l.trim());if(lines.length<2){st.textContent='File appears empty.';st.style.color='var(--red)';return}
     const hdr=parseCSVLine(lines[0]).map(h=>h.toLowerCase().replace(/[®\s]+/g,' ').trim());if(!hdr.includes('activity type')){st.textContent='Not a Garmin Activities CSV';st.style.color='var(--red)';return}
     const col=n=>hdr.indexOf(n),colHas=s=>hdr.findIndex(h=>h.includes(s)),iType=col('activity type'),iDate=col('date'),iTime=col('time'),iPace=col('avg pace')===-1?col('avg speed'):col('avg pace'),iTE=col('aerobic te'),iNP=colHas('normalized power'),iAvgPower=col('avg power'),iGarminIF=colHas('intensity factor')
     const toSport=t=>{const tl=t.toLowerCase();if(tl.includes('run')||tl.includes('treadmill')||tl.includes('trail'))return'run';if(tl.includes('cycl')||tl.includes('bike')||tl.includes('ride')||tl.includes('spinning'))return'bike';if(tl.includes('swim'))return'swim';return null}
@@ -1185,7 +1219,7 @@ function importGarmin(){
     const teToIF=te=>te>=5?0.97:te>=4?0.90:te>=3?0.82:te>=2?0.74:0.63
     let added=0,skipped=0,noThresh=0,ignored=0,teEst=0
     lines.slice(1).forEach(line=>{if(!line.trim())return;const c=parseCSVLine(line);const type=(c[iType]||'').trim();const sport=toSport(type);if(!sport){ignored++;return}
-      const rawDate=(c[iDate]||'').trim();const date=rawDate.slice(0,10);if(!date.match(/^\d{4}-\d{2}-\d{2}$/))return
+      const rawDate=(c[iDate]||'').trim();const date=parseGarminDate(rawDate);if(!date){skipped++;return}
       const durMin=parseDur((c[iTime]||'').trim());if(durMin<5)return
       if(workouts.some(w=>w.date===date&&w.sport===sport&&Math.abs(w.time-Math.round(durMin))<2)){skipped++;return}
       let ifv,intensity
@@ -1708,10 +1742,309 @@ function setCoachTone(t) { coachTone = t; document.querySelectorAll('.tone-btn')
 function setCoachPeriod(p) { coachPeriod = p; document.querySelectorAll('.coach-period-tab').forEach(b => b.classList.remove('active')); document.querySelector(`.coach-period-tab[data-period="${p}"]`)?.classList.add('active'); renderCoachTab(); }
 function setCorrSport(s){corrSport=s;document.querySelectorAll('[data-corrsport]').forEach(p=>p.classList.toggle('active',p.dataset.corrsport===s));renderCorrelations()}
 function pearsonR(xs,ys){const n=xs.length;if(n<3)return{r:null,n};const mx=xs.reduce((a,b)=>a+b,0)/n,my=ys.reduce((a,b)=>a+b,0)/n;let num=0,dx=0,dy=0;for(let i=0;i<n;i++){const a=xs[i]-mx,b=ys[i]-my;num+=a*b;dx+=a*a;dy+=b*b}const den=Math.sqrt(dx*dy);return{r:den>0?num/den:null,n}}
-function aggregateWeeklyForCorr(wos,sport){const byWeek=new Map();const fd=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');wos.forEach(w=>{const d=new Date(w.date+'T12:00:00'),wd=d.getDay(),df=wd===0?-6:1-wd;const mn=new Date(d);mn.setDate(d.getDate()+df);const k=fd(mn);if(!byWeek.has(k))byWeek.set(k,[]);byWeek.get(k).push(w)});const out=[];for(const[k,sessions]of byWeek){const days=getDayAggs(sessions);const mSum=days.reduce((s,d)=>s+d.m,0);const adjSum=sessions.reduce((s,w)=>s+(w.adjTSS||Math.round(w.rawTSS*sportMult(w.sport))),0);const wifSum=sessions.reduce((s,w)=>s+w.ifv*(w.adjTSS||Math.round(w.rawTSS*sportMult(w.sport))),0);const avgIF=adjSum>0?wifSum/adjSum:null;const sportW=sessions.filter(w=>w.sport===sport);let meanPace=null;if(sportW.length){const paces=[];sportW.forEach(w=>{if(sport==='bike'){const ftp=parseFloat(profile.bike)||200;paces.push(w.ifv*ftp)}else if(sport==='run'){const lt=pSec(profile.run);if(lt)paces.push(lt/w.ifv)}else{const css=pSec(profile.swim);if(css)paces.push(css/w.ifv)}});if(paces.length)meanPace=paces.reduce((a,b)=>a+b,0)/paces.length}out.push({week:k,m:mSum,tss:adjSum,avgIF,meanPace})}return out.sort((a,b)=>a.week.localeCompare(b.week))}
-function drawCorrOverlay(weeks){const canvas=document.getElementById('corrOverlayCanvas');if(!canvas)return;const dpr=window.devicePixelRatio||1;const W=canvas.offsetWidth||canvas.parentElement.offsetWidth||360,H=200;canvas.width=W*dpr;canvas.height=H*dpr;const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);if(weeks.length<2){ctx.fillStyle='#4a5560';ctx.font='11px Barlow Condensed,sans-serif';ctx.textAlign='center';ctx.fillText('Need ≥ 2 weeks of data in this period',W/2,H/2);return}const PAD_L=10,PAD_R=10,PAD_T=14,PAD_B=22;const cW=W-PAD_L-PAD_R,cH=H-PAD_T-PAD_B;const paceInvert=corrSport!=='bike';const series=[{key:'m',color:'#00d4aa'},{key:'tss',color:'#3b82f6'},{key:'avgIF',color:'#ffcc00'},{key:'meanPace',color:'#ff6b35',invert:paceInvert}];ctx.strokeStyle='rgba(42,48,53,0.9)';ctx.lineWidth=0.5;for(let i=0;i<=4;i++){const y=PAD_T+cH*i/4;ctx.beginPath();ctx.moveTo(PAD_L,y);ctx.lineTo(PAD_L+cW,y);ctx.stroke()}const n=weeks.length;const xS=i=>PAD_L+(n>1?cW*i/(n-1):cW/2);series.forEach(s=>{const vals=weeks.map(w=>w[s.key]).filter(v=>v!=null&&!isNaN(v));if(vals.length<2)return;const mn=Math.min(...vals),mx=Math.max(...vals);const range=mx-mn||1;const yS=v=>{const norm=(v-mn)/range;const adj=s.invert?1-norm:norm;return PAD_T+cH*(1-adj)};ctx.beginPath();ctx.strokeStyle=s.color;ctx.lineWidth=2;let first=true;weeks.forEach((w,i)=>{const v=w[s.key];if(v==null||isNaN(v)){first=true;return}const x=xS(i),y=yS(v);if(first){ctx.moveTo(x,y);first=false}else ctx.lineTo(x,y)});ctx.stroke();weeks.forEach((w,i)=>{const v=w[s.key];if(v==null||isNaN(v))return;ctx.beginPath();ctx.fillStyle=s.color;ctx.arc(xS(i),yS(v),2.5,0,Math.PI*2);ctx.fill()})});ctx.fillStyle='#4a5560';ctx.font='9px Barlow Condensed,sans-serif';ctx.textAlign='center';const labelIdxs=n<=6?weeks.map((_,i)=>i):[0,Math.floor(n/4),Math.floor(n/2),Math.floor(3*n/4),n-1];labelIdxs.forEach(i=>{const d=new Date(weeks[i].week+'T12:00:00');const lbl=(d.getMonth()+1)+'/'+d.getDate();ctx.fillText(lbl,xS(i),H-7)})}
+function aggregateWeeklyForCorr(wos,sport){const byWeek=new Map();const fd=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');wos.forEach(w=>{const d=new Date(w.date+'T12:00:00'),wd=d.getDay(),df=wd===0?-6:1-wd;const mn=new Date(d);mn.setDate(d.getDate()+df);const k=fd(mn);if(!byWeek.has(k))byWeek.set(k,[]);byWeek.get(k).push(w)});const out=[];for(const[k,sessions]of byWeek){const days=getDayAggs(sessions);const mSum=days.reduce((s,d)=>s+d.m,0);const lpSum=days.reduce((s,d)=>s+d.lp,0);const ipSum=days.reduce((s,d)=>s+d.ip,0);const lpipRatio=ipSum>0?lpSum/ipSum:null;const adjSum=sessions.reduce((s,w)=>s+(w.adjTSS||Math.round(w.rawTSS*sportMult(w.sport))),0);const wifSum=sessions.reduce((s,w)=>s+w.ifv*(w.adjTSS||Math.round(w.rawTSS*sportMult(w.sport))),0);const avgIF=adjSum>0?wifSum/adjSum:null;const sportW=sessions.filter(w=>w.sport===sport);let meanPace=null;if(sportW.length){const paces=[];sportW.forEach(w=>{if(sport==='bike'){const ftp=parseFloat(profile.bike)||200;paces.push(w.ifv*ftp)}else if(sport==='run'){const lt=pSec(profile.run);if(lt)paces.push(lt/w.ifv)}else{const css=pSec(profile.swim);if(css)paces.push(css/w.ifv)}});if(paces.length)meanPace=paces.reduce((a,b)=>a+b,0)/paces.length}out.push({week:k,m:mSum,tss:adjSum,avgIF,meanPace,lpipRatio})}return out.sort((a,b)=>a.week.localeCompare(b.week))}
+function corrLagged(weeks,srcKey,lag,paceInvert,dstKey){dstKey=dstKey||'top20Pace';const pairs=[];for(let i=0;i+lag<weeks.length;i++){const x=weeks[i][srcKey],y=weeks[i+lag][dstKey];if(x!=null&&y!=null&&!isNaN(x)&&!isNaN(y))pairs.push([x,y])}if(pairs.length<3)return{r:null,n:pairs.length};const xs=pairs.map(p=>p[0]),ys=pairs.map(p=>p[1]);let pr=pearsonR(xs,ys);if(paceInvert&&pr.r!=null)pr={r:-pr.r,n:pr.n};return pr}
+function corrRolling(weeks,srcKey,winSize,paceInvert){const result=[];for(let i=0;i<weeks.length;i++){if(i<winSize-1){result.push(null);continue}const win=weeks.slice(i-winSize+1,i+1);const pairs=win.filter(w=>w[srcKey]!=null&&w.meanPace!=null&&!isNaN(w[srcKey])&&!isNaN(w.meanPace));if(pairs.length<3){result.push(null);continue}const xs=pairs.map(p=>p[srcKey]),ys=pairs.map(p=>p.meanPace);let pr=pearsonR(xs,ys);if(paceInvert&&pr.r!=null)pr={r:-pr.r,n:pr.n};result.push(pr.r)}return result}
+function drawCorrOverlay(weeks,opts){
+  opts=opts||{};
+  const canvas=document.getElementById('corrOverlayCanvas');if(!canvas)return;
+  const dpr=window.devicePixelRatio||1;
+  const W=canvas.offsetWidth||canvas.parentElement.offsetWidth||360,H=230;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
+  if(weeks.length<2){ctx.fillStyle='#4a5560';ctx.font='11px Barlow Condensed,sans-serif';ctx.textAlign='center';ctx.fillText('Need ≥ 2 weeks of data in this period',W/2,H/2);return}
+  const PAD_L=24,PAD_R=opts.lpip?32:14,PAD_T=12,PAD_B=44;
+  const cW=W-PAD_L-PAD_R,cH=H-PAD_T-PAD_B;
+  const paceInvert=corrSport!=='bike';
+  const n=weeks.length;
+  const xS=i=>PAD_L+(n>1?cW*i/(n-1):cW/2);
+  const mVals=weeks.map(w=>w.m).filter(v=>v!=null);
+  const mMin=mVals.length?Math.min(...mVals):0,mMax=mVals.length?Math.max(...mVals):42;
+  const mRange=(mMax-mMin)||1;
+  const yM=v=>PAD_T+cH*(1-(v-mMin)/mRange);
+  if(opts.zones&&mVals.length){
+    const zones=[
+      {min:0,max:13,color:'rgba(100,116,139,0.07)'},
+      {min:14,max:18,color:'rgba(5,150,105,0.07)'},
+      {min:19,max:24,color:'rgba(59,130,246,0.07)'},
+      {min:25,max:27,color:'rgba(255,204,0,0.09)'},
+      {min:28,max:42,color:'rgba(225,29,72,0.07)'}
+    ];
+    zones.forEach(z=>{
+      const top=Math.max(z.min,mMin),bot=Math.min(z.max,mMax);
+      if(top>bot)return;
+      const y1=yM(bot),y2=yM(top);
+      ctx.fillStyle=z.color;
+      ctx.fillRect(PAD_L,Math.min(y1,y2),cW,Math.abs(y2-y1)||1);
+    });
+  }
+  ctx.strokeStyle='rgba(42,48,53,0.9)';ctx.lineWidth=0.5;
+  for(let i=0;i<=4;i++){const y=PAD_T+cH*i/4;ctx.beginPath();ctx.moveTo(PAD_L,y);ctx.lineTo(PAD_L+cW,y);ctx.stroke()}
+  if(opts.pb){
+    const paces=weeks.map(w=>w.meanPace).filter(v=>v!=null);
+    if(paces.length>=2){
+      const pmin=Math.min(...paces),pmax=Math.max(...paces),prange=(pmax-pmin)||1;
+      const pbVal=paceInvert?pmin:pmax;
+      const norm=(pbVal-pmin)/prange;
+      const adj=paceInvert?1-norm:norm;
+      const y=PAD_T+cH*(1-adj);
+      ctx.strokeStyle='rgba(232,234,235,0.5)';ctx.lineWidth=1;ctx.setLineDash([2,3]);
+      ctx.beginPath();ctx.moveTo(PAD_L,y);ctx.lineTo(PAD_L+cW,y);ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle='rgba(232,234,235,0.6)';ctx.font='9px Barlow Condensed,sans-serif';ctx.textAlign='left';
+      ctx.fillText('PB',PAD_L+3,y-2);
+    }
+  }
+  if(opts.top20){
+    const paces=weeks.map(w=>w.meanPace);
+    const allPaces=paces.filter(v=>v!=null);
+    if(allPaces.length>=3){
+      const pmin=Math.min(...allPaces),pmax=Math.max(...allPaces),prange=(pmax-pmin)||1;
+      const win=Math.min(10,allPaces.length);
+      ctx.strokeStyle='rgba(255,107,53,0.45)';ctx.lineWidth=1.5;ctx.setLineDash([4,3]);
+      ctx.beginPath();let first=true;
+      for(let i=0;i<n;i++){
+        const start=Math.max(0,i-win+1);
+        const window=paces.slice(start,i+1).filter(v=>v!=null);
+        if(window.length<3){first=true;continue}
+        const sorted=[...window].sort((a,b)=>a-b);
+        const idx=paceInvert?Math.floor(sorted.length*0.2):Math.floor(sorted.length*0.8);
+        const top20=sorted[Math.max(0,Math.min(sorted.length-1,idx))];
+        const norm=(top20-pmin)/prange;
+        const adj=paceInvert?1-norm:norm;
+        const y=PAD_T+cH*(1-adj);
+        const x=xS(i);
+        if(first){ctx.moveTo(x,y);first=false}else ctx.lineTo(x,y)
+      }
+      ctx.stroke();ctx.setLineDash([]);
+    }
+  }
+  const series=[{key:'m',color:'#00d4aa'},{key:'tss',color:'#3b82f6'},{key:'avgIF',color:'#ffcc00'},{key:'meanPace',color:'#ff6b35',invert:paceInvert}];
+  series.forEach(s=>{
+    const vals=weeks.map(w=>w[s.key]).filter(v=>v!=null&&!isNaN(v));
+    if(vals.length<2)return;
+    const mn=Math.min(...vals),mx=Math.max(...vals);
+    const range=(mx-mn)||1;
+    const yS=v=>{const norm=(v-mn)/range;const adj=s.invert?1-norm:norm;return PAD_T+cH*(1-adj)};
+    ctx.beginPath();ctx.strokeStyle=s.color;ctx.lineWidth=2;let first=true;
+    weeks.forEach((w,i)=>{const v=w[s.key];if(v==null||isNaN(v)){first=true;return}const x=xS(i),y=yS(v);if(first){ctx.moveTo(x,y);first=false}else ctx.lineTo(x,y)});
+    ctx.stroke();
+    weeks.forEach((w,i)=>{const v=w[s.key];if(v==null||isNaN(v))return;ctx.beginPath();ctx.fillStyle=s.color;ctx.arc(xS(i),yS(v),2.5,0,Math.PI*2);ctx.fill()})
+  });
+  if(opts.lpip){
+    const ratios=weeks.map(w=>w.lpipRatio).filter(v=>v!=null);
+    if(ratios.length>=2){
+      const rmin=Math.min(...ratios),rmax=Math.max(...ratios),rrange=(rmax-rmin)||1;
+      const yR=v=>PAD_T+cH*(1-(v-rmin)/rrange);
+      ctx.strokeStyle='rgba(168,85,247,0.6)';ctx.lineWidth=1.5;ctx.setLineDash([5,3]);
+      ctx.beginPath();let first=true;
+      weeks.forEach((w,i)=>{const v=w.lpipRatio;if(v==null){first=true;return}const x=xS(i),y=yR(v);if(first){ctx.moveTo(x,y);first=false}else ctx.lineTo(x,y)});
+      ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle='rgba(168,85,247,0.75)';ctx.font='9px Barlow Condensed,sans-serif';ctx.textAlign='left';
+      ctx.fillText(rmax.toFixed(2),PAD_L+cW+3,PAD_T+8);
+      ctx.fillText(rmin.toFixed(2),PAD_L+cW+3,PAD_T+cH);
+      ctx.save();ctx.translate(W-4,PAD_T+cH/2);ctx.rotate(Math.PI/2);ctx.textAlign='center';
+      ctx.fillText('LP/IP',0,0);ctx.restore();
+    }
+  }
+  if(mVals.length){
+    ctx.fillStyle='rgba(0,212,170,0.7)';ctx.font='9px Barlow Condensed,sans-serif';ctx.textAlign='right';
+    ctx.fillText(Math.round(mMax),PAD_L-3,PAD_T+8);
+    ctx.fillText(Math.round(mMin),PAD_L-3,PAD_T+cH);
+  }
+  ctx.fillStyle='#4a5560';ctx.font='9px Barlow Condensed,sans-serif';ctx.textAlign='center';
+  const labelIdxs=n<=6?weeks.map((_,i)=>i):[0,Math.floor(n/4),Math.floor(n/2),Math.floor(3*n/4),n-1];
+  labelIdxs.forEach(i=>{const d=new Date(weeks[i].week+'T12:00:00');const lbl=(d.getMonth()+1)+'/'+d.getDate();ctx.fillText(lbl,xS(i),PAD_T+cH+12)});
+  if(opts.wow){
+    const wowY=PAD_T+cH+28;
+    ctx.font='11px Barlow Condensed,sans-serif';ctx.textAlign='center';
+    weeks.forEach((w,i)=>{
+      if(i===0||w.meanPace==null||weeks[i-1].meanPace==null)return;
+      const diff=w.meanPace-weeks[i-1].meanPace;
+      if(Math.abs(diff)<0.001)return;
+      const faster=paceInvert?diff<0:diff>0;
+      ctx.fillStyle=faster?'rgba(0,212,170,0.85)':'rgba(255,59,59,0.85)';
+      ctx.fillText(faster?'↑':'↓',xS(i),wowY);
+    });
+  }
+}
+function drawCorrRolling(weeks,paceInvert){
+  const canvas=document.getElementById('corrRollingCanvas');if(!canvas)return null;
+  const dpr=window.devicePixelRatio||1;
+  const W=canvas.offsetWidth||canvas.parentElement.offsetWidth||360,H=110;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
+  const PAD_L=24,PAD_R=10,PAD_T=8,PAD_B=18;
+  const cW=W-PAD_L-PAD_R,cH=H-PAD_T-PAD_B;
+  const n=weeks.length;
+  const mRoll=corrRolling(weeks,'m',8,paceInvert);
+  const tssRoll=corrRolling(weeks,'tss',8,paceInvert);
+  if(n<8){
+    ctx.fillStyle='#4a5560';ctx.font='11px Barlow Condensed,sans-serif';ctx.textAlign='center';
+    ctx.fillText('Need ≥ 8 weeks for rolling correlation',W/2,H/2);
+    return{mRoll,tssRoll};
+  }
+  const xS=i=>PAD_L+(n>1?cW*i/(n-1):cW/2);
+  const yS=r=>PAD_T+cH*(1-(r+1)/2);
+  ctx.fillStyle='rgba(0,212,170,0.05)';ctx.fillRect(PAD_L,yS(1),cW,yS(0.5)-yS(1));
+  ctx.fillStyle='rgba(255,59,59,0.05)';ctx.fillRect(PAD_L,yS(-0.5),cW,yS(-1)-yS(-0.5));
+  ctx.strokeStyle='rgba(42,48,53,0.7)';ctx.lineWidth=0.5;
+  [1,0.5,-0.5,-1].forEach(v=>{ctx.beginPath();ctx.moveTo(PAD_L,yS(v));ctx.lineTo(PAD_L+cW,yS(v));ctx.stroke()});
+  ctx.strokeStyle='rgba(74,85,96,0.7)';ctx.lineWidth=1;ctx.setLineDash([2,2]);
+  ctx.beginPath();ctx.moveTo(PAD_L,yS(0));ctx.lineTo(PAD_L+cW,yS(0));ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#4a5560';ctx.font='9px Barlow Condensed,sans-serif';ctx.textAlign='right';
+  ctx.fillText('+1',PAD_L-3,yS(1)+3);
+  ctx.fillText('0',PAD_L-3,yS(0)+3);
+  ctx.fillText('-1',PAD_L-3,yS(-1)+3);
+  const draw=(arr,color)=>{ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2;let first=true;arr.forEach((v,i)=>{if(v==null||isNaN(v)){first=true;return}const x=xS(i),y=yS(v);if(first){ctx.moveTo(x,y);first=false}else ctx.lineTo(x,y)});ctx.stroke()};
+  draw(mRoll,'#00d4aa');
+  draw(tssRoll,'#3b82f6');
+  ctx.fillStyle='#4a5560';ctx.font='9px Barlow Condensed,sans-serif';ctx.textAlign='center';
+  const labelIdxs=n<=6?weeks.map((_,i)=>i):[0,Math.floor(n/4),Math.floor(n/2),Math.floor(3*n/4),n-1];
+  labelIdxs.forEach(i=>{const d=new Date(weeks[i].week+'T12:00:00');const lbl=(d.getMonth()+1)+'/'+d.getDate();ctx.fillText(lbl,xS(i),H-5)});
+  return{mRoll,tssRoll};
+}
 function rColorStr(r){const a=Math.abs(r);return a>=0.7?'var(--accent)':a>=0.4?'var(--yellow)':'var(--text3)'}
-function renderCorrelations(){const panel=document.getElementById('corrPanel');if(!panel)return;document.querySelectorAll('[data-corrsport]').forEach(p=>p.classList.toggle('active',p.dataset.corrsport===corrSport));const wos=getCoachPeriodWorkouts();const weeks=aggregateWeeklyForCorr(wos,corrSport);drawCorrOverlay(weeks);const fmtPace=(sport,v)=>{if(v==null)return'—';if(sport==='bike')return Math.round(v)+'w';return formatSecondsToPace(Math.round(v))+(sport==='run'?'/mi':'/100m')};const leg=document.getElementById('corrLegend');if(leg){const mVals=weeks.map(w=>w.m).filter(v=>v!=null),tssVals=weeks.map(w=>w.tss).filter(v=>v!=null),ifVals=weeks.map(w=>w.avgIF).filter(v=>v!=null&&v>0),pVals=weeks.map(w=>w.meanPace).filter(v=>v!=null);const cell=(color,label,lo,hi)=>`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:12px;height:2px;background:${color};display:inline-block;border-radius:1px"></span><span style="color:var(--text2);font-weight:700">${label}</span><span style="color:var(--text3)">${lo} → ${hi}</span></span>`;leg.innerHTML=[mVals.length?cell('#00d4aa','M',Math.min(...mVals),Math.max(...mVals)):'',tssVals.length?cell('#3b82f6','TSS',Math.min(...tssVals),Math.max(...tssVals)):'',ifVals.length?cell('#ffcc00','IF',Math.min(...ifVals).toFixed(2),Math.max(...ifVals).toFixed(2)):'',pVals.length?cell('#ff6b35','Pace',fmtPace(corrSport,Math.min(...pVals)),fmtPace(corrSport,Math.max(...pVals))):''].filter(Boolean).join('')}const paceInvert=corrSport!=='bike';const labels={m:'M',tss:'TSS',avgIF:'IF',meanPace:'Pace'};const keys=['m','tss','avgIF','meanPace'];const pairR={};for(let i=0;i<keys.length;i++)for(let j=i+1;j<keys.length;j++){const k1=keys[i],k2=keys[j];const pairs=weeks.filter(w=>w[k1]!=null&&w[k2]!=null&&!isNaN(w[k1])&&!isNaN(w[k2]));if(pairs.length<3){pairR[k1+'_'+k2]={r:null,n:pairs.length};continue}const xs=pairs.map(p=>p[k1]),ys=pairs.map(p=>p[k2]);let pr=pearsonR(xs,ys);if(paceInvert&&(k1==='meanPace'||k2==='meanPace')&&pr.r!=null)pr={r:-pr.r,n:pr.n};pairR[k1+'_'+k2]=pr}const mat=document.getElementById('corrMatrix');if(mat){const header='<tr><th style="padding:4px 6px"></th>'+keys.map(k=>`<th style="padding:4px 6px;color:var(--text3);font-family:var(--font-display);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;text-align:center">${labels[k]}</th>`).join('')+'</tr>';const rows=[];for(let i=0;i<keys.length;i++){const cells=[`<td style="padding:4px 6px;color:var(--text3);font-family:var(--font-display);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em">${labels[keys[i]]}</td>`];for(let j=0;j<keys.length;j++){if(j<=i){cells.push('<td style="padding:4px 6px;background:rgba(42,48,53,0.25);border-radius:4px"></td>');continue}const key=keys[i]+'_'+keys[j];const pr=pairR[key];if(!pr||pr.r==null)cells.push(`<td style="padding:6px;text-align:center;font-size:10px;color:var(--text3);background:var(--surface2);border-radius:4px">—<div style="font-size:8px;margin-top:2px">n=${pr?pr.n:0}</div></td>`);else{const c=rColorStr(pr.r);const bg=Math.abs(pr.r)>=0.7?'rgba(0,212,170,0.08)':Math.abs(pr.r)>=0.4?'rgba(255,204,0,0.06)':'var(--surface2)';cells.push(`<td style="padding:6px;text-align:center;font-size:13px;font-weight:800;color:${c};background:${bg};border-radius:4px">${pr.r>=0?'+':''}${pr.r.toFixed(2)}<div style="font-size:8px;color:var(--text3);font-weight:500;margin-top:2px">n=${pr.n}</div></td>`)}}rows.push('<tr>'+cells.join('')+'</tr>')}mat.innerHTML=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:separate;border-spacing:3px">${header}${rows.join('')}</table></div><div style="font-size:9px;color:var(--text3);margin-top:6px;display:flex;gap:10px;flex-wrap:wrap"><span><span style="display:inline-block;width:8px;height:8px;background:var(--accent);border-radius:2px;vertical-align:middle"></span> |r| ≥ 0.7 strong</span><span><span style="display:inline-block;width:8px;height:8px;background:var(--yellow);border-radius:2px;vertical-align:middle"></span> 0.4 – 0.7 moderate</span><span><span style="display:inline-block;width:8px;height:8px;background:var(--text3);border-radius:2px;vertical-align:middle"></span> < 0.4 weak</span>${paceInvert?'<span style="color:var(--text3)">· pace sign flipped so +r means faster pace</span>':''}</div>`}const insight=document.getElementById('corrInsight');if(insight){const entries=Object.entries(pairR).filter(([,v])=>v.r!=null);entries.sort((a,b)=>Math.abs(b[1].r)-Math.abs(a[1].r));if(!entries.length)insight.textContent='Not enough overlapping weeks yet — need ≥ 3 weeks with both metrics to compute r.';else{const top=entries[0];const[k1,k2]=top[0].split('_');const r=top[1].r;const strength=Math.abs(r)>=0.7?'Strong':Math.abs(r)>=0.4?'Moderate':'Weak';const dir=r>=0?'positive':'negative';const ifPace=pairR['avgIF_meanPace'];const mPace=pairR['m_meanPace'];const parts=[`${strength} ${dir} link — ${labels[k1]} vs ${labels[k2]}: r = ${r>=0?'+':''}${r.toFixed(2)} (n=${top[1].n}).`];if(ifPace&&ifPace.r!=null&&(k1!=='avgIF'||k2!=='meanPace'))parts.push(`IF↔Pace r = ${ifPace.r>=0?'+':''}${ifPace.r.toFixed(2)}.`);if(mPace&&mPace.r!=null&&(k1!=='m'||k2!=='meanPace'))parts.push(`M↔Pace r = ${mPace.r>=0?'+':''}${mPace.r.toFixed(2)}.`);insight.textContent=parts.join(' ')}}}
+function renderCorrelations(){
+  const panel=document.getElementById('corrPanel');if(!panel)return;
+  document.querySelectorAll('[data-corrsport]').forEach(p=>p.classList.toggle('active',p.dataset.corrsport===corrSport));
+  const wos=getCoachPeriodWorkouts();
+  const weeks=aggregateWeeklyForCorr(wos,corrSport);
+  const _paceInvertEarly=corrSport!=='bike';
+  const _allPaces=weeks.map(w=>w.meanPace);
+  const _win=10;
+  weeks.forEach((w,i)=>{
+    const start=Math.max(0,i-_win+1);
+    const winVals=_allPaces.slice(start,i+1).filter(v=>v!=null);
+    if(winVals.length<3){w.top20Pace=null;return}
+    const sorted=[...winVals].sort((a,b)=>a-b);
+    const idx=_paceInvertEarly?Math.floor(sorted.length*0.2):Math.floor(sorted.length*0.8);
+    w.top20Pace=sorted[Math.max(0,Math.min(sorted.length-1,idx))];
+  });
+  const opts={
+    zones:document.getElementById('togZones')?.checked!==false,
+    top20:document.getElementById('togTop20')?.checked!==false,
+    lpip:document.getElementById('togLpIp')?.checked!==false,
+    pb:document.getElementById('togPb')?.checked!==false,
+    wow:document.getElementById('togWoW')?.checked!==false
+  };
+  drawCorrOverlay(weeks,opts);
+  const fmtPace=(sport,v)=>{if(v==null)return'—';if(sport==='bike')return Math.round(v)+'w';return formatSecondsToPace(Math.round(v))+(sport==='run'?'/mi':'/100m')};
+  const leg=document.getElementById('corrLegend');
+  if(leg){
+    const mVals=weeks.map(w=>w.m).filter(v=>v!=null),tssVals=weeks.map(w=>w.tss).filter(v=>v!=null),ifVals=weeks.map(w=>w.avgIF).filter(v=>v!=null&&v>0),pVals=weeks.map(w=>w.meanPace).filter(v=>v!=null),lpipVals=weeks.map(w=>w.lpipRatio).filter(v=>v!=null);
+    const cell=(color,label,lo,hi,dashed)=>`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:14px;height:0;border-top:2px ${dashed||'solid'} ${color};display:inline-block"></span><span style="color:var(--text2);font-weight:700">${label}</span><span style="color:var(--text3)">${lo} → ${hi}</span></span>`;
+    const items=[
+      mVals.length?cell('#00d4aa','M',Math.min(...mVals),Math.max(...mVals)):'',
+      tssVals.length?cell('#3b82f6','TSS',Math.min(...tssVals),Math.max(...tssVals)):'',
+      ifVals.length?cell('#ffcc00','IF',Math.min(...ifVals).toFixed(2),Math.max(...ifVals).toFixed(2)):'',
+      pVals.length?cell('#ff6b35','Pace',fmtPace(corrSport,Math.min(...pVals)),fmtPace(corrSport,Math.max(...pVals))):'',
+      (opts.top20&&pVals.length>=3)?cell('rgba(255,107,53,0.6)','Top 20% pace','rolling','window','dashed'):'',
+      (opts.lpip&&lpipVals.length>=2)?cell('rgba(168,85,247,0.7)','LP/IP ratio',Math.min(...lpipVals).toFixed(2),Math.max(...lpipVals).toFixed(2),'dashed'):'',
+      opts.pb?cell('rgba(232,234,235,0.6)','PB pace','best','—','dotted'):''
+    ];
+    leg.innerHTML=items.filter(Boolean).join('');
+  }
+  const paceInvert=corrSport!=='bike';
+  const labels={m:'M',tss:'TSS',avgIF:'IF',lpipRatio:'LP/IP',top20Pace:'Top 20%'};
+  const keys=['m','tss','avgIF','lpipRatio','top20Pace'];
+  const pairR={};
+  for(let i=0;i<keys.length;i++)for(let j=i+1;j<keys.length;j++){
+    const k1=keys[i],k2=keys[j];
+    const pairs=weeks.filter(w=>w[k1]!=null&&w[k2]!=null&&!isNaN(w[k1])&&!isNaN(w[k2]));
+    if(pairs.length<3){pairR[k1+'_'+k2]={r:null,n:pairs.length};continue}
+    const xs=pairs.map(p=>p[k1]),ys=pairs.map(p=>p[k2]);
+    let pr=pearsonR(xs,ys);
+    if(paceInvert&&(k1==='top20Pace'||k2==='top20Pace')&&pr.r!=null)pr={r:-pr.r,n:pr.n};
+    pairR[k1+'_'+k2]=pr;
+  }
+  const mat=document.getElementById('corrMatrix');
+  if(mat){
+    const header='<tr><th style="padding:4px 6px"></th>'+keys.map(k=>`<th style="padding:4px 6px;color:var(--text3);font-family:var(--font-display);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;text-align:center">${labels[k]}</th>`).join('')+'</tr>';
+    const rows=[];
+    for(let i=0;i<keys.length;i++){
+      const cells=[`<td style="padding:4px 6px;color:var(--text3);font-family:var(--font-display);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em">${labels[keys[i]]}</td>`];
+      for(let j=0;j<keys.length;j++){
+        if(j<=i){cells.push('<td style="padding:4px 6px;background:rgba(42,48,53,0.25);border-radius:4px"></td>');continue}
+        const key=keys[i]+'_'+keys[j];const pr=pairR[key];
+        if(!pr||pr.r==null)cells.push(`<td style="padding:6px;text-align:center;font-size:10px;color:var(--text3);background:var(--surface2);border-radius:4px">—<div style="font-size:8px;margin-top:2px">n=${pr?pr.n:0}</div></td>`);
+        else{const c=rColorStr(pr.r);const bg=Math.abs(pr.r)>=0.7?'rgba(0,212,170,0.08)':Math.abs(pr.r)>=0.4?'rgba(255,204,0,0.06)':'var(--surface2)';cells.push(`<td style="padding:6px;text-align:center;font-size:13px;font-weight:800;color:${c};background:${bg};border-radius:4px">${pr.r>=0?'+':''}${pr.r.toFixed(2)}<div style="font-size:8px;color:var(--text3);font-weight:500;margin-top:2px">n=${pr.n}</div></td>`)}
+      }
+      rows.push('<tr>'+cells.join('')+'</tr>');
+    }
+    mat.innerHTML=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:separate;border-spacing:3px">${header}${rows.join('')}</table></div><div style="font-size:9px;color:var(--text3);margin-top:6px;display:flex;gap:10px;flex-wrap:wrap"><span><span style="display:inline-block;width:8px;height:8px;background:var(--accent);border-radius:2px;vertical-align:middle"></span> |r| ≥ 0.7 strong</span><span><span style="display:inline-block;width:8px;height:8px;background:var(--yellow);border-radius:2px;vertical-align:middle"></span> 0.4 – 0.7 moderate</span><span><span style="display:inline-block;width:8px;height:8px;background:var(--text3);border-radius:2px;vertical-align:middle"></span> < 0.4 weak</span>${paceInvert?'<span style="color:var(--text3)">· pace sign flipped so +r means faster pace</span>':''}</div>`;
+  }
+  const lagSpecs=[{src:'m',color:'#00d4aa',label:'M → Top 20%'},{src:'tss',color:'#3b82f6',label:'TSS → Top 20%'},{src:'lpipRatio',color:'rgba(168,85,247,0.85)',label:'LP/IP → Top 20%'}];
+  const lagsArr=[1,2,3];
+  const laggedR={};
+  lagSpecs.forEach(s=>{laggedR[s.src]=lagsArr.map(L=>corrLagged(weeks,s.src,L,paceInvert))});
+  const lagMat=document.getElementById('corrLagMatrix');
+  if(lagMat){
+    const header='<tr><th style="padding:4px 6px"></th>'+lagsArr.map(L=>`<th style="padding:4px 6px;color:var(--text3);font-family:var(--font-display);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;text-align:center">+${L} wk</th>`).join('')+'</tr>';
+    const rows=lagSpecs.map(s=>{
+      const cells=[`<td style="padding:4px 6px;color:var(--text2);font-family:var(--font-display);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em"><span style="display:inline-block;width:10px;height:2px;background:${s.color};vertical-align:middle;margin-right:4px;border-radius:1px"></span>${s.label}</td>`];
+      laggedR[s.src].forEach(pr=>{
+        if(!pr||pr.r==null)cells.push(`<td style="padding:6px;text-align:center;font-size:10px;color:var(--text3);background:var(--surface2);border-radius:4px">—<div style="font-size:8px;margin-top:2px">n=${pr?pr.n:0}</div></td>`);
+        else{const c=rColorStr(pr.r);const bg=Math.abs(pr.r)>=0.7?'rgba(0,212,170,0.08)':Math.abs(pr.r)>=0.4?'rgba(255,204,0,0.06)':'var(--surface2)';cells.push(`<td style="padding:6px;text-align:center;font-size:13px;font-weight:800;color:${c};background:${bg};border-radius:4px">${pr.r>=0?'+':''}${pr.r.toFixed(2)}<div style="font-size:8px;color:var(--text3);font-weight:500;margin-top:2px">n=${pr.n}</div></td>`)}
+      });
+      return '<tr>'+cells.join('')+'</tr>';
+    });
+    lagMat.innerHTML=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:separate;border-spacing:3px">${header}${rows.join('')}</table></div>`;
+  }
+  const rolling=drawCorrRolling(weeks,paceInvert);
+  const rollingCur=document.getElementById('corrRollingCurrent');
+  if(rollingCur&&rolling){
+    const last=arr=>{for(let i=arr.length-1;i>=0;i--)if(arr[i]!=null&&!isNaN(arr[i]))return arr[i];return null};
+    const fmt=v=>v==null?'—':(v>=0?'+':'')+v.toFixed(2);
+    const mNow=last(rolling.mRoll),tssNow=last(rolling.tssRoll);
+    rollingCur.innerHTML=`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:12px;height:2px;background:#00d4aa;display:inline-block;border-radius:1px"></span><span style="color:var(--text2);font-weight:700">M→Pace</span> <span style="color:var(--text);font-weight:700">${fmt(mNow)}</span></span><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:12px;height:2px;background:#3b82f6;display:inline-block;border-radius:1px"></span><span style="color:var(--text2);font-weight:700">TSS→Pace</span> <span style="color:var(--text);font-weight:700">${fmt(tssNow)}</span></span>`;
+  }
+  const insight=document.getElementById('corrInsight');
+  if(insight){
+    const entries=Object.entries(pairR).filter(([,v])=>v.r!=null);
+    entries.sort((a,b)=>Math.abs(b[1].r)-Math.abs(a[1].r));
+    if(!entries.length)insight.textContent='Not enough overlapping weeks yet — need ≥ 3 weeks with both metrics to compute r.';
+    else{
+      const top=entries[0];const[k1,k2]=top[0].split('_');const r=top[1].r;
+      const strength=Math.abs(r)>=0.7?'Strong':Math.abs(r)>=0.4?'Moderate':'Weak';
+      const dir=r>=0?'positive':'negative';
+      const ifPace=pairR['avgIF_top20Pace'];const mPace=pairR['m_top20Pace'];
+      const parts=[`${strength} ${dir} link — ${labels[k1]} vs ${labels[k2]}: r = ${r>=0?'+':''}${r.toFixed(2)} (n=${top[1].n}).`];
+      if(ifPace&&ifPace.r!=null&&(k1!=='avgIF'||k2!=='top20Pace'))parts.push(`IF↔Top20 r = ${ifPace.r>=0?'+':''}${ifPace.r.toFixed(2)}.`);
+      if(mPace&&mPace.r!=null&&(k1!=='m'||k2!=='top20Pace'))parts.push(`M↔Top20 r = ${mPace.r>=0?'+':''}${mPace.r.toFixed(2)}.`);
+      insight.textContent=parts.join(' ');
+    }
+  }
+  const auto=document.getElementById('corrAutoInsight');
+  if(auto){
+    const msgs=[];
+    const mPace=pairR['m_top20Pace'];const tssPace=pairR['tss_top20Pace'];
+    const mLag=laggedR.m||[];
+    const mStronger=mPace?.r!=null&&tssPace?.r!=null&&Math.abs(mPace.r)>Math.abs(tssPace.r);
+    const lagPositive=mLag.some(l=>l&&l.r!=null&&l.r>0.3);
+    if(mStronger&&lagPositive)msgs.push('🟢 <strong>M shows the strongest and predictive relationship with pace.</strong>');
+    else if(mStronger)msgs.push('🟡 M correlates with pace more strongly than TSS, but the predictive (lagged) signal is weak.');
+    const mRoll=rolling?.mRoll||[];
+    const recent=mRoll.slice(-12).filter(v=>v!=null&&!isNaN(v));
+    const last6=recent.slice(-6);
+    const stable=last6.length>=6&&last6.every(v=>v>0.5);
+    if(stable)msgs.push('🟢 <strong>Relationship is stable and reliable</strong> (rolling r > 0.5 for 6+ weeks).');
+    if(mLag[0]&&mLag[2]&&mLag[0].r!=null&&mLag[2].r!=null){
+      if(Math.abs(mLag[0].r)>0.5&&Math.abs(mLag[2].r)<0.2)msgs.push('🟡 Effect is short-term, not sustained — the signal fades by 3 weeks.');
+    }
+    if(recent.length>=6){
+      const mn=Math.min(...recent),mx=Math.max(...recent);
+      if(mx-mn>1.0)msgs.push('🔴 <strong>Data is unstable</strong> — avoid strong conclusions; rolling correlation swings widely.');
+    }
+    if(msgs.length){
+      auto.style.display='block';
+      auto.innerHTML='<div style="font-family:var(--font-display);font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Auto-insight</div>'+msgs.map(m=>'<div style="margin-bottom:4px">'+m+'</div>').join('');
+    }else{
+      auto.style.display='none';
+    }
+  }
+}
 function setCoachPredSport(s) { coachPredSport = s; renderCoachTab(); }
 function refreshCoachAnalysis() { renderCoachTab(); flash('Coach refreshed'); }
 function setTargetArchetype(k) { coachTargetArchetype = k; renderCoachTab(); }
