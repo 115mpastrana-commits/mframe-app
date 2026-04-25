@@ -927,7 +927,7 @@ function setupFrameTooltip(){
 
 function getWeekContext(days){
   const{mon}=getWeekRange();const todayIdx=getDayIdx(today());const ww=getWeekWo()
-  const weekM=days.reduce((s,d)=>s+d.m,0)+getWeekRestM(new Map(days.map(d=>[d.date,d])))
+  const weekM=days.reduce((s,d)=>s+d.m,0)
   const weekTSS=ww.reduce((s,w)=>s+(w.adjTSS||Math.round(w.rawTSS*sportMult(w.sport))),0);const tier=getTier()
   const todayAgg=days.find(d=>d.date===today())||null
   const remaining=[];for(let i=todayIdx;i<7;i++){const d=new Date(mon);d.setDate(mon.getDate()+i);const ds=d.toISOString().split('T')[0];const sid=weekPlan[i];const st={id:sid}||null;const trained=ww.some(w=>w.date===ds);remaining.push({idx:i,date:ds,plan:st,trained,isToday:i===todayIdx})}
@@ -963,7 +963,7 @@ function getRecContext(days){
 
 function renderWeek(){
   const{mon}=getWeekRange();const ww=getWeekWo();const days=getDayAggs(ww);const weekDayMap=new Map(days.map(d=>[d.date,d]))
-  const weekM=days.reduce((s,d)=>s+d.m,0)+getWeekRestM(weekDayMap)
+  const weekM=days.reduce((s,d)=>s+d.m,0)
   const weekTSS=ww.reduce((s,w)=>s+(w.adjTSS||Math.round(w.rawTSS*sportMult(w.sport))),0)
   const peakIF=days.length?Math.max(...days.map(d=>d.avgIF)):0;const tier=getTier()
   document.getElementById('heroM').textContent=weekM;document.getElementById('heroM').className='hero-stat-val'+(weekM>=30?' danger':weekM>=28?' warn':'')
@@ -1117,7 +1117,7 @@ function renderMTrendChart(){
   const byWeek=new Map()
   workouts.forEach(w=>{const d=new Date(w.date+'T12:00:00'),wd=d.getDay(),df=wd===0?-6:1-wd;const mn=new Date(d);mn.setDate(d.getDate()+df);const k=fmtW(mn);if(!byWeek.has(k))byWeek.set(k,[]);byWeek.get(k).push(w)})
   const weeks=Array.from(byWeek.keys()).sort().slice(-12)
-  const weekData=weeks.map(k=>{const sess=byWeek.get(k),days=getDayAggs(sess);const weekM=days.reduce((s,d)=>s+d.m,0)+(k===getWeekRange().start?getWeekRestM(new Map(days.map(d=>[d.date,d]))):0);return{key:k.slice(5),m:weekM}})
+  const weekData=weeks.map(k=>{const sess=byWeek.get(k),days=getDayAggs(sess);const weekM=days.reduce((s,d)=>s+d.m,0);return{key:k.slice(5),m:weekM}})
   if(weekData.length<2){canvas.style.display='none';document.getElementById('mTrendInsight').innerHTML='Need at least 2 weeks of data';return}
   canvas.style.display='block'
   const dpr=window.devicePixelRatio||1;const W=Math.max(200,canvas.parentElement.clientWidth-32),H=160
@@ -1334,7 +1334,7 @@ function getCoachWeeklyData() {
   return Array.from(bw.entries()).sort((a, b) => a[0].localeCompare(b[0])).map(([k, s]) => {
     const days = getDayAggs(s);
     const tss = s.reduce((a, w) => a + (w.adjTSS || Math.round(w.rawTSS * sportMult(w.sport))), 0);
-    const m = days.reduce((a, d) => a + d.m, 0) + (k === getWeekRange().start ? getWeekRestM(new Map(days.map(d => [d.date, d]))) : 0);
+    const m = days.reduce((a, d) => a + d.m, 0);
     const lp = days.reduce((a, d) => a + d.lp, 0), ip = days.reduce((a, d) => a + d.ip, 0);
     return { week: k, tss, m, lp, ip, ratio: ip > 0 ? lp / ip : 0, sessions: s.length, days };
   });
