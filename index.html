@@ -362,6 +362,18 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
   .coach-hero-grade{font-size:46px}
   .coach-dream-row{grid-template-columns:1fr}
 }
+.profile-switcher-btn{padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--font-display);font-weight:700;letter-spacing:0.04em;text-transform:uppercase;display:inline-flex;align-items:center;gap:4px}
+.profile-switcher-btn:hover{color:var(--text);border-color:var(--accent)}
+.profile-dropdown{position:absolute;top:calc(100% + 4px);right:0;min-width:200px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.5)}
+.profile-dropdown-row{display:flex;align-items:center;gap:6px;padding:7px 8px;border-radius:6px;cursor:pointer;font-size:13px;color:var(--text2)}
+.profile-dropdown-row:hover{background:var(--surface2);color:var(--text)}
+.profile-dropdown-row.active{background:rgba(0,212,170,0.08);color:var(--accent)}
+.profile-dropdown-row .pname{flex:1;font-weight:600}
+.profile-dropdown-row .picon{font-size:11px;opacity:0.6;cursor:pointer;padding:2px 4px}
+.profile-dropdown-row .picon:hover{opacity:1;color:var(--text)}
+.profile-dropdown-divider{height:1px;background:var(--border);margin:4px 0}
+.profile-dropdown-add{padding:7px 8px;color:var(--accent);font-weight:700;cursor:pointer;border-radius:6px;font-size:13px}
+.profile-dropdown-add:hover{background:rgba(0,212,170,0.08)}
 .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
 .modal-overlay[style*="flex"]{display:flex!important}
 .modal-content{background:var(--surface);border:1px solid var(--border);border-radius:16px;max-width:520px;width:100%;max-height:85vh;overflow-y:auto;padding:20px}
@@ -437,8 +449,11 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
 </head>
 <body>
 <div class="modal-overlay" id="archetypeModal" onclick="closeModal(event)"><div class="modal-content" onclick="event.stopPropagation()"><div class="modal-header"><span class="modal-title">🏆 Training Archetypes</span><span class="modal-close" onclick="closeModal()">&times;</span></div><div id="modalArchetypeList"></div></div></div>
+<div class="modal-overlay" id="firstRunModal"><div class="modal-content" onclick="event.stopPropagation()"><div class="modal-header"><span class="modal-title">Welcome to M-FRAME</span></div><div style="font-size:13px;color:var(--text2);margin-bottom:12px">Who's training?</div><input type="text" id="firstRunName" class="form-input" placeholder="Your name" style="margin-bottom:12px" onkeydown="if(event.key==='Enter')completeFirstRun()"><button class="btn-primary" onclick="completeFirstRun()">Create profile</button></div></div>
+<div class="modal-overlay" id="newProfileModal" onclick="closeNewProfileModal(event)"><div class="modal-content" onclick="event.stopPropagation()"><div class="modal-header"><span class="modal-title">New profile</span><span class="modal-close" onclick="closeNewProfileModal()">&times;</span></div><input type="text" id="newProfileName" class="form-input" placeholder="Profile name" style="margin-bottom:12px" onkeydown="if(event.key==='Enter')commitNewProfile()"><button class="btn-primary" onclick="commitNewProfile()">Create</button></div></div>
 <nav id="appNav">
   <div class="nav-brand"><div class="logo">M<em>-</em>FRAME</div><div class="logo-tagline">volume × intensity</div></div>
+  <div id="profileSwitcherWrap" style="position:relative"><button id="profileSwitcherBtn" class="profile-switcher-btn" onclick="toggleProfileDropdown(event)"><span id="profileSwitcherName">—</span> <span style="font-size:9px;color:var(--text3)">▾</span></button><div id="profileDropdown" class="profile-dropdown" style="display:none"></div></div>
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="showTab('week')"><span class="nav-tab-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="nav-tab-label">Week</span></button>
     <button class="nav-tab" onclick="showTab('log')"><span class="nav-tab-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span><span class="nav-tab-label">Log</span></button>
@@ -540,12 +555,19 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
       <button class="tone-btn" data-tone="encouraging" onclick="setCoachTone('encouraging')">🌱 Encouraging</button>
       <button class="btn-sm" onclick="refreshCoachAnalysis()" style="margin-left:auto">🔄</button>
     </div>
+    <div class="card" id="coachSummaryCard" style="margin-bottom:14px;border-left:3px solid var(--accent)">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+        <span style="font-family:var(--font-display);font-size:11px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--text2)">🧭 Coaching Summary</span>
+        <span style="font-size:8px;color:var(--yellow);background:rgba(255,204,0,0.12);border:1px solid rgba(255,204,0,0.25);padding:1px 4px;border-radius:3px;letter-spacing:0.04em;text-transform:uppercase">Exp</span>
+      </div>
+      <div id="coachSummaryBody" style="font-size:12px;color:var(--text2);line-height:1.55"></div>
+    </div>
     <div class="card" id="corrPanel" style="margin-bottom:14px">
       <div class="expandable-header" style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
         <span class="expandable-title">📊 PERFORMANCE CORRELATIONS</span>
         <span style="font-size:9px;color:var(--text3);font-weight:400;letter-spacing:0.04em">weekly · pearson r</span>
       </div>
-      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.5">Overlays your weekly M, TSS, avg IF and pace (normalized) so you can see patterns. Pearson r quantifies the linear relationship (−1 to +1).</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.5">Overlays your weekly M, TSS, and pace (normalized). Top 20% pace is the primary performance metric (solid orange) — average pace is shown faded for context. Pearson r quantifies the linear relationship (−1 to +1).</div>
       <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;align-items:center">
         <span style="font-size:10px;color:var(--text3);margin-right:2px;font-family:var(--font-display);letter-spacing:0.05em;text-transform:uppercase">Pace:</span>
         <span class="sport-pill active" data-corrsport="run" onclick="setCorrSport('run')">🏃 Run</span>
@@ -582,13 +604,45 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
       <div style="margin-top:14px">
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
           <span style="font-family:var(--font-display);font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text2)">Lagged <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0.02em">(predicting future Top 20% pace)</span></span>
-          <span style="font-size:9px;color:var(--text3);font-weight:400">Tests if M predicts future performance</span>
+          <span style="font-size:9px;color:var(--text3);font-weight:400">Tests if today's training predicts pace +1/+2/+3 wks ahead</span>
         </div>
         <div id="corrLagMatrix"></div>
       </div>
 
       <div id="corrInsight" style="font-size:11px;color:var(--text3);margin-top:10px;font-style:italic;line-height:1.6"></div>
       <div id="corrAutoInsight" style="margin-top:10px;padding:10px 12px;background:var(--surface2);border-left:3px solid var(--accent);border-radius:6px;font-size:11px;color:var(--text2);line-height:1.6;display:none"></div>
+    </div>
+    <div class="card" id="zonePerfCard" style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+        <span class="expandable-title">📈 Performance by Training Zone</span>
+        <span style="font-size:8px;color:var(--yellow);background:rgba(255,204,0,0.12);border:1px solid rgba(255,204,0,0.25);padding:1px 4px;border-radius:3px;letter-spacing:0.04em;text-transform:uppercase">Exp</span>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.5">Which M zone produces your best Top 20% pace? Per zone: weeks (n), avg pace, avg LP/IP ratio, and avg week-over-week pace change.</div>
+      <div id="zonePerfBody"></div>
+    </div>
+    <div class="card" id="distOptCard" style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+        <span class="expandable-title">🎯 Distance from Optimal vs Performance</span>
+        <span style="font-size:8px;color:var(--yellow);background:rgba(255,204,0,0.12);border:1px solid rgba(255,204,0,0.25);padding:1px 4px;border-radius:3px;letter-spacing:0.04em;text-transform:uppercase">Exp</span>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.5">Tests whether being closer to <strong style="color:var(--text2)">M = 26</strong> predicts better Top 20% pace — a nonlinear test that raw correlation misses. Compared to raw TSS for context.</div>
+      <div id="distOptBody"></div>
+    </div>
+    <div class="card" id="plateauCard" style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+        <span class="expandable-title">🪨 Plateau Detection</span>
+        <span style="font-size:8px;color:var(--yellow);background:rgba(255,204,0,0.12);border:1px solid rgba(255,204,0,0.25);padding:1px 4px;border-radius:3px;letter-spacing:0.04em;text-transform:uppercase">Exp</span>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.5">Looks for stretches where TSS is stable (±10%) for 4+ weeks AND M sits in the 24–26 sweet spot, then checks whether pace improvement is stalling.</div>
+      <div id="plateauBody"></div>
+    </div>
+    <div class="card" id="adaptEffCard" style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+        <span class="expandable-title">⚙️ Adaptation Efficiency</span>
+        <span style="font-size:8px;color:var(--yellow);background:rgba(255,204,0,0.12);border:1px solid rgba(255,204,0,0.25);padding:1px 4px;border-radius:3px;letter-spacing:0.04em;text-transform:uppercase">Exp</span>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.5">How much pace gain you get per unit of training load — and whether quality (high-M) buys more adaptation per hour than volume alone.</div>
+      <div id="adaptEffBody"></div>
     </div>
     <div id="coachContent"></div>
   </div>
@@ -599,7 +653,8 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
   <div class="card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="font-family:var(--font-display);font-size:10px;font-weight:800;color:var(--accent);background:rgba(0,212,170,0.12);border:1px solid rgba(0,212,170,0.25);padding:2px 8px;border-radius:4px;letter-spacing:0.06em">STEP 2</span><div class="card-label" style="margin:0">TSS weekly target</div></div><div id="tssButtons" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div><div id="tssDesc" style="font-size:11px;color:var(--text3)"></div><div style="margin-top:12px"><div class="collapse-toggle" onclick="toggleCollapse('cutoffBody','cutoffIcon')" style="padding:4px 0"><span style="font-size:11px;color:var(--text3)">Advanced — load cutoffs (experimental)</span><span class="collapse-icon" id="cutoffIcon">&#9662;</span></div><div class="collapse-body" id="cutoffBody"><div style="margin-top:8px;font-size:11px;color:var(--text3);line-height:1.6;margin-bottom:10px">Cutoffs define what counts as a low, mid, or high volume session as a percentage of your weekly TSS goal. Default values are experimental — adjust only if you understand your training data.</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px"><div><div class="form-label">Low cutoff %</div><input type="number" id="sLoCut" class="form-input" step="0.001" oninput="updateCutoffPreview()"></div><div><div class="form-label">High cutoff %</div><input type="number" id="sHiCut" class="form-input" step="0.001" oninput="updateCutoffPreview()"></div></div><div id="cutoffPreview" style="font-size:11px;color:var(--text3);margin-bottom:10px"></div><button class="btn-primary" onclick="saveCutoffs()">Apply cutoffs</button></div></div></div>
   <div class="card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="font-family:var(--font-display);font-size:10px;font-weight:800;color:var(--accent);background:rgba(0,212,170,0.12);border:1px solid rgba(0,212,170,0.25);padding:2px 8px;border-radius:4px;letter-spacing:0.06em">STEP 3</span><div class="card-label" style="margin:0">M budget (intensity ceiling)</div></div><div id="mBudgetCards"></div><div style="margin-top:8px;padding:8px 12px;background:var(--surface2);border-radius:8px;border-left:3px solid var(--text3)" id="mBudgetNote"><div style="font-size:12px;color:var(--text2)" id="mBudgetDesc">—</div></div></div>
   <div class="card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="font-family:var(--font-display);font-size:10px;font-weight:800;color:var(--accent);background:rgba(0,212,170,0.12);border:1px solid rgba(0,212,170,0.25);padding:2px 8px;border-radius:4px;letter-spacing:0.06em">STEP 4</span><div class="card-label" style="margin:0">Zone distribution target</div></div><div style="font-size:11px;color:var(--text3);margin-bottom:8px">Set your intensity zone targets. These appear in rule compliance and guide recommendations.</div><div class="zone-preset-btns" id="zonePresetBtns"></div><div class="form-row" style="margin-bottom:8px"><div class="form-group" style="margin:0"><label class="form-label">Low Z1–2 %</label><input type="number" id="sLoTarget" class="form-input" min="0" max="100" oninput="updateHiTarget()"></div><div class="form-group" style="margin:0"><label class="form-label">Mod Z3 %</label><input type="number" id="sMoTarget" class="form-input" min="0" max="100" oninput="updateHiTarget()"></div></div><div style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--surface2);border-radius:8px;margin-bottom:10px"><span style="font-size:12px;color:var(--text3)">High Z4+ (auto)</span><span style="font-size:14px;font-weight:700;color:var(--red)" id="sHiDisplay">—</span></div><button class="btn-primary" onclick="saveZoneTarget()">Apply Zone Targets</button></div>
-  <div class="card"><div class="collapse-toggle" onclick="toggleCollapse('dataBody','dataIcon')"><div class="card-label" style="margin:0">Data</div><span class="collapse-icon" id="dataIcon">&#9662;</span></div><div class="collapse-body" id="dataBody"><div style="height:8px"></div><div style="display:flex;gap:8px"><button class="btn-sm" onclick="exportJSON()">Export JSON</button><button class="btn-sm" onclick="exportCSV()">Export CSV</button><button class="btn-sm danger" onclick="clearAll()">Clear All</button></div><div style="background:var(--surface2);border-radius:8px;padding:12px;margin-top:10px"><div class="form-label">Import JSON backup</div><input type="file" id="importFile" accept=".json" class="form-input" style="margin-bottom:8px"><button class="btn-sm" onclick="importJSON()" style="width:100%">Restore</button></div><div style="background:var(--surface2);border-radius:8px;padding:12px;margin-top:10px"><div class="form-label">Import from Garmin Connect</div><div style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.6">Export from <strong style="color:var(--text2)">Garmin Connect → Activities → Export CSV</strong>.<br>Running &amp; swimming use your saved threshold pace to calculate IF.<br>Cycling uses Aerobic Training Effect as an intensity estimate.<br>Activities under 5 min and duplicates are skipped.</div><input type="file" id="importGarminFile" accept=".csv" class="form-input" style="margin-bottom:8px"><button class="btn-sm" onclick="importGarmin()" style="width:100%">Import Garmin CSV</button><div id="garminImportStatus" style="font-size:11px;margin-top:6px;line-height:1.5;color:var(--text3)"></div></div></div></div>
+  <div class="card"><div class="collapse-toggle" onclick="toggleCollapse('thBody','thIcon')"><div class="card-label" style="margin:0">Threshold history</div><span class="collapse-icon" id="thIcon">&#9662;</span></div><div class="collapse-body" id="thBody"><div id="thBanner" style="display:none"></div><div id="thSections"></div></div></div>
+  <div class="card"><div class="collapse-toggle" onclick="toggleCollapse('dataBody','dataIcon')"><div class="card-label" style="margin:0">Data</div><span class="collapse-icon" id="dataIcon">&#9662;</span></div><div class="collapse-body" id="dataBody"><div style="height:8px"></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn-sm" onclick="exportJSON()">Export JSON</button><button class="btn-sm" onclick="exportCSV()">Export CSV</button><button class="btn-sm" onclick="recalculateAllWorkouts()">Recalculate history</button><button class="btn-sm danger" onclick="clearAll()">Clear All</button></div><div style="background:var(--surface2);border-radius:8px;padding:12px;margin-top:10px"><div class="form-label">Import JSON backup</div><input type="file" id="importFile" accept=".json" class="form-input" style="margin-bottom:8px"><button class="btn-sm" onclick="importJSON()" style="width:100%">Restore</button></div><div style="background:var(--surface2);border-radius:8px;padding:12px;margin-top:10px"><div class="form-label">Import from Garmin Connect</div><div style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.6">Export from <strong style="color:var(--text2)">Garmin Connect → Activities → Export CSV</strong>.<br>Running &amp; swimming use your saved threshold pace to calculate IF.<br>Cycling uses Aerobic Training Effect as an intensity estimate.<br>Activities under 5 min and duplicates are skipped.</div><input type="file" id="importGarminFile" accept=".csv" class="form-input" style="margin-bottom:8px"><button class="btn-sm" onclick="importGarmin()" style="width:100%">Import Garmin CSV</button><div id="garminImportStatus" style="font-size:11px;margin-top:6px;line-height:1.5;color:var(--text3)"></div></div></div></div>
   <div class="card"><div class="collapse-toggle" onclick="toggleCollapse('curveConfigBody','curveConfigIcon')"><div class="card-label" style="margin-bottom:0">Efficiency curve — <span style="color:var(--yellow)">experimental</span></div><span class="collapse-icon" id="curveConfigIcon">&#9662;</span></div><div class="collapse-body" id="curveConfigBody"><div style="height:6px"></div><div style="font-size:11px;color:var(--text3);font-style:italic;margin-bottom:10px;line-height:1.5">These values define the shape of your optimal ratio curve. Default anchors are experimental.</div><div class="form-row" style="margin-bottom:10px"><div class="form-group"><label class="form-label">Low anchor TSS</label><input type="number" id="curveLowTSS" class="form-input" value="300" step="10" min="50" oninput="updateCurvePreview()"></div><div class="form-group"><label class="form-label">Low anchor ratio</label><input type="number" id="curveLowRatio" class="form-input" value="0.8" step="0.01" min="0.1" oninput="updateCurvePreview()"></div></div><div class="form-row" style="margin-bottom:10px"><div class="form-group"><label class="form-label">High anchor TSS</label><input type="number" id="curveHighTSS" class="form-input" value="1000" step="10" min="100" oninput="updateCurvePreview()"></div><div class="form-group"><label class="form-label">High anchor ratio</label><input type="number" id="curveHighRatio" class="form-input" value="1.5" step="0.01" min="0.2" oninput="updateCurvePreview()"></div></div><div id="curvePreview" style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.6"></div><button class="btn-sm" onclick="saveCurveConfig()" style="width:100%">Apply curve</button></div></div>
 </div>
 
@@ -626,6 +681,27 @@ let curveConfig={anchorLowTSS:300,anchorLowRatio:0.8,anchorHighTSS:1000,anchorHi
 let dayIntensity={},daySports={},dayHiType={},historySport='run',filteredWorkoutsCache=[]
 let paceChartOpen=false,efficiencyCurveOpen=false
 let paceLinesVisible={mean:true,high:true,low:true}
+let thresholdHistory=null
+let thresholdNeedsRecalc=false
+const Storage={
+  ACTIVE_KEY:'mf_activeProfile',
+  PROFILES_KEY:'mf_profiles',
+  dataKey(profileId){return 'mf_data_'+profileId},
+  listProfiles(){try{return JSON.parse(localStorage.getItem(this.PROFILES_KEY)||'[]')}catch{return[]}},
+  saveProfiles(list){localStorage.setItem(this.PROFILES_KEY,JSON.stringify(list))},
+  getActiveId(){return localStorage.getItem(this.ACTIVE_KEY)},
+  setActiveId(id){localStorage.setItem(this.ACTIVE_KEY,id)},
+  loadData(profileId){try{return JSON.parse(localStorage.getItem(this.dataKey(profileId))||'{}')}catch{return{}}},
+  saveData(profileId,blob){localStorage.setItem(this.dataKey(profileId),JSON.stringify(blob))},
+  deleteProfile(profileId){localStorage.removeItem(this.dataKey(profileId));const list=this.listProfiles().filter(p=>p.id!==profileId);this.saveProfiles(list)}
+}
+function getActiveProfile(){const id=Storage.getActiveId();if(!id)return null;return Storage.listProfiles().find(p=>p.id===id)||null}
+function getThresholdAt(metric,dateStr){const arr=(thresholdHistory&&thresholdHistory[metric])||[];if(!arr.length)return null;let match=null;for(const entry of arr){if(entry.effectiveFrom<=dateStr)match=entry;else break}return match}
+function ensureThresholdHistoryShape(){if(!thresholdHistory||typeof thresholdHistory!=='object')thresholdHistory={bike:[],run:[],swim:[],weeklyTSSGoal:[]};['bike','run','swim','weeklyTSSGoal'].forEach(k=>{if(!Array.isArray(thresholdHistory[k]))thresholdHistory[k]=[]})}
+function sortThresholdMetric(metric){if(thresholdHistory&&Array.isArray(thresholdHistory[metric]))thresholdHistory[metric].sort((a,b)=>a.effectiveFrom.localeCompare(b.effectiveFrom))}
+function addThresholdEntry(metric,value,dateStr){ensureThresholdHistoryShape();const arr=thresholdHistory[metric];const existing=arr.find(e=>e.effectiveFrom===dateStr);if(existing){existing.value=value}else{arr.push({value,effectiveFrom:dateStr})}sortThresholdMetric(metric)}
+function updateThresholdEntry(metric,oldDate,newDate,newValue){ensureThresholdHistoryShape();const arr=thresholdHistory[metric];const idx=arr.findIndex(e=>e.effectiveFrom===oldDate);if(idx<0)return false;arr[idx]={value:newValue,effectiveFrom:newDate};const dupes=arr.filter(e=>e.effectiveFrom===newDate);if(dupes.length>1){const keep=arr[idx];thresholdHistory[metric]=arr.filter(e=>e.effectiveFrom!==newDate||e===keep)}sortThresholdMetric(metric);return true}
+function deleteThresholdEntry(metric,dateStr){ensureThresholdHistoryShape();const arr=thresholdHistory[metric];if(arr.length<=1)return false;thresholdHistory[metric]=arr.filter(e=>e.effectiveFrom!==dateStr);return true}
 
 const LOAD_TIERS={low:{key:'low',label:'Maintenance',mMin:14,mCeil:18,accent:'#059669',desc:'Recovery/deload. 14–18 M — fitness preserved, fatigue cleared. Use after every 2–3 hard blocks.'},moderate:{key:'moderate',label:'Productive',mMin:19,mCeil:24,accent:'#16a34a',desc:'Fitness building. 19–24 M — target for most training weeks. Sustainable 8–12 weeks.'},high:{key:'high',label:'Optimal',mMin:25,mCeil:27,accent:'#65a30d',desc:'Peak adaptation. 25–27 M — maximum 3–4 weeks. Must follow with Maintenance.'},extreme:{key:'extreme',label:'Overreaching',mMin:28,mCeil:29,accent:'#ea580c',desc:'Functional overload. 28–29 M — maximum 1 week. Elite only. Follow with Maintenance.'}}
 const TSS_OPTS=[{v:150,l:'150',d:'Detraining — maintaining coordination only'},{v:300,l:'300',d:'Limited — protecting habits and intensity'},{v:400,l:'400',d:'Productive — structure matters, training begins'},{v:500,l:'500',d:'Advanced — M rules fully apply'},{v:650,l:'650',d:'Advanced Amateur — recommended default'},{v:800,l:'800',d:'Pro-Am — fatigue accumulates across weeks'},{v:1000,l:'1000',d:'Elite — narrow margins, no shortcuts'}]
@@ -635,14 +711,16 @@ const getTier=()=>LOAD_TIERS[weeklyLoadKey]||LOAD_TIERS.moderate
 
 function pSec(s){if(!s||typeof s!=='string')return 0;const p=s.split(':');if(p.length!==2)return 0;const m=parseInt(p[0]),sc=parseInt(p[1]);return(isNaN(m)||isNaN(sc))?0:m*60+sc}
 function sportMult(s){return s==='run'?1.4:s==='swim'?0.65:1.0}
-function calcIF(intensity,sport){const th=sport==='bike'?profile.bike:sport==='run'?profile.run:profile.swim;if(!th||!th.trim())return 0;const iStr=String(intensity).trim();let ifv=0;if(iStr.includes(':')){const ts=pSec(th),is=pSec(iStr);if(ts&&is)ifv=Math.min(ts/is,1.3)}else{const tn=parseFloat(th),iv=parseFloat(iStr);if(!isNaN(tn)&&!isNaN(iv)&&tn>0)ifv=Math.min(iv/tn,1.3)}return Math.max(ifv,0.50)}
+function calcIF(intensity,sport,dateStr){let th;if(dateStr){const e=getThresholdAt(sport,dateStr);th=e?e.value:(sport==='bike'?profile.bike:sport==='run'?profile.run:profile.swim)}else{th=sport==='bike'?profile.bike:sport==='run'?profile.run:profile.swim}if(!th||!String(th).trim())return 0;const iStr=String(intensity).trim();let ifv=0;if(iStr.includes(':')){const ts=pSec(String(th)),is=pSec(iStr);if(ts&&is)ifv=Math.min(ts/is,1.3)}else{const tn=parseFloat(th),iv=parseFloat(iStr);if(!isNaN(tn)&&!isNaN(iv)&&tn>0)ifv=Math.min(iv/tn,1.3)}return Math.max(ifv,0.50)}
 function calcRawTSS(min,ifv){return Math.round((min/60)*ifv*ifv*100)}
-function getLoadPts(adj){const base=weeklyTSSGoal;const loCut=base*(loadCutoffs.lo/100);const hiCut=base*(loadCutoffs.hi/100);return adj<loCut?1:adj<=hiCut?2:3}
+function getLoadPts(adj,dateStr){let goal=weeklyTSSGoal;if(dateStr){const e=getThresholdAt('weeklyTSSGoal',dateStr);if(e){const v=parseFloat(e.value);if(!isNaN(v)&&v>0)goal=v}}const loCut=goal*(loadCutoffs.lo/100);const hiCut=goal*(loadCutoffs.hi/100);return adj<loCut?1:adj<=hiCut?2:3}
 function getIntPts(sport,ifv){if(sport==='run')return ifv<0.83?1:ifv<0.90?2:3;if(sport==='bike')return ifv<0.76?1:ifv<0.91?2:3;if(sport==='swim')return ifv<0.93?1:ifv<0.98?2:3;return ifv<0.80?1:ifv<0.90?2:3}
-function calcM(sport,rawTSS,ifv){const adj=Math.round(rawTSS*sportMult(sport));const lp=getLoadPts(adj),ip=getIntPts(sport,ifv);return{m:Math.min(lp+ip,6),adjTSS:adj,lp,ip}}
-function getDayAggs(list){const map=new Map();list.forEach(w=>{if(!map.has(w.date))map.set(w.date,{date:w.date,rawTSS:0,adjTSS:0,wIF:0,sessions:[]});const e=map.get(w.date);e.rawTSS+=w.rawTSS;e.adjTSS+=w.adjTSS||Math.round(w.rawTSS*sportMult(w.sport));e.wIF+=w.ifv*(w.adjTSS||w.rawTSS);e.sessions.push(w)});const out=[];for(const[,e]of map){const avgIF=e.adjTSS>0?e.wIF/e.adjTSS:0.5;const peakSess=e.sessions.reduce((a,b)=>b.ifv>a.ifv?b:a);const domSess=e.sessions.reduce((a,b)=>b.rawTSS>a.rawTSS?b:a);const adj=Math.round(e.rawTSS*sportMult(domSess.sport));const lp=getLoadPts(adj);const ip=getIntPts(peakSess.sport,peakSess.ifv);out.push({date:e.date,rawTSS:e.rawTSS,adjTSS:e.adjTSS,avgIF,peakIF:peakSess.ifv,m:Math.min(lp+ip,6),lp,ip,sessions:e.sessions,cnt:e.sessions.length})}return out.sort((a,b)=>a.date.localeCompare(b.date))}
-function save(){const wk=getWeekRange().start;localStorage.setItem('mf6',JSON.stringify({workouts,profile,weeklyLoadKey,weeklyTSSGoal,weekPlan,weekPlanWeek:wk,intensityTarget,loadCutoffs,curveConfig,dayIntensity,daySports,dayHiType}))}
-function load(){const raw=localStorage.getItem('mf6')||localStorage.getItem('mframe5')||localStorage.getItem('mframe4')||localStorage.getItem('mframe3')||'{}';const d=JSON.parse(raw);workouts=(d.workouts||[]).map(w=>{if(!w.adjTSS)w.adjTSS=Math.round(w.rawTSS*sportMult(w.sport));return w});profile=d.profile||{};weeklyLoadKey=d.weeklyLoadKey||'moderate';weeklyTSSGoal=d.weeklyTSSGoal||650;intensityTarget=d.intensityTarget||{lo:70,mo:20,hi:10};loadCutoffs=d.loadCutoffs||{lo:8.333,hi:16.666};curveConfig=d.curveConfig||{anchorLowTSS:300,anchorLowRatio:0.8,anchorHighTSS:1000,anchorHighRatio:1.5};dayIntensity=d.dayIntensity||{};daySports=d.daySports||{};dayHiType=d.dayHiType||{};const wk=getWeekRange().start;const saved=d.weekPlanWeek===wk?(d.weekPlan||{}):{};weekPlan={restDays:saved.restDays||[],valleyVols:saved.valleyVols||{},makeup:saved.makeup||{}}}
+function calcM(sport,rawTSS,ifv,dateStr){const adj=Math.round(rawTSS*sportMult(sport));const lp=getLoadPts(adj,dateStr),ip=getIntPts(sport,ifv);return{m:Math.min(lp+ip,6),adjTSS:adj,lp,ip}}
+function getDayAggs(list){const map=new Map();list.forEach(w=>{if(!map.has(w.date))map.set(w.date,{date:w.date,rawTSS:0,adjTSS:0,wIF:0,sessions:[]});const e=map.get(w.date);e.rawTSS+=w.rawTSS;e.adjTSS+=w.adjTSS||Math.round(w.rawTSS*sportMult(w.sport));e.wIF+=w.ifv*(w.adjTSS||w.rawTSS);e.sessions.push(w)});const out=[];for(const[,e]of map){const avgIF=e.adjTSS>0?e.wIF/e.adjTSS:0.5;const peakSess=e.sessions.reduce((a,b)=>b.ifv>a.ifv?b:a);const domSess=e.sessions.reduce((a,b)=>b.rawTSS>a.rawTSS?b:a);const adj=Math.round(e.rawTSS*sportMult(domSess.sport));const lp=getLoadPts(adj,e.date);const ip=getIntPts(peakSess.sport,peakSess.ifv);out.push({date:e.date,rawTSS:e.rawTSS,adjTSS:e.adjTSS,avgIF,peakIF:peakSess.ifv,m:Math.min(lp+ip,6),lp,ip,sessions:e.sessions,cnt:e.sessions.length})}return out.sort((a,b)=>a.date.localeCompare(b.date))}
+function save(){const id=Storage.getActiveId();if(!id)return;const wk=getWeekRange().start;Storage.saveData(id,{workouts,profile,weeklyLoadKey,weeklyTSSGoal,weekPlan,weekPlanWeek:wk,intensityTarget,loadCutoffs,curveConfig,dayIntensity,daySports,dayHiType,thresholdHistory})}
+function load(){const id=Storage.getActiveId();const d=id?Storage.loadData(id):{};workouts=(d.workouts||[]).map(w=>{if(!w.adjTSS)w.adjTSS=Math.round(w.rawTSS*sportMult(w.sport));return w});profile=d.profile||{};weeklyLoadKey=d.weeklyLoadKey||'moderate';weeklyTSSGoal=d.weeklyTSSGoal||650;intensityTarget=d.intensityTarget||{lo:70,mo:20,hi:10};loadCutoffs=d.loadCutoffs||{lo:8.333,hi:16.666};curveConfig=d.curveConfig||{anchorLowTSS:300,anchorLowRatio:0.8,anchorHighTSS:1000,anchorHighRatio:1.5};dayIntensity=d.dayIntensity||{};daySports=d.daySports||{};dayHiType=d.dayHiType||{};thresholdHistory=d.thresholdHistory||null;const wk=getWeekRange().start;const saved=d.weekPlanWeek===wk?(d.weekPlan||{}):{};weekPlan={restDays:saved.restDays||[],valleyVols:saved.valleyVols||{},makeup:saved.makeup||{}};seedThresholdHistoryIfNeeded()}
+function seedThresholdHistoryIfNeeded(){const empty=!thresholdHistory||(!thresholdHistory.bike?.length&&!thresholdHistory.run?.length&&!thresholdHistory.swim?.length&&!thresholdHistory.weeklyTSSGoal?.length);if(!empty)return;ensureThresholdHistoryShape();let seeded=false;if(profile&&profile.bike&&!thresholdHistory.bike.length){thresholdHistory.bike.push({value:profile.bike,effectiveFrom:'1970-01-01'});seeded=true}if(profile&&profile.run&&!thresholdHistory.run.length){thresholdHistory.run.push({value:profile.run,effectiveFrom:'1970-01-01'});seeded=true}if(profile&&profile.swim&&!thresholdHistory.swim.length){thresholdHistory.swim.push({value:profile.swim,effectiveFrom:'1970-01-01'});seeded=true}if(weeklyTSSGoal&&!thresholdHistory.weeklyTSSGoal.length){thresholdHistory.weeklyTSSGoal.push({value:weeklyTSSGoal,effectiveFrom:'1970-01-01'});seeded=true}if(seeded&&Storage.getActiveId())save()}
+function migrateLegacyIfNeeded(){const profiles=Storage.listProfiles();if(profiles.length>0)return false;const legacyKeys=['mf6','mframe5','mframe4','mframe3'];let legacyRaw=null,legacyKeyFound=null;for(const k of legacyKeys){const v=localStorage.getItem(k);if(v){legacyRaw=v;legacyKeyFound=k;break}}if(!legacyRaw)return false;let blob;try{blob=JSON.parse(legacyRaw)}catch{return false}const newId='p_'+uid();const meta={id:newId,name:'Me',createdAt:today()};Storage.saveData(newId,blob||{});Storage.saveProfiles([meta]);Storage.setActiveId(newId);legacyKeys.forEach(k=>localStorage.removeItem(k));setTimeout(()=>flash("Migrated existing data to profile 'Me'"),200);return true}
 function nyDate(d){const parts=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(d||new Date());const get=t=>parts.find(p=>p.type===t).value;return get('year')+'-'+get('month')+'-'+get('day')}
 function today(){return nyDate()}
 function getWeekRange(){const t=today(),p=t.split('-').map(Number);const mon=new Date(p[0],p[1]-1,p[2],12,0,0);const day=mon.getDay(),diff=day===0?-6:1-day;mon.setDate(mon.getDate()+diff);const fmtD=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');return{start:fmtD(mon),end:fmtD(new Date(mon.getTime()+6*864e5)),mon}}
@@ -778,16 +856,17 @@ function getEffectiveVolume(volLevel, dayIdx){
   if(isRestDay){const makeup=weekPlan.makeup?.[dayIdx]||null;if(makeup==='off')return'off';if(makeup==='low')return'low';if(makeup==='mid')return'mid';if(makeup==='high')return'high';return'low'}
   return volLevel
 }
-function calcDayM(vol, intW, missed, makeup=null){
+function calcDayM(vol, intW, missed, makeup=null, sport='bike', hiType=null){
   if(missed)return 0
-  if(vol==='rest'){if(makeup==='off')return 0;if(makeup==='low')return 2;if(makeup==='mid')return 3;if(makeup==='high')return 4;return 2}
-  if(vol==='mid'&&intW==='low')return 3;if(vol==='mid'&&intW==='mid')return 4;if(vol==='mid'&&intW==='high')return 5
-  if(vol==='high'&&intW==='low')return 4;if(vol==='high'&&intW==='mid')return 5;if(vol==='high'&&intW==='high')return 6
-  return 0
+  const{lp,ip}=getLoadIntensityPts(vol,intW,makeup,sport,hiType)
+  return Math.min(lp+ip,6)
 }
-function getLoadIntensityPts(vol, intW, makeup=null){
+function getLoadIntensityPts(vol, intW, makeup=null, sport='bike', hiType=null){
   if(vol==='rest'){if(makeup==='off')return{lp:0,ip:0};if(makeup==='low')return{lp:1,ip:1};if(makeup==='mid')return{lp:2,ip:1};if(makeup==='high')return{lp:3,ip:1};return{lp:1,ip:1}}
-  const lpMap={mid:2,high:3},ipMap={low:1,mid:2,high:3};return{lp:lpMap[vol]||2,ip:ipMap[intW]||1}
+  const lp=({mid:2,high:3})[vol]||2
+  const ifv=getEstimatedIF(intW,sport,hiType)
+  const ip=getIntPts(sport,ifv)
+  return{lp,ip}
 }
 function getEstimatedDurationAndTSS(vol, intW, makeup=null, sport='bike', hiType=null){
   const volPct={rest_low:0.06,rest_mid:0.10,rest_high:0.18,low:0.10,mid:0.18,high:0.28}
@@ -858,7 +937,7 @@ function renderDayDetails(plan, ww){
     const isCompleted=isPast&&dayAgg
     if(isPast&&dayAgg){m=dayAgg.m;lp=dayAgg.lp;ip=dayAgg.ip;estTSS=dayAgg.adjTSS;estIF=dayAgg.avgIF;const mult=sportMult(sport);duration=Math.round((estTSS*60)/(estIF*estIF*100*mult));paceDisplay=calculateTargetPace(sport,estIF)}
     else if(isToday&&dayAgg){m=dayAgg.m;lp=dayAgg.lp;ip=dayAgg.ip;estTSS=dayAgg.adjTSS;estIF=dayAgg.avgIF;const mult=sportMult(sport);duration=Math.round((estTSS*60)/(estIF*estIF*100*mult));paceDisplay=calculateTargetPace(sport,estIF)}
-    else{const isFullRest=isRestDay&&makeup==='off';if(isFullRest||isMissed){m=0;lp=0;ip=0;estTSS=0;estIF=0;duration=0;paceDisplay='--'}else{m=calcDayM(vol,intW,false,makeup);const pts=getLoadIntensityPts(vol,intW,makeup);lp=pts.lp;ip=pts.ip;const hiType=intW==='high'?resolveHiType(i,plan):null;const result=getEstimatedDurationAndTSS(effVol,intW,makeup,sport,hiType);estTSS=result.tss;estIF=getEstimatedIF(intW,sport,hiType);duration=result.duration;paceDisplay=calculateTargetPace(sport,estIF)}}
+    else{const isFullRest=isRestDay&&makeup==='off';if(isFullRest||isMissed){m=0;lp=0;ip=0;estTSS=0;estIF=0;duration=0;paceDisplay='--'}else{const hiType=intW==='high'?resolveHiType(i,plan):null;m=calcDayM(vol,intW,false,makeup,sport,hiType);const pts=getLoadIntensityPts(vol,intW,makeup,sport,hiType);lp=pts.lp;ip=pts.ip;const result=getEstimatedDurationAndTSS(effVol,intW,makeup,sport,hiType);estTSS=result.tss;estIF=getEstimatedIF(intW,sport,hiType);duration=result.duration;paceDisplay=calculateTargetPace(sport,estIF)}}
     const color=m===0?'var(--text3)':m<=2?'var(--green)':m<=4?'var(--yellow)':'var(--red)'
     const isFullRest=isRestDay&&makeup==='off';const isFuture=!isPast&&!isToday
     let cls='day-col'+(isToday?' is-today':'')+(isPast&&!isToday?' is-past':'')+(isCompleted?' is-completed':'')+(isMissed?' is-missed':'')
@@ -872,7 +951,7 @@ function renderProjectedM(plan, ww){
   if(!pv)return;if(!plan){if(sec)sec.style.display='none';return}
   if(sec)sec.style.display='block'
   const{mon}=getWeekRange();const dayAggMap=new Map(getDayAggs(ww).map(d=>[d.date,d]));let proj=0
-  plan.vol.forEach((v,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);const ds=d.toISOString().split('T')[0];const isPast=ds<today(),isToday=ds===today();const isRestDay=getRestDays().includes(i);const makeup=isRestDay?(weekPlan.makeup||{})[i]||'low':'';const dayAgg=dayAggMap.get(ds);if(isPast)proj+=dayAgg?dayAgg.m:0;else if(isToday&&dayAgg)proj+=dayAgg.m;else proj+=calcDayM(v,plan.intWave[i],false,makeup)})
+  plan.vol.forEach((v,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);const ds=d.toISOString().split('T')[0];const isPast=ds<today(),isToday=ds===today();const isRestDay=getRestDays().includes(i);const makeup=isRestDay?(weekPlan.makeup||{})[i]||'low':'';const dayAgg=dayAggMap.get(ds);const sport=daySports[i]||'bike';const iw=plan.intWave[i];const hiType=iw==='high'?resolveHiType(i,plan):null;if(isPast)proj+=dayAgg?dayAgg.m:0;else if(isToday&&dayAgg)proj+=dayAgg.m;else proj+=calcDayM(v,iw,false,makeup,sport,hiType)})
   const color=proj===0?'var(--text3)':proj<2?'var(--text3)':proj<10?'var(--text3)':proj<14?'var(--zone-slow)':proj<19?'var(--zone-maint)':proj<25?'var(--zone-prod)':proj<28?'var(--zone-optimal)':proj<30?'var(--zone-over)':'var(--zone-injury)'
   pv.textContent=proj;pv.style.color=color
   const needlePct=Math.min(98,Math.max(2,(proj/42)*100));if(pn)pn.style.left=needlePct+'%'
@@ -967,21 +1046,23 @@ function getWeekContext(days){
   const hiDays=days.filter(d=>d.avgIF>=0.90).length;const doneSessions=ww.length;const plannedTotal=Object.values(weekPlan).filter(id=>id&&id!=='rest').length
   return{weekM,weekTSS,tier,todayAgg,remaining,unfinished,keyUnfinished,daysLeft,tssDeficit,hiDays,doneSessions,plannedTotal,ww}
 }
-function getWaveDay(dayIdx){const plan=buildFullPlan();if(!plan)return null;const makeup=(weekPlan.makeup||{})[dayIdx]||null;return{vol:plan.vol[dayIdx],int:plan.intWave[dayIdx],projM:calcDayM(plan.vol[dayIdx],plan.intWave[dayIdx],false,makeup),makeup}}
-function getProjectedWeekM(){const plan=buildFullPlan();if(!plan)return 0;const{mon}=getWeekRange();const ww=getWeekWo();const dayAggMap=new Map(getDayAggs(ww).map(d=>[d.date,d]));let proj=0;plan.vol.forEach((v,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);const ds=d.toISOString().split('T')[0];const isPast=ds<today(),isToday=ds===today();const makeup=(weekPlan.makeup||{})[i]||null;const dayAgg=dayAggMap.get(ds);if(isPast)proj+=dayAgg?dayAgg.m:0;else if(isToday&&dayAgg)proj+=dayAgg.m;else proj+=calcDayM(v,plan.intWave[i],false,makeup)});return proj}
+function getWaveDay(dayIdx){const plan=buildFullPlan();if(!plan)return null;const makeup=(weekPlan.makeup||{})[dayIdx]||null;const sport=daySports[dayIdx]||'bike';const iw=plan.intWave[dayIdx];const hiType=iw==='high'?resolveHiType(dayIdx,plan):null;return{vol:plan.vol[dayIdx],int:iw,hiType,projM:calcDayM(plan.vol[dayIdx],iw,false,makeup,sport,hiType),makeup}}
+function hiGuideType(hiType){return hiType==='short'?'intervals':hiType==='long'?'threshold':hiType==='tempo'?'tempo':'intervals'}
+function hiTypeLabel(hiType){return hiType==='short'?'VO2 (short)':hiType==='long'?'Threshold (long)':hiType==='tempo'?'Tempo':'Hard'}
+function getProjectedWeekM(){const plan=buildFullPlan();if(!plan)return 0;const{mon}=getWeekRange();const ww=getWeekWo();const dayAggMap=new Map(getDayAggs(ww).map(d=>[d.date,d]));let proj=0;plan.vol.forEach((v,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);const ds=d.toISOString().split('T')[0];const isPast=ds<today(),isToday=ds===today();const makeup=(weekPlan.makeup||{})[i]||null;const dayAgg=dayAggMap.get(ds);const sport=daySports[i]||'bike';const iw=plan.intWave[i];const hiType=iw==='high'?resolveHiType(i,plan):null;if(isPast)proj+=dayAgg?dayAgg.m:0;else if(isToday&&dayAgg)proj+=dayAgg.m;else proj+=calcDayM(v,iw,false,makeup,sport,hiType)});return proj}
 function getTodayRec(days){
   const ctx=getWeekContext(days);const{weekM,tier,todayAgg}=ctx;const ww=getWeekWo();const sport=dominantSport(ww);const ti=getDayIdx(today());const wave=getWaveDay(ti);const projM=getProjectedWeekM();const mDeficit=Math.max(0,tier.mMin-projM);const defNote=mDeficit>=2?` · ⚠ Week ${mDeficit}M short of ${tier.mMin} target`:''
   if(weekM>=30)return{label:'⚠ Injury Risk',color:'var(--red)',body:'M at 30+. Maladaptation. Reduce load immediately.'}
   if(weekM>=28)return{label:'Overreaching',color:'var(--accent2)',body:'Functional overload. Max 1 week. Follow with Maintenance.'}
   if(todayAgg){if(todayAgg.avgIF>=0.92)return{label:'Done — hard session',color:'var(--accent2)',body:'M'+todayAgg.m+' banked. No second session today.'+defNote};if(todayAgg.m>=4)return{label:'Done — strong session',color:'var(--yellow)',body:'M'+todayAgg.m+' logged. Optional: Z1 walk only.'+defNote};return{label:'Light second session ok',color:'var(--green)',body:guide('aerobic',sport)+' · IF < 0.75'+defNote}}
-  if(wave){if(wave.vol==='rest'){const mkMap={off:'Full rest — M0. ',low:'Easy makeup — M2. ',mid:'Light makeup — M3. ',high:'Moderate makeup — M4. '};const mkBody=wave.makeup&&wave.makeup!=='off'?(mkMap[wave.makeup]||''):'Active recovery — M2. ';return{label:wave.makeup&&wave.makeup!=='off'?'Rest + makeup':'Active recovery',color:wave.makeup&&wave.makeup!=='off'?'var(--vol)':'var(--text3)',body:mkBody}};const volLabel=wave.vol==='high'?'High':'Mid';const intLabel=wave.int==='high'?'Hard':wave.int==='mid'?'Tempo':'Easy';return{label:volLabel+' · '+intLabel,color:wave.projM>=5?'var(--yellow)':wave.projM>=4?'var(--vol)':'var(--text3)',body:guide(wave.int==='high'?'intervals':wave.int==='mid'?'tempo':'aerobic',sport)+' · Target M'+wave.projM+defNote}}
+  if(wave){if(wave.vol==='rest'){const mkMap={off:'Full rest — M0. ',low:'Easy makeup — M2. ',mid:'Light makeup — M3. ',high:'Moderate makeup — M4. '};const mkBody=wave.makeup&&wave.makeup!=='off'?(mkMap[wave.makeup]||''):'Active recovery — M2. ';return{label:wave.makeup&&wave.makeup!=='off'?'Rest + makeup':'Active recovery',color:wave.makeup&&wave.makeup!=='off'?'var(--vol)':'var(--text3)',body:mkBody}};const volLabel=wave.vol==='high'?'High':'Mid';const intLabel=wave.int==='high'?hiTypeLabel(wave.hiType):wave.int==='mid'?'Tempo':'Easy';const gType=wave.int==='high'?hiGuideType(wave.hiType):wave.int==='mid'?'tempo':'aerobic';return{label:volLabel+' · '+intLabel,color:wave.projM>=5?'var(--yellow)':wave.projM>=4?'var(--vol)':'var(--text3)',body:guide(gType,sport)+' · Target M'+wave.projM+defNote}}
   return{label:'Train freely',color:'var(--green)',body:guide('aerobic',sport)+defNote}
 }
 function getTomRec(days){
   const ctx=getWeekContext(days);const{weekM,tier}=ctx;const ww=getWeekWo();const sport=dominantSport(ww);const ti=getDayIdx(tom());const wave=getWaveDay(ti);const projM=getProjectedWeekM();const mDeficit=Math.max(0,tier.mMin-projM);const defNote=mDeficit>=2?` · ⚠ Week ${mDeficit}M short of ${tier.mMin} target`:''
   if(weekM>=30)return{label:'⚠ Injury Risk',color:'var(--red)',body:'Rest tomorrow too. Load must drop below 25.'}
   if(weekM>=28)return{label:'Overreaching',color:'var(--accent2)',body:'Easy or off tomorrow.'+defNote}
-  if(wave){if(wave.vol==='rest'){const mkMap={off:'Full rest — M0.',low:'Easy session — M2.',mid:'Light session — M3.',high:'Moderate session — M4.'};const mkBody=wave.makeup&&wave.makeup!=='off'?(mkMap[wave.makeup]||'Rest day.'):'Active recovery — M2.';return{label:wave.makeup&&wave.makeup!=='off'?'Rest + makeup':'Active recovery',color:wave.makeup&&wave.makeup!=='off'?'var(--vol)':'var(--text3)',body:mkBody}};const volLabel=wave.vol==='high'?'High':'Mid';const intLabel=wave.int==='high'?'hard':wave.int==='mid'?'tempo':'easy';return{label:DAYS[ti]+' · '+volLabel+' · '+intLabel,color:wave.projM>=5?'var(--yellow)':wave.projM>=4?'var(--vol)':'var(--text3)',body:guide(wave.int==='high'?'intervals':wave.int==='mid'?'tempo':'aerobic',sport)+' · Target M'+wave.projM+defNote}}
+  if(wave){if(wave.vol==='rest'){const mkMap={off:'Full rest — M0.',low:'Easy session — M2.',mid:'Light session — M3.',high:'Moderate session — M4.'};const mkBody=wave.makeup&&wave.makeup!=='off'?(mkMap[wave.makeup]||'Rest day.'):'Active recovery — M2.';return{label:wave.makeup&&wave.makeup!=='off'?'Rest + makeup':'Active recovery',color:wave.makeup&&wave.makeup!=='off'?'var(--vol)':'var(--text3)',body:mkBody}};const volLabel=wave.vol==='high'?'High':'Mid';const intLabel=wave.int==='high'?hiTypeLabel(wave.hiType):wave.int==='mid'?'tempo':'easy';const gType=wave.int==='high'?hiGuideType(wave.hiType):wave.int==='mid'?'tempo':'aerobic';return{label:DAYS[ti]+' · '+volLabel+' · '+intLabel,color:wave.projM>=5?'var(--yellow)':wave.projM>=4?'var(--vol)':'var(--text3)',body:guide(gType,sport)+' · Target M'+wave.projM+defNote}}
   return{label:'Easy session',color:'var(--green)',body:guide('aerobic',sport)+defNote}
 }
 function getRecContext(days){
@@ -1039,7 +1120,7 @@ function renderWeek(){
   const fmtMin=m=>{if(!m)return'0m';const h=Math.floor(m/60),mm=Math.round(m%60);return h>0?h+'h'+(mm?(mm<10?'0':'')+mm+'m':''):mm+'m'};const tEl2=document.getElementById('budgetTotalTime');if(tEl2)tEl2.textContent=totMin>0?fmtMin(totMin)+' logged':''
   const budRows=document.getElementById('budgetZoneRows')
   if(budRows){budRows.innerHTML=[{label:'Low  Z1–2',min:loMin,pct:lp,target:zt.lo,color:'#00d4aa'},{label:'Mod  Z3',min:moMin,pct:mp,target:zt.mo,color:'#ffcc00'},{label:'High Z4+',min:hiMin,pct:hp,target:zt.hi,color:'#ff6b35'}].map(z=>{const delta=totMin>0?z.pct-z.target:null;const absDelta=delta!==null?Math.abs(delta):0;const deltaColor=absDelta<=5?'var(--text3)':delta>0?'var(--yellow)':'var(--red)';const deltaStr=delta===null?'':delta>=0?'+'+delta+'%':delta+'%';return`<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border)"><div style="width:8px;height:8px;border-radius:2px;background:${z.color}"></div><div style="font-size:11px;color:var(--text2);flex:1">${z.label}</div><div style="font-size:14px;font-weight:700;min-width:36px;text-align:right">${totMin>0?fmtMin(z.min):'—'}</div><div style="font-size:10px;color:var(--text3);min-width:28px;text-align:right">${totMin>0?z.pct+'%':'—'}</div><div style="font-size:9px;font-weight:600;min-width:30px;text-align:right;color:${deltaColor}">${deltaStr}</div></div>`}).join('')}
-  const planFull_=buildFullPlan();const td_=today();const fmtDp_=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');const projWeek_=Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);const ds=fmtDp_(d);const da=weekDayMap.get(ds);const isRD=getRestDays().includes(i);const mk=isRD?(weekPlan.makeup||{})[i]||'low':'';const sp=daySports[i]||'bike';if(da)return{lp:da.lp,ip:da.ip,projIF:da.avgIF};if(ds<td_)return{lp:0,ip:0,projIF:0};if(!planFull_)return{lp:0,ip:0,projIF:0};const v=planFull_.vol[i];const iw=planFull_.intWave[i];if(isRD&&mk==='off')return{lp:0,ip:0,projIF:0};const pts=getLoadIntensityPts(v,iw,mk);const hiType=iw==='high'?resolveHiType(i,planFull_):null;const pIF=isRD?getEstimatedIF('low',sp):getEstimatedIF(iw,sp,hiType);return{lp:pts.lp,ip:pts.ip,projIF:pIF}});
+  const planFull_=buildFullPlan();const td_=today();const fmtDp_=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');const projWeek_=Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);const ds=fmtDp_(d);const da=weekDayMap.get(ds);const isRD=getRestDays().includes(i);const mk=isRD?(weekPlan.makeup||{})[i]||'low':'';const sp=daySports[i]||'bike';if(da)return{lp:da.lp,ip:da.ip,projIF:da.avgIF};if(ds<td_)return{lp:0,ip:0,projIF:0};if(!planFull_)return{lp:0,ip:0,projIF:0};const v=planFull_.vol[i];const iw=planFull_.intWave[i];if(isRD&&mk==='off')return{lp:0,ip:0,projIF:0};const hiType=iw==='high'?resolveHiType(i,planFull_):null;const pts=getLoadIntensityPts(v,iw,mk,sp,hiType);const pIF=isRD?getEstimatedIF('low',sp):getEstimatedIF(iw,sp,hiType);return{lp:pts.lp,ip:pts.ip,projIF:pIF}});
   const hiDays=days.filter(d=>d.avgIF>=0.95).length;let consecKey=false;for(let i=0;i<6;i++)if(projWeek_[i].projIF>=0.90&&projWeek_[i+1].projIF>=0.90){consecKey=true;break}
   const tlp=projWeek_.reduce((s,d)=>s+d.lp,0),tip=projWeek_.reduce((s,d)=>s+d.ip,0);const ratio=tip>0?(tlp/tip).toFixed(2):0
   const loDiff=lp-zt.lo,hiDiff=hp-zt.hi;const loStatus=Math.abs(loDiff)<=8?'rule-ok':loDiff<-8?'rule-fail':'rule-warn';const hiStatus=Math.abs(hiDiff)<=5?'rule-ok':hiDiff>5?'rule-fail':'rule-warn'
@@ -1076,12 +1157,12 @@ function renderWeek(){
   if(lMax)lMax.textContent=barMax.toFixed(2)+' · engine'
   if(rTxt){const dev=((parseFloat(ratio)||0)-optimalRatio)/optimalRatio;if(ratio<=0)rTxt.textContent='Log sessions to see ratio';else if(Math.abs(dev)<=0.2)rTxt.textContent='✓ Efficient — load and intensity well balanced for your TSS';else if(dev<-0.2)rTxt.textContent='↓ Intensity-heavy — your quality minutes outpace your volume';else rTxt.textContent='↑ Volume-heavy — add intensity or reduce easy volume to lift quality'}
 }
-function getWeekRestM(dayAggMap){const plan=buildFullPlan();if(!plan)return 0;const{mon}=getWeekRange();const fmtD=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');const today_=today();let restM=0;plan.vol.forEach((v,i)=>{if(v==='rest'){const ds=fmtD(new Date(mon.getTime()+i*864e5));const hasLog=dayAggMap&&dayAggMap.has(ds);if(hasLog)return;if(ds<today_)return;const makeup=(weekPlan.makeup||{})[i]||'low';restM+=calcDayM('rest',plan.intWave[i],false,makeup)}});return restM}
+function getWeekRestM(dayAggMap){const plan=buildFullPlan();if(!plan)return 0;const{mon}=getWeekRange();const fmtD=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');const today_=today();let restM=0;plan.vol.forEach((v,i)=>{if(v==='rest'){const ds=fmtD(new Date(mon.getTime()+i*864e5));const hasLog=dayAggMap&&dayAggMap.has(ds);if(hasLog)return;if(ds<today_)return;const makeup=(weekPlan.makeup||{})[i]||'low';const sport=daySports[i]||'bike';restM+=calcDayM('rest',plan.intWave[i],false,makeup,sport,null)}});return restM}
 
 function onSportChange(){const s=document.getElementById('fSport').value;document.getElementById('fIntLabel').textContent=s==='bike'?'Watts':s==='run'?'Pace (min:sec/mi)':'Pace (min:sec/100m)';document.getElementById('fIntensity').placeholder=s==='bike'?'e.g. 210':s==='run'?'e.g. 7:30':'e.g. 1:50';updateZone()}
 function updateZone(){const s=document.getElementById('fSport').value,v=document.getElementById('fIntensity').value.trim(),el=document.getElementById('zoneTag');if(!v){el.style.display='none';updateLivePreview();return}const z=getZone(s,v);if(z){el.style.display='inline-block';el.textContent=z;el.style.background='rgba(0,212,170,0.14)';el.style.color='var(--accent)';el.style.border='1px solid rgba(0,212,170,0.3)'}else el.style.display='none';updateLivePreview()}
 function updateLivePreview(){const s=document.getElementById('fSport').value,time=parseFloat(document.getElementById('fTime').value),v=document.getElementById('fIntensity').value.trim(),prev=document.getElementById('livePreview');if(!time||isNaN(time)||!v){prev.classList.remove('visible');return}if(!profile.bike&&!profile.run&&!profile.swim){prev.classList.remove('visible');return}const ifv=calcIF(v,s);if(!ifv||ifv<=0){prev.classList.remove('visible');return}const rawTSS=calcRawTSS(time,ifv),{m,lp,ip,adjTSS}=calcM(s,rawTSS,ifv);document.getElementById('lpM').textContent=m;document.getElementById('lpM').style.color=m<=2?'var(--green)':m<=4?'var(--yellow)':'var(--red)';document.getElementById('lpTSS').textContent=adjTSS;document.getElementById('lpIF').textContent=ifv.toFixed(2);document.getElementById('lpLI').textContent=lp+'L·'+ip+'I';const z=getZone(s,v),zEl=document.getElementById('lpZone');zEl.textContent=z?('Zone: '+z+' · M'+m+' = '+lp+' load + '+ip+' intensity'):'M'+m+' = '+lp+' load pts + '+ip+' intensity pts';prev.classList.add('visible')}
-function saveWorkout(){const sport=document.getElementById('fSport').value,time=parseFloat(document.getElementById('fTime').value),intensity=document.getElementById('fIntensity').value.trim(),date=document.getElementById('fDate').value||today();if(!time||isNaN(time))return alert('Enter duration');if(!intensity)return alert('Enter intensity');const ifv=calcIF(intensity,sport);if(!ifv)return alert('Save thresholds in Setup first');const rawTSS=calcRawTSS(time,ifv),{m,adjTSS,lp,ip}=calcM(sport,rawTSS,ifv);const w={id:editId||uid(),sport,time,intensity,rawTSS,adjTSS,ifv,lp,ip,m,date};if(editId){workouts=workouts.map(x=>x.id===editId?w:x);editId=null}else workouts.push(w);save();cancelEdit();render();flash('M'+m+'  TSS '+adjTSS+'  IF '+ifv.toFixed(2))}
+function saveWorkout(){const sport=document.getElementById('fSport').value,time=parseFloat(document.getElementById('fTime').value),intensity=document.getElementById('fIntensity').value.trim(),date=document.getElementById('fDate').value||today();if(!time||isNaN(time))return alert('Enter duration');if(!intensity)return alert('Enter intensity');const ifv=calcIF(intensity,sport,date);if(!ifv)return alert('Save thresholds in Setup first');const rawTSS=calcRawTSS(time,ifv),{m,adjTSS,lp,ip}=calcM(sport,rawTSS,ifv,date);const w={id:editId||uid(),sport,time,intensity,rawTSS,adjTSS,ifv,lp,ip,m,date};if(editId){workouts=workouts.map(x=>x.id===editId?w:x);editId=null}else workouts.push(w);save();cancelEdit();render();flash('M'+m+'  TSS '+adjTSS+'  IF '+ifv.toFixed(2))}
 function edit(id){const w=workouts.find(x=>x.id===id);if(!w)return;document.getElementById('fSport').value=w.sport;document.getElementById('fTime').value=w.time;document.getElementById('fIntensity').value=w.intensity;document.getElementById('fDate').value=w.date;editId=id;document.getElementById('logTitle').textContent='Edit session';document.getElementById('cancelBtn').style.display='block';onSportChange();showTab('log');window.scrollTo({top:0,behavior:'smooth'})}
 function cancelEdit(){editId=null;document.getElementById('logTitle').textContent='Log a session';document.getElementById('cancelBtn').style.display='none';document.getElementById('fSport').value='bike';document.getElementById('fTime').value='';document.getElementById('fIntensity').value='';document.getElementById('fDate').value=today();document.getElementById('zoneTag').style.display='none';document.getElementById('livePreview').classList.remove('visible');onSportChange()}
 function del(id){if(!confirm('Delete?'))return;workouts=workouts.filter(x=>x.id!==id);save();render()}
@@ -1192,19 +1273,88 @@ function renderSettings(){
   const tier=getTier();document.getElementById('mBudgetNote').style.borderLeftColor=tier.accent;document.getElementById('mBudgetDesc').textContent=tier.desc
   document.getElementById('sLoTarget').value=intensityTarget.lo;document.getElementById('sMoTarget').value=intensityTarget.mo;document.getElementById('sHiDisplay').textContent=(100-intensityTarget.lo-intensityTarget.mo)+'%'
   const pb=document.getElementById('zonePresetBtns');if(pb)pb.innerHTML=ZONE_PRESETS.map(p=>{const a=p.lo===intensityTarget.lo&&p.mo===intensityTarget.mo;return`<button class="btn-sm${a?' active':''}" onclick="setZonePreset(${p.lo},${p.mo},${p.hi})">${p.label}</button>`}).join('')
-  document.getElementById('sLoCut').value=loadCutoffs.lo;document.getElementById('sHiCut').value=loadCutoffs.hi;updateCutoffPreview();renderCurveConfig()
+  document.getElementById('sLoCut').value=loadCutoffs.lo;document.getElementById('sHiCut').value=loadCutoffs.hi;updateCutoffPreview();renderCurveConfig();renderThresholdHistory()
+}
+function validateThresholdValue(metric,value){if(metric==='bike'){const n=parseFloat(value);return!isNaN(n)&&n>0?String(Math.round(n)):null}if(metric==='run'||metric==='swim'){return /^\d{1,2}:\d{2}$/.test(String(value).trim())?String(value).trim():null}if(metric==='weeklyTSSGoal'){const n=parseInt(value,10);return!isNaN(n)&&n>0?n:null}return null}
+function thresholdMetricLabel(m){return({bike:'Bike FTP',run:'Run LTP',swim:'Swim CSS',weeklyTSSGoal:'Weekly TSS goal'})[m]||m}
+function thresholdValuePlaceholder(m){return({bike:'250',run:'7:50',swim:'1:50',weeklyTSSGoal:'650'})[m]||''}
+function renderThresholdHistory(){
+  const sec=document.getElementById('thSections');if(!sec)return
+  ensureThresholdHistoryShape()
+  const banner=document.getElementById('thBanner')
+  if(banner){if(thresholdNeedsRecalc){banner.style.display='block';banner.innerHTML=`<div style="background:rgba(255,204,0,0.08);border:1px solid rgba(255,204,0,0.3);border-radius:8px;padding:10px 12px;margin-bottom:10px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2);line-height:1.4"><span style="flex:1">⚠ Stored M-scores reflect the <em>previous</em> timeline. <a onclick="recalculateAllWorkouts()" style="color:var(--accent);cursor:pointer;font-weight:700">Recalculate now</a></span><span onclick="dismissThresholdBanner()" style="cursor:pointer;color:var(--text3);font-size:18px;line-height:1;padding:0 4px">×</span></div>`}else{banner.style.display='none';banner.innerHTML=''}}
+  const metrics=['bike','run','swim','weeklyTSSGoal']
+  sec.innerHTML=metrics.map(metric=>{
+    const arr=(thresholdHistory[metric]||[]).slice().sort((a,b)=>b.effectiveFrom.localeCompare(a.effectiveFrom))
+    const rowsHtml=arr.length?arr.map((entry,idx)=>{
+      const isCurrent=idx===0
+      const editId='thRow_'+metric+'_'+entry.effectiveFrom.replace(/-/g,'')
+      return`<div class="coach-threshold-card" id="${editId}" style="display:flex;align-items:center;gap:10px"><div style="flex:1;display:flex;flex-direction:column;gap:2px"><div style="font-size:12px;color:var(--text2);font-family:var(--font-display);font-weight:700">${entry.effectiveFrom}${isCurrent?' <span style="font-size:9px;background:rgba(0,212,170,0.15);color:var(--accent);padding:1px 6px;border-radius:3px;margin-left:4px;letter-spacing:0.04em">CURRENT</span>':''}</div><div style="font-size:13px;color:var(--text);font-weight:600">${entry.value}</div></div><button class="btn-sm" onclick="beginEditThresholdEntry('${metric}','${entry.effectiveFrom}')">Edit</button><button class="btn-sm danger" onclick="deleteThresholdEntryUI('${metric}','${entry.effectiveFrom}')">×</button></div>`
+    }).join(''):'<div style="font-size:11px;color:var(--text3);font-style:italic;padding:6px 0">No entries yet</div>'
+    return`<div style="margin-bottom:14px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div class="card-label" style="margin:0">${thresholdMetricLabel(metric)}</div><button class="btn-sm" onclick="beginAddThresholdEntry('${metric}')">+ Add entry</button></div><div id="thAddForm_${metric}" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px"></div>${rowsHtml}</div>`
+  }).join('')
+}
+function dismissThresholdBanner(){thresholdNeedsRecalc=false;renderThresholdHistory()}
+function beginAddThresholdEntry(metric){
+  const form=document.getElementById('thAddForm_'+metric);if(!form)return
+  const td=today();const placeholder=thresholdValuePlaceholder(metric)
+  form.style.display='block'
+  form.innerHTML=`<div class="form-row" style="margin-bottom:8px"><div class="form-group" style="margin:0"><label class="form-label">Effective from</label><input type="date" id="thAddDate_${metric}" class="form-input" value="${td}"></div><div class="form-group" style="margin:0"><label class="form-label">Value</label><input type="text" id="thAddVal_${metric}" class="form-input" placeholder="${placeholder}"></div></div><div style="display:flex;gap:6px"><button class="btn-sm" onclick="commitAddThresholdEntry('${metric}')" style="flex:1">Save</button><button class="btn-sm" onclick="cancelAddThresholdEntry('${metric}')" style="flex:1">Cancel</button></div>`
+  setTimeout(()=>document.getElementById('thAddVal_'+metric)?.focus(),50)
+}
+function cancelAddThresholdEntry(metric){const f=document.getElementById('thAddForm_'+metric);if(f){f.style.display='none';f.innerHTML=''}}
+function commitAddThresholdEntry(metric){
+  const dateEl=document.getElementById('thAddDate_'+metric),valEl=document.getElementById('thAddVal_'+metric)
+  if(!dateEl||!valEl)return
+  const dateStr=dateEl.value,raw=valEl.value
+  if(!dateStr)return flash('Pick a date')
+  const validated=validateThresholdValue(metric,raw);if(validated===null)return flash('Invalid value for '+thresholdMetricLabel(metric))
+  ensureThresholdHistoryShape()
+  const arr=thresholdHistory[metric]
+  const sorted=arr.slice().sort((a,b)=>a.effectiveFrom.localeCompare(b.effectiveFrom))
+  const wouldBeLatest=!sorted.length||sorted[sorted.length-1].effectiveFrom<=dateStr
+  if(!wouldBeLatest&&dateStr>today())return flash('Future dates only allowed for the most recent entry')
+  addThresholdEntry(metric,validated,dateStr)
+  thresholdNeedsRecalc=true;save();renderThresholdHistory();flash('Added')
+}
+function beginEditThresholdEntry(metric,oldDate){
+  const arr=thresholdHistory[metric]||[];const entry=arr.find(e=>e.effectiveFrom===oldDate);if(!entry)return
+  const rowId='thRow_'+metric+'_'+oldDate.replace(/-/g,'')
+  const row=document.getElementById(rowId);if(!row)return
+  row.innerHTML=`<div style="flex:1;display:flex;gap:6px;align-items:center"><input type="date" id="thEditDate_${metric}" class="form-input" value="${oldDate}" style="flex:1;padding:6px 8px"><input type="text" id="thEditVal_${metric}" class="form-input" value="${entry.value}" style="flex:1;padding:6px 8px"></div><button class="btn-sm" onclick="commitEditThresholdEntry('${metric}','${oldDate}')">Save</button><button class="btn-sm" onclick="renderThresholdHistory()">Cancel</button>`
+}
+function commitEditThresholdEntry(metric,oldDate){
+  const dateEl=document.getElementById('thEditDate_'+metric),valEl=document.getElementById('thEditVal_'+metric)
+  if(!dateEl||!valEl)return
+  const newDate=dateEl.value,raw=valEl.value
+  if(!newDate)return flash('Pick a date')
+  const validated=validateThresholdValue(metric,raw);if(validated===null)return flash('Invalid value for '+thresholdMetricLabel(metric))
+  const arr=thresholdHistory[metric]||[]
+  const others=arr.filter(e=>e.effectiveFrom!==oldDate)
+  const sortedOthers=others.slice().sort((a,b)=>a.effectiveFrom.localeCompare(b.effectiveFrom))
+  const wouldBeLatest=!sortedOthers.length||sortedOthers[sortedOthers.length-1].effectiveFrom<=newDate
+  if(!wouldBeLatest&&newDate>today())return flash('Future dates only allowed for the most recent entry')
+  updateThresholdEntry(metric,oldDate,newDate,validated)
+  thresholdNeedsRecalc=true;save();renderThresholdHistory();flash('Updated')
+}
+function deleteThresholdEntryUI(metric,dateStr){
+  const arr=thresholdHistory[metric]||[]
+  if(arr.length<=1)return flash("Can't delete the only entry for "+thresholdMetricLabel(metric)+'. Add another first.')
+  if(!confirm('Delete '+thresholdMetricLabel(metric)+' entry from '+dateStr+'?'))return
+  if(!deleteThresholdEntry(metric,dateStr))return
+  thresholdNeedsRecalc=true;save();renderThresholdHistory();flash('Deleted')
 }
 function updateHiTarget(){const lo=parseInt(document.getElementById('sLoTarget').value)||0,mo=parseInt(document.getElementById('sMoTarget').value)||0;document.getElementById('sHiDisplay').textContent=Math.max(0,100-lo-mo)+'%'}
 function setZonePreset(lo,mo,hi){intensityTarget={lo,mo,hi};save();renderSettings();renderWeek();flash('Zone targets: '+lo+'/'+mo+'/'+hi)}
 function saveZoneTarget(){const lo=Math.max(0,Math.min(100,parseInt(document.getElementById('sLoTarget').value)||70)),mo=Math.max(0,Math.min(100-lo,parseInt(document.getElementById('sMoTarget').value)||20)),hi=Math.max(0,100-lo-mo);intensityTarget={lo,mo,hi};save();renderSettings();renderWeek();flash('Zone targets: '+lo+'/'+mo+'/'+hi)}
-function saveProfile(){profile={bike:document.getElementById('sBikeFTP').value.trim(),run:document.getElementById('sRunLTP').value.trim(),swim:document.getElementById('sSwimCSS').value.trim()};save();flash('Thresholds saved');renderWeek()}
+function saveProfile(){const bike=document.getElementById('sBikeFTP').value.trim(),run=document.getElementById('sRunLTP').value.trim(),swim=document.getElementById('sSwimCSS').value.trim();const td=today();ensureThresholdHistoryShape();[['bike',bike],['run',run],['swim',swim]].forEach(([k,v])=>{if(!v)return;const arr=thresholdHistory[k];const latest=arr.length?arr[arr.length-1]:null;if(!latest||latest.value!==v)addThresholdEntry(k,v,td);else if(latest.effectiveFrom===td)latest.value=v});profile={bike,run,swim};thresholdNeedsRecalc=true;save();flash('Thresholds saved');if(typeof renderThresholdHistory==='function')renderThresholdHistory();renderWeek()}
 function setLoadTier(k){weeklyLoadKey=k;save();renderSettings();renderWeek()}
-function setTSSGoal(v){weeklyTSSGoal=v;save();renderSettings();renderWeek()}
-function saveCutoffs(){const lo=parseFloat(document.getElementById('sLoCut').value),hi=parseFloat(document.getElementById('sHiCut').value);if(isNaN(lo)||isNaN(hi)||lo<=0||hi<=lo||hi>=50)return;loadCutoffs={lo,hi};workouts=workouts.map(w=>{const mc=calcM(w.sport,w.rawTSS,w.ifv);return{...w,adjTSS:mc.adjTSS,lp:mc.lp,ip:mc.ip,m:mc.m}});save();flash('Cutoffs saved');render()}
+function setTSSGoal(v){const td=today();ensureThresholdHistoryShape();const arr=thresholdHistory.weeklyTSSGoal;const latest=arr.length?arr[arr.length-1]:null;if(!latest||parseFloat(latest.value)!==v)addThresholdEntry('weeklyTSSGoal',v,td);else if(latest.effectiveFrom===td)latest.value=v;weeklyTSSGoal=v;thresholdNeedsRecalc=true;save();renderSettings();renderWeek()}
+function saveCutoffs(){const lo=parseFloat(document.getElementById('sLoCut').value),hi=parseFloat(document.getElementById('sHiCut').value);if(isNaN(lo)||isNaN(hi)||lo<=0||hi<=lo||hi>=50)return;loadCutoffs={lo,hi};workouts=workouts.map(w=>{const mc=calcM(w.sport,w.rawTSS,w.ifv,w.date);return{...w,adjTSS:mc.adjTSS,lp:mc.lp,ip:mc.ip,m:mc.m}});save();flash('Cutoffs saved');render()}
 function updateCutoffPreview(){const lo=parseFloat(document.getElementById('sLoCut').value)||loadCutoffs.lo,hi=parseFloat(document.getElementById('sHiCut').value)||loadCutoffs.hi,el=document.getElementById('cutoffPreview');if(el)el.textContent='At '+weeklyTSSGoal+' TSS/week: low < '+(weeklyTSSGoal*lo/100).toFixed(1)+' · high > '+(weeklyTSSGoal*hi/100).toFixed(1)+' adj TSS'}
-function exportJSON(){const b=new Blob([JSON.stringify({workouts,profile,weeklyLoadKey,weeklyTSSGoal,intensityTarget,loadCutoffs,curveConfig},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='mframe_'+today()+'.json';a.click()}
+function exportJSON(){const meta=getActiveProfile();const profileName=meta?meta.name:'profile';const safe=profileName.replace(/[^a-z0-9]+/gi,'_');const blob={profileName,exportedAt:new Date().toISOString(),workouts,profile,weeklyLoadKey,weeklyTSSGoal,intensityTarget,loadCutoffs,curveConfig,thresholdHistory,weekPlan,dayIntensity,daySports,dayHiType};const b=new Blob([JSON.stringify(blob,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='mframe_'+safe+'_'+today()+'.json';a.click()}
 function exportCSV(){if(!workouts.length)return alert('No data');const h=['Date','Sport','Min','Intensity','RawTSS','AdjTSS','IF','LoadPts','IntPts','M'];const rows=workouts.map(w=>[w.date,w.sport,w.time,w.intensity,w.rawTSS,w.adjTSS||Math.round(w.rawTSS*sportMult(w.sport)),w.ifv.toFixed(2),w.lp,w.ip,w.m]);const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent([h,...rows].map(r=>r.join(',')).join('\n'));a.download='mframe_'+today()+'.csv';a.click()}
-function importJSON(){const f=document.getElementById('importFile').files[0];if(!f)return alert('Select a file');const r=new FileReader();r.onload=e=>{try{const d=JSON.parse(e.target.result);if(d.workouts){workouts=d.workouts.map(w=>{if(!w.adjTSS)w.adjTSS=Math.round(w.rawTSS*sportMult(w.sport));return w})}if(d.profile)profile=d.profile;if(d.weeklyLoadKey)weeklyLoadKey=d.weeklyLoadKey;if(d.weeklyTSSGoal)weeklyTSSGoal=d.weeklyTSSGoal;if(d.intensityTarget)intensityTarget=d.intensityTarget;if(d.loadCutoffs)loadCutoffs=d.loadCutoffs;if(d.curveConfig)curveConfig=d.curveConfig;save();render();renderSettings();flash('Imported '+workouts.length+' sessions')}catch{alert('Invalid file')}};r.readAsText(f)}
+function importJSON(){const f=document.getElementById('importFile').files[0];if(!f)return alert('Select a file');const meta=getActiveProfile();if(!meta)return alert('No active profile');if(!confirm(`Replace data for profile '${meta.name}'?`))return;const r=new FileReader();r.onload=e=>{try{const d=JSON.parse(e.target.result);if(d.workouts){workouts=d.workouts.map(w=>{if(!w.adjTSS)w.adjTSS=Math.round(w.rawTSS*sportMult(w.sport));return w})}else workouts=[];profile=d.profile||{};weeklyLoadKey=d.weeklyLoadKey||'moderate';weeklyTSSGoal=d.weeklyTSSGoal||650;intensityTarget=d.intensityTarget||{lo:70,mo:20,hi:10};loadCutoffs=d.loadCutoffs||{lo:8.333,hi:16.666};curveConfig=d.curveConfig||{anchorLowTSS:300,anchorLowRatio:0.8,anchorHighTSS:1000,anchorHighRatio:1.5};thresholdHistory=d.thresholdHistory||null;dayIntensity=d.dayIntensity||{};daySports=d.daySports||{};dayHiType=d.dayHiType||{};const wk=getWeekRange().start;const saved=d.weekPlanWeek===wk?(d.weekPlan||{}):(d.weekPlan||{});weekPlan={restDays:saved.restDays||[],valleyVols:saved.valleyVols||{},makeup:saved.makeup||{}};seedThresholdHistoryIfNeeded();save();render();renderSettings();flash('Imported '+workouts.length+' sessions')}catch{alert('Invalid file')}};r.readAsText(f)}
 function parseCSVLine(l){const o=[];let c='',q=false;for(let i=0;i<l.length;i++){const ch=l[i];if(ch==='"')q=!q;else if(ch===','&&!q){o.push(c.trim());c=''}else c+=ch}o.push(c.trim());return o}
 function parseGarminDate(raw){if(!raw)return'';const s=raw.trim().split(/[ T]/)[0];if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;const m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2}|\d{4})$/);if(!m)return'';let a=parseInt(m[1]),b=parseInt(m[2]),y=parseInt(m[3]);if(y<100)y+=2000;let mo,d;if(a>12&&b<=12){mo=b;d=a}else{mo=a;d=b}if(mo<1||mo>12||d<1||d>31)return'';return y+'-'+String(mo).padStart(2,'0')+'-'+String(d).padStart(2,'0')}
 function importGarmin(){
@@ -1223,15 +1373,16 @@ function importGarmin(){
       const durMin=parseDur((c[iTime]||'').trim());if(durMin<5)return
       if(workouts.some(w=>w.date===date&&w.sport===sport&&Math.abs(w.time-Math.round(durMin))<2)){skipped++;return}
       let ifv,intensity
-      if(sport==='run'||sport==='swim'){const paceStr=(iPace>=0?(c[iPace]||''):'').trim();if(!paceStr||paceStr==='--'){skipped++;return}ifv=calcIF(paceStr,sport);if(!ifv||ifv<=0){noThresh++;return}intensity=paceStr}
+      if(sport==='run'||sport==='swim'){const paceStr=(iPace>=0?(c[iPace]||''):'').trim();if(!paceStr||paceStr==='--'){skipped++;return}ifv=calcIF(paceStr,sport,date);if(!ifv||ifv<=0){noThresh++;return}intensity=paceStr}
       else{const ftp=parseFloat(profile.bike)||0;const np=iNP>=0?parseFloat(c[iNP]||''):NaN;const avgPow=iAvgPower>=0?parseFloat(c[iAvgPower]||''):NaN;const garminIFv=iGarminIF>=0?parseFloat(c[iGarminIF]||''):NaN
         if(!isNaN(np)&&np>0&&ftp>0){ifv=parseFloat((np/ftp).toFixed(2));intensity=String(Math.round(np))}else if(!isNaN(avgPow)&&avgPow>0&&ftp>0){ifv=parseFloat((avgPow/ftp).toFixed(2));intensity=String(Math.round(avgPow))}else if(!isNaN(garminIFv)&&garminIFv>0.3&&garminIFv<2){ifv=garminIFv;intensity=String(Math.round((ftp||200)*ifv))}else{const te=iTE>=0?parseFloat(c[iTE]||''):NaN;if(isNaN(te)||te<=0){skipped++;return}ifv=teToIF(te);intensity=String(Math.round((ftp||200)*ifv));teEst++}}
-      const time=Math.round(durMin);const rawTSS=calcRawTSS(time,ifv);const mc=calcM(sport,rawTSS,ifv)
+      const time=Math.round(durMin);const rawTSS=calcRawTSS(time,ifv);const mc=calcM(sport,rawTSS,ifv,date)
       workouts.push({id:uid(),date,sport,time,intensity,rawTSS,adjTSS:mc.adjTSS,ifv,lp:mc.lp,ip:mc.ip,m:mc.m});added++})
     workouts.sort((a,b)=>a.date.localeCompare(b.date));save();render();renderSettings()
     const parts=[`✓ ${added} session${added!==1?'s':''} imported`];if(skipped)parts.push(`${skipped} duplicate skipped`);if(noThresh)parts.push(`${noThresh} skipped — set threshold in Setup`);if(ignored)parts.push(`${ignored} non-endurance ignored`);if(teEst)parts.push(`${teEst} cycling estimated from Aerobic TE`)
     st.style.color=added>0?'var(--accent)':'var(--text3)';st.innerHTML=parts.join('<br>');if(added>0)flash('Imported '+added+' sessions')}catch(err){st.textContent='Parse error: '+err.message;st.style.color='var(--red)'}};r.readAsText(f)}
-function clearAll(){if(!confirm('Delete all data?'))return;workouts=[];save();render();flash('Cleared')}
+function clearAll(){const meta=getActiveProfile();if(!meta)return;if(!confirm(`Clear all data for profile '${meta.name}'?`))return;workouts=[];profile={};weeklyLoadKey='moderate';weeklyTSSGoal=650;intensityTarget={lo:70,mo:20,hi:10};loadCutoffs={lo:8.333,hi:16.666};curveConfig={anchorLowTSS:300,anchorLowRatio:0.8,anchorHighTSS:1000,anchorHighRatio:1.5};weekPlan={restDays:[],valleyVols:{},makeup:{}};dayIntensity={};daySports={};dayHiType={};thresholdHistory=null;save();render();renderSettings();flash('Cleared')}
+function recalculateAllWorkouts(){if(!confirm('Re-score every workout using its date\'s threshold and TSS goal? This rewrites stored M-scores.'))return;let n=0;workouts=workouts.map(w=>{const ifv=calcIF(w.intensity,w.sport,w.date);if(!ifv)return w;const rawTSS=calcRawTSS(w.time,ifv);const{m,adjTSS,lp,ip}=calcM(w.sport,rawTSS,ifv,w.date);n++;return{...w,ifv,rawTSS,adjTSS,m,lp,ip}});thresholdNeedsRecalc=false;save();render();if(typeof renderThresholdHistory==='function')renderThresholdHistory();flash('Recalculated '+n+' workouts')}
 
 function getCurveParams(){const{anchorLowTSS:lt,anchorLowRatio:lr,anchorHighTSS:ht,anchorHighRatio:hr}=curveConfig;const b=Math.log(hr/lr)/Math.log(ht/lt);const a=lr/Math.pow(lt,b);return{a,b}}
 function getCurveRatio(tss){const{a,b}=getCurveParams();return a*Math.pow(tss,b)}
@@ -1742,7 +1893,18 @@ function setCoachTone(t) { coachTone = t; document.querySelectorAll('.tone-btn')
 function setCoachPeriod(p) { coachPeriod = p; document.querySelectorAll('.coach-period-tab').forEach(b => b.classList.remove('active')); document.querySelector(`.coach-period-tab[data-period="${p}"]`)?.classList.add('active'); renderCoachTab(); }
 function setCorrSport(s){corrSport=s;document.querySelectorAll('[data-corrsport]').forEach(p=>p.classList.toggle('active',p.dataset.corrsport===s));renderCorrelations()}
 function pearsonR(xs,ys){const n=xs.length;if(n<3)return{r:null,n};const mx=xs.reduce((a,b)=>a+b,0)/n,my=ys.reduce((a,b)=>a+b,0)/n;let num=0,dx=0,dy=0;for(let i=0;i<n;i++){const a=xs[i]-mx,b=ys[i]-my;num+=a*b;dx+=a*a;dy+=b*b}const den=Math.sqrt(dx*dy);return{r:den>0?num/den:null,n}}
-function aggregateWeeklyForCorr(wos,sport){const byWeek=new Map();const fd=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');wos.forEach(w=>{const d=new Date(w.date+'T12:00:00'),wd=d.getDay(),df=wd===0?-6:1-wd;const mn=new Date(d);mn.setDate(d.getDate()+df);const k=fd(mn);if(!byWeek.has(k))byWeek.set(k,[]);byWeek.get(k).push(w)});const out=[];for(const[k,sessions]of byWeek){const days=getDayAggs(sessions);const mSum=days.reduce((s,d)=>s+d.m,0);const lpSum=days.reduce((s,d)=>s+d.lp,0);const ipSum=days.reduce((s,d)=>s+d.ip,0);const lpipRatio=ipSum>0?lpSum/ipSum:null;const adjSum=sessions.reduce((s,w)=>s+(w.adjTSS||Math.round(w.rawTSS*sportMult(w.sport))),0);const wifSum=sessions.reduce((s,w)=>s+w.ifv*(w.adjTSS||Math.round(w.rawTSS*sportMult(w.sport))),0);const avgIF=adjSum>0?wifSum/adjSum:null;const sportW=sessions.filter(w=>w.sport===sport);let meanPace=null;if(sportW.length){const paces=[];sportW.forEach(w=>{if(sport==='bike'){const ftp=parseFloat(profile.bike)||200;paces.push(w.ifv*ftp)}else if(sport==='run'){const lt=pSec(profile.run);if(lt)paces.push(lt/w.ifv)}else{const css=pSec(profile.swim);if(css)paces.push(css/w.ifv)}});if(paces.length)meanPace=paces.reduce((a,b)=>a+b,0)/paces.length}out.push({week:k,m:mSum,tss:adjSum,avgIF,meanPace,lpipRatio})}return out.sort((a,b)=>a.week.localeCompare(b.week))}
+const M_OPTIMAL_CENTER=26,M_OPTIMAL_LOW=25,M_OPTIMAL_HIGH=27;
+const M_ZONES=[
+  {key:'recovery',label:'Recovery',min:0,max:9,color:'var(--zone-healthy,#64748b)'},
+  {key:'slow',label:'Slow Detrain',min:10,max:13,color:'var(--zone-slow,#94a3b8)'},
+  {key:'maint',label:'Maintenance',min:14,max:18,color:'var(--zone-maint,#059669)'},
+  {key:'prod',label:'Productive',min:19,max:24,color:'var(--zone-prod,#3b82f6)'},
+  {key:'optimal',label:'Optimal',min:25,max:27,color:'var(--zone-optimal,#ffcc00)'},
+  {key:'over',label:'Overreaching',min:28,max:29,color:'var(--zone-over,#ff6b35)'},
+  {key:'injury',label:'Injury Risk',min:30,max:Infinity,color:'var(--zone-injury,#e11d48)'}
+];
+function getMZone(m){if(m==null||isNaN(m))return null;return M_ZONES.find(z=>m>=z.min&&m<=z.max)||M_ZONES[M_ZONES.length-1]}
+function aggregateWeeklyForCorr(wos,sport){const byWeek=new Map();const fd=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');wos.forEach(w=>{const d=new Date(w.date+'T12:00:00'),wd=d.getDay(),df=wd===0?-6:1-wd;const mn=new Date(d);mn.setDate(d.getDate()+df);const k=fd(mn);if(!byWeek.has(k))byWeek.set(k,[]);byWeek.get(k).push(w)});const out=[];for(const[k,sessions]of byWeek){const days=getDayAggs(sessions);const mSum=days.reduce((s,d)=>s+d.m,0);const lpSum=days.reduce((s,d)=>s+d.lp,0);const ipSum=days.reduce((s,d)=>s+d.ip,0);const lpipRatio=ipSum>0?lpSum/ipSum:null;const adjSum=sessions.reduce((s,w)=>s+(w.adjTSS||Math.round(w.rawTSS*sportMult(w.sport))),0);const wifSum=sessions.reduce((s,w)=>s+w.ifv*(w.adjTSS||Math.round(w.rawTSS*sportMult(w.sport))),0);const avgIF=adjSum>0?wifSum/adjSum:null;const sportW=sessions.filter(w=>w.sport===sport);let meanPace=null;if(sportW.length){const paces=[];sportW.forEach(w=>{if(sport==='bike'){const ftp=parseFloat(profile.bike)||200;paces.push(w.ifv*ftp)}else if(sport==='run'){const lt=pSec(profile.run);if(lt)paces.push(lt/w.ifv)}else{const css=pSec(profile.swim);if(css)paces.push(css/w.ifv)}});if(paces.length)meanPace=paces.reduce((a,b)=>a+b,0)/paces.length}const mDistance=mSum!=null?Math.abs(mSum-M_OPTIMAL_CENTER):null;let onCurveDeviation=null;if(lpipRatio!=null&&adjSum>0){const optR=getCurveRatio(adjSum);if(optR>0)onCurveDeviation=Math.abs(lpipRatio-optR)}const mZ=getMZone(mSum);out.push({week:k,m:mSum,tss:adjSum,avgIF,meanPace,lpipRatio,mDistance,onCurveDeviation,mZone:mZ?mZ.key:null,mZoneLabel:mZ?mZ.label:null})}return out.sort((a,b)=>a.week.localeCompare(b.week))}
 function corrLagged(weeks,srcKey,lag,paceInvert,dstKey){dstKey=dstKey||'top20Pace';const pairs=[];for(let i=0;i+lag<weeks.length;i++){const x=weeks[i][srcKey],y=weeks[i+lag][dstKey];if(x!=null&&y!=null&&!isNaN(x)&&!isNaN(y))pairs.push([x,y])}if(pairs.length<3)return{r:null,n:pairs.length};const xs=pairs.map(p=>p[0]),ys=pairs.map(p=>p[1]);let pr=pearsonR(xs,ys);if(paceInvert&&pr.r!=null)pr={r:-pr.r,n:pr.n};return pr}
 function corrRolling(weeks,srcKey,winSize,paceInvert){const result=[];for(let i=0;i<weeks.length;i++){if(i<winSize-1){result.push(null);continue}const win=weeks.slice(i-winSize+1,i+1);const pairs=win.filter(w=>w[srcKey]!=null&&w.meanPace!=null&&!isNaN(w[srcKey])&&!isNaN(w.meanPace));if(pairs.length<3){result.push(null);continue}const xs=pairs.map(p=>p[srcKey]),ys=pairs.map(p=>p.meanPace);let pr=pearsonR(xs,ys);if(paceInvert&&pr.r!=null)pr={r:-pr.r,n:pr.n};result.push(pr.r)}return result}
 function drawCorrOverlay(weeks,opts){
@@ -1795,31 +1957,20 @@ function drawCorrOverlay(weeks,opts){
       ctx.fillText('PB',PAD_L+3,y-2);
     }
   }
-  if(opts.top20){
-    const paces=weeks.map(w=>w.meanPace);
-    const allPaces=paces.filter(v=>v!=null);
-    if(allPaces.length>=3){
-      const pmin=Math.min(...allPaces),pmax=Math.max(...allPaces),prange=(pmax-pmin)||1;
-      const win=Math.min(10,allPaces.length);
-      ctx.strokeStyle='rgba(255,107,53,0.45)';ctx.lineWidth=1.5;ctx.setLineDash([4,3]);
-      ctx.beginPath();let first=true;
-      for(let i=0;i<n;i++){
-        const start=Math.max(0,i-win+1);
-        const window=paces.slice(start,i+1).filter(v=>v!=null);
-        if(window.length<3){first=true;continue}
-        const sorted=[...window].sort((a,b)=>a-b);
-        const idx=paceInvert?Math.floor(sorted.length*0.2):Math.floor(sorted.length*0.8);
-        const top20=sorted[Math.max(0,Math.min(sorted.length-1,idx))];
-        const norm=(top20-pmin)/prange;
-        const adj=paceInvert?1-norm:norm;
-        const y=PAD_T+cH*(1-adj);
-        const x=xS(i);
-        if(first){ctx.moveTo(x,y);first=false}else ctx.lineTo(x,y)
-      }
+  // Mean pace (secondary): faded, dashed, no markers
+  {
+    const vals=weeks.map(w=>w.meanPace).filter(v=>v!=null&&!isNaN(v));
+    if(vals.length>=2){
+      const mn=Math.min(...vals),mx=Math.max(...vals),range=(mx-mn)||1;
+      const yS=v=>{const norm=(v-mn)/range;const adj=paceInvert?1-norm:norm;return PAD_T+cH*(1-adj)};
+      ctx.beginPath();ctx.strokeStyle='rgba(255,107,53,0.35)';ctx.lineWidth=1.25;ctx.setLineDash([3,3]);
+      let first=true;
+      weeks.forEach((w,i)=>{const v=w.meanPace;if(v==null||isNaN(v)){first=true;return}const x=xS(i),y=yS(v);if(first){ctx.moveTo(x,y);first=false}else ctx.lineTo(x,y)});
       ctx.stroke();ctx.setLineDash([]);
     }
   }
-  const series=[{key:'m',color:'#00d4aa'},{key:'tss',color:'#3b82f6'},{key:'avgIF',color:'#ffcc00'},{key:'meanPace',color:'#ff6b35',invert:paceInvert}];
+  // M and TSS series (no IF — IF is circular vs pace)
+  const series=[{key:'m',color:'#00d4aa'},{key:'tss',color:'#3b82f6'}];
   series.forEach(s=>{
     const vals=weeks.map(w=>w[s.key]).filter(v=>v!=null&&!isNaN(v));
     if(vals.length<2)return;
@@ -1831,6 +1982,32 @@ function drawCorrOverlay(weeks,opts){
     ctx.stroke();
     weeks.forEach((w,i)=>{const v=w[s.key];if(v==null||isNaN(v))return;ctx.beginPath();ctx.fillStyle=s.color;ctx.arc(xS(i),yS(v),2.5,0,Math.PI*2);ctx.fill()})
   });
+  // Top 20% pace (PRIMARY performance metric): bright solid line with markers
+  if(opts.top20){
+    const paces=weeks.map(w=>w.meanPace);
+    const allPaces=paces.filter(v=>v!=null);
+    if(allPaces.length>=3){
+      const pmin=Math.min(...allPaces),pmax=Math.max(...allPaces),prange=(pmax-pmin)||1;
+      const win=Math.min(10,allPaces.length);
+      const pts=[];
+      for(let i=0;i<n;i++){
+        const start=Math.max(0,i-win+1);
+        const window=paces.slice(start,i+1).filter(v=>v!=null);
+        if(window.length<3){pts.push(null);continue}
+        const sorted=[...window].sort((a,b)=>a-b);
+        const idx=paceInvert?Math.floor(sorted.length*0.2):Math.floor(sorted.length*0.8);
+        const top20=sorted[Math.max(0,Math.min(sorted.length-1,idx))];
+        const norm=(top20-pmin)/prange;
+        const adj=paceInvert?1-norm:norm;
+        pts.push(PAD_T+cH*(1-adj));
+      }
+      ctx.strokeStyle='#ff6b35';ctx.lineWidth=2.25;ctx.setLineDash([]);
+      ctx.beginPath();let first=true;
+      pts.forEach((y,i)=>{if(y==null){first=true;return}const x=xS(i);if(first){ctx.moveTo(x,y);first=false}else ctx.lineTo(x,y)});
+      ctx.stroke();
+      pts.forEach((y,i)=>{if(y==null)return;ctx.beginPath();ctx.fillStyle='#ff6b35';ctx.arc(xS(i),y,2.5,0,Math.PI*2);ctx.fill()});
+    }
+  }
   if(opts.lpip){
     const ratios=weeks.map(w=>w.lpipRatio).filter(v=>v!=null);
     if(ratios.length>=2){
@@ -1877,7 +2054,7 @@ function drawCorrRolling(weeks,paceInvert){
   const PAD_L=24,PAD_R=10,PAD_T=8,PAD_B=18;
   const cW=W-PAD_L-PAD_R,cH=H-PAD_T-PAD_B;
   const n=weeks.length;
-  const mRoll=corrRolling(weeks,'m',8,paceInvert);
+  const mRoll=corrRolling(weeks,'mDistance',8,paceInvert);
   const tssRoll=corrRolling(weeks,'tss',8,paceInvert);
   if(n<8){
     ctx.fillStyle='#4a5560';ctx.font='11px Barlow Condensed,sans-serif';ctx.textAlign='center';
@@ -1938,17 +2115,16 @@ function renderCorrelations(){
     const items=[
       mVals.length?cell('#00d4aa','M',Math.min(...mVals),Math.max(...mVals)):'',
       tssVals.length?cell('#3b82f6','TSS',Math.min(...tssVals),Math.max(...tssVals)):'',
-      ifVals.length?cell('#ffcc00','IF',Math.min(...ifVals).toFixed(2),Math.max(...ifVals).toFixed(2)):'',
-      pVals.length?cell('#ff6b35','Pace',fmtPace(corrSport,Math.min(...pVals)),fmtPace(corrSport,Math.max(...pVals))):'',
-      (opts.top20&&pVals.length>=3)?cell('rgba(255,107,53,0.6)','Top 20% pace','rolling','window','dashed'):'',
+      (opts.top20&&pVals.length>=3)?cell('#ff6b35','Top 20% pace (primary)','rolling','window'):'',
+      pVals.length?cell('rgba(255,107,53,0.45)','Avg pace (secondary)',fmtPace(corrSport,Math.min(...pVals)),fmtPace(corrSport,Math.max(...pVals)),'dashed'):'',
       (opts.lpip&&lpipVals.length>=2)?cell('rgba(168,85,247,0.7)','LP/IP ratio',Math.min(...lpipVals).toFixed(2),Math.max(...lpipVals).toFixed(2),'dashed'):'',
       opts.pb?cell('rgba(232,234,235,0.6)','PB pace','best','—','dotted'):''
     ];
     leg.innerHTML=items.filter(Boolean).join('');
   }
   const paceInvert=corrSport!=='bike';
-  const labels={m:'M',tss:'TSS',avgIF:'IF',lpipRatio:'LP/IP',top20Pace:'Top 20%'};
-  const keys=['m','tss','avgIF','lpipRatio','top20Pace'];
+  const labels={mDistance:'M-dist',onCurveDeviation:'Off-curve',tss:'TSS',top20Pace:'Top 20%'};
+  const keys=['mDistance','onCurveDeviation','tss','top20Pace'];
   const pairR={};
   for(let i=0;i<keys.length;i++)for(let j=i+1;j<keys.length;j++){
     const k1=keys[i],k2=keys[j];
@@ -1973,9 +2149,9 @@ function renderCorrelations(){
       }
       rows.push('<tr>'+cells.join('')+'</tr>');
     }
-    mat.innerHTML=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:separate;border-spacing:3px">${header}${rows.join('')}</table></div><div style="font-size:9px;color:var(--text3);margin-top:6px;display:flex;gap:10px;flex-wrap:wrap"><span><span style="display:inline-block;width:8px;height:8px;background:var(--accent);border-radius:2px;vertical-align:middle"></span> |r| ≥ 0.7 strong</span><span><span style="display:inline-block;width:8px;height:8px;background:var(--yellow);border-radius:2px;vertical-align:middle"></span> 0.4 – 0.7 moderate</span><span><span style="display:inline-block;width:8px;height:8px;background:var(--text3);border-radius:2px;vertical-align:middle"></span> < 0.4 weak</span>${paceInvert?'<span style="color:var(--text3)">· pace sign flipped so +r means faster pace</span>':''}</div>`;
+    mat.innerHTML=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:separate;border-spacing:3px">${header}${rows.join('')}</table></div><div style="font-size:9px;color:var(--text3);margin-top:6px;display:flex;gap:10px;flex-wrap:wrap"><span><span style="display:inline-block;width:8px;height:8px;background:var(--accent);border-radius:2px;vertical-align:middle"></span> |r| ≥ 0.7 strong</span><span><span style="display:inline-block;width:8px;height:8px;background:var(--yellow);border-radius:2px;vertical-align:middle"></span> 0.4 – 0.7 moderate</span><span><span style="display:inline-block;width:8px;height:8px;background:var(--text3);border-radius:2px;vertical-align:middle"></span> < 0.4 weak</span>${paceInvert?'<span style="color:var(--text3)">· pace sign flipped so +r means faster pace</span>':''}</div><div style="font-size:9px;color:var(--text3);margin-top:4px;line-height:1.5"><strong style="color:var(--text2)">M-dist</strong> = |M − 26| (lower = closer to optimal). <strong style="color:var(--text2)">Off-curve</strong> = |LP/IP − optimal ratio for this TSS|. For M-dist↔Top 20% a <strong>negative r</strong> means closer-to-optimal predicts faster pace.</div>`;
   }
-  const lagSpecs=[{src:'m',color:'#00d4aa',label:'M → Top 20%'},{src:'tss',color:'#3b82f6',label:'TSS → Top 20%'},{src:'lpipRatio',color:'rgba(168,85,247,0.85)',label:'LP/IP → Top 20%'}];
+  const lagSpecs=[{src:'mDistance',color:'#00d4aa',label:'M-dist → Top 20%'},{src:'onCurveDeviation',color:'rgba(168,85,247,0.85)',label:'Off-curve → Top 20%'},{src:'tss',color:'#3b82f6',label:'TSS → Top 20%'}];
   const lagsArr=[1,2,3];
   const laggedR={};
   lagSpecs.forEach(s=>{laggedR[s.src]=lagsArr.map(L=>corrLagged(weeks,s.src,L,paceInvert))});
@@ -1998,7 +2174,7 @@ function renderCorrelations(){
     const last=arr=>{for(let i=arr.length-1;i>=0;i--)if(arr[i]!=null&&!isNaN(arr[i]))return arr[i];return null};
     const fmt=v=>v==null?'—':(v>=0?'+':'')+v.toFixed(2);
     const mNow=last(rolling.mRoll),tssNow=last(rolling.tssRoll);
-    rollingCur.innerHTML=`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:12px;height:2px;background:#00d4aa;display:inline-block;border-radius:1px"></span><span style="color:var(--text2);font-weight:700">M→Pace</span> <span style="color:var(--text);font-weight:700">${fmt(mNow)}</span></span><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:12px;height:2px;background:#3b82f6;display:inline-block;border-radius:1px"></span><span style="color:var(--text2);font-weight:700">TSS→Pace</span> <span style="color:var(--text);font-weight:700">${fmt(tssNow)}</span></span>`;
+    rollingCur.innerHTML=`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:12px;height:2px;background:#00d4aa;display:inline-block;border-radius:1px"></span><span style="color:var(--text2);font-weight:700">M-dist→Pace</span> <span style="color:var(--text);font-weight:700">${fmt(mNow)}</span></span><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:12px;height:2px;background:#3b82f6;display:inline-block;border-radius:1px"></span><span style="color:var(--text2);font-weight:700">TSS→Pace</span> <span style="color:var(--text);font-weight:700">${fmt(tssNow)}</span></span>`;
   }
   const insight=document.getElementById('corrInsight');
   if(insight){
@@ -2009,29 +2185,31 @@ function renderCorrelations(){
       const top=entries[0];const[k1,k2]=top[0].split('_');const r=top[1].r;
       const strength=Math.abs(r)>=0.7?'Strong':Math.abs(r)>=0.4?'Moderate':'Weak';
       const dir=r>=0?'positive':'negative';
-      const ifPace=pairR['avgIF_top20Pace'];const mPace=pairR['m_top20Pace'];
+      const distPace=pairR['mDistance_top20Pace'];const offPace=pairR['onCurveDeviation_top20Pace'];const tssPace=pairR['tss_top20Pace'];
       const parts=[`${strength} ${dir} link — ${labels[k1]} vs ${labels[k2]}: r = ${r>=0?'+':''}${r.toFixed(2)} (n=${top[1].n}).`];
-      if(ifPace&&ifPace.r!=null&&(k1!=='avgIF'||k2!=='top20Pace'))parts.push(`IF↔Top20 r = ${ifPace.r>=0?'+':''}${ifPace.r.toFixed(2)}.`);
-      if(mPace&&mPace.r!=null&&(k1!=='m'||k2!=='top20Pace'))parts.push(`M↔Top20 r = ${mPace.r>=0?'+':''}${mPace.r.toFixed(2)}.`);
+      if(distPace&&distPace.r!=null&&top[0]!=='mDistance_top20Pace')parts.push(`M-dist↔Top20 r = ${distPace.r>=0?'+':''}${distPace.r.toFixed(2)}.`);
+      if(offPace&&offPace.r!=null&&top[0]!=='onCurveDeviation_top20Pace')parts.push(`Off-curve↔Top20 r = ${offPace.r>=0?'+':''}${offPace.r.toFixed(2)}.`);
+      if(tssPace&&tssPace.r!=null&&top[0]!=='tss_top20Pace')parts.push(`TSS↔Top20 r = ${tssPace.r>=0?'+':''}${tssPace.r.toFixed(2)}.`);
       insight.textContent=parts.join(' ');
     }
   }
   const auto=document.getElementById('corrAutoInsight');
   if(auto){
     const msgs=[];
-    const mPace=pairR['m_top20Pace'];const tssPace=pairR['tss_top20Pace'];
-    const mLag=laggedR.m||[];
-    const mStronger=mPace?.r!=null&&tssPace?.r!=null&&Math.abs(mPace.r)>Math.abs(tssPace.r);
-    const lagPositive=mLag.some(l=>l&&l.r!=null&&l.r>0.3);
-    if(mStronger&&lagPositive)msgs.push('🟢 <strong>M shows the strongest and predictive relationship with pace.</strong>');
-    else if(mStronger)msgs.push('🟡 M correlates with pace more strongly than TSS, but the predictive (lagged) signal is weak.');
+    const distPace=pairR['mDistance_top20Pace'];const tssPace=pairR['tss_top20Pace'];
+    const distLag=laggedR.mDistance||[];
+    const distStronger=distPace?.r!=null&&tssPace?.r!=null&&Math.abs(distPace.r)>Math.abs(tssPace.r);
+    const lagSignificant=distLag.some(l=>l&&l.r!=null&&Math.abs(l.r)>0.3);
+    if(distStronger&&lagSignificant)msgs.push('🟢 <strong>Distance-from-optimal predicts pace better than raw TSS</strong> — the optimal-zone model is supported.');
+    else if(distStronger)msgs.push('🟡 Distance-from-optimal correlates with pace more strongly than TSS, but the predictive (lagged) signal is weak.');
+    else if(distPace?.r!=null&&tssPace?.r!=null&&Math.abs(tssPace.r)>Math.abs(distPace.r))msgs.push('🟡 Raw TSS predicts pace better than distance-from-optimal — the optimal-zone hypothesis is not supported in this period.');
     const mRoll=rolling?.mRoll||[];
     const recent=mRoll.slice(-12).filter(v=>v!=null&&!isNaN(v));
     const last6=recent.slice(-6);
-    const stable=last6.length>=6&&last6.every(v=>v>0.5);
-    if(stable)msgs.push('🟢 <strong>Relationship is stable and reliable</strong> (rolling r > 0.5 for 6+ weeks).');
-    if(mLag[0]&&mLag[2]&&mLag[0].r!=null&&mLag[2].r!=null){
-      if(Math.abs(mLag[0].r)>0.5&&Math.abs(mLag[2].r)<0.2)msgs.push('🟡 Effect is short-term, not sustained — the signal fades by 3 weeks.');
+    const stable=last6.length>=6&&last6.every(v=>Math.abs(v)>0.5);
+    if(stable)msgs.push('🟢 <strong>Relationship is stable and reliable</strong> (rolling |r| > 0.5 for 6+ weeks).');
+    if(distLag[0]&&distLag[2]&&distLag[0].r!=null&&distLag[2].r!=null){
+      if(Math.abs(distLag[0].r)>0.5&&Math.abs(distLag[2].r)<0.2)msgs.push('🟡 Effect is short-term, not sustained — the signal fades by 3 weeks.');
     }
     if(recent.length>=6){
       const mn=Math.min(...recent),mx=Math.max(...recent);
@@ -2044,6 +2222,169 @@ function renderCorrelations(){
       auto.style.display='none';
     }
   }
+  renderCoachSummary(weeks);
+  renderZonePerformance(weeks,paceInvert);
+  renderDistanceFromOptimal(weeks,pairR);
+  renderPlateauDetection(weeks,paceInvert);
+  renderAdaptationEfficiency(weeks,paceInvert);
+}
+function fmtPaceForSport(sport,v){if(v==null||isNaN(v))return'—';if(sport==='bike')return Math.round(v)+'w';return formatSecondsToPace(Math.round(v))+(sport==='run'?'/mi':'/100m')}
+function paceImprovementLabel(sport,delta){if(delta==null||!isFinite(delta))return'—';const paceInvert=sport!=='bike';const better=paceInvert?delta<0:delta>0;const pct=Math.abs(delta);if(pct<0.05)return`<span style="color:var(--text3)">±${pct.toFixed(2)}%</span>`;return `<span style="color:${better?'var(--accent)':'var(--accent2)'}">${better?'↑':'↓'} ${pct.toFixed(2)}%</span>`}
+function renderCoachSummary(weeks){
+  const body=document.getElementById('coachSummaryBody');if(!body)return;
+  if(!weeks.length){body.innerHTML='<div style="color:var(--text3);font-style:italic">Log sessions to see your coaching summary.</div>';return}
+  const last=weeks[weeks.length-1];
+  const z=last.m!=null?getMZone(last.m):null;
+  const dist=last.mDistance;
+  let ratioStatus='—',ratioColor='var(--text3)';
+  if(last.lpipRatio!=null&&last.tss>0){
+    const optR=getCurveRatio(last.tss);
+    if(optR>0){
+      const dev=last.lpipRatio-optR;const rel=dev/optR;
+      if(Math.abs(rel)<0.1){ratioStatus='on curve';ratioColor='var(--accent)'}
+      else if(rel>0){ratioStatus=Math.abs(rel)<0.25?'slightly volume-heavy':'volume-heavy';ratioColor='var(--vol)'}
+      else{ratioStatus=Math.abs(rel)<0.25?'slightly intensity-heavy':'intensity-heavy';ratioColor='var(--accent2)'}
+    }
+  }
+  const recent=weeks.slice(-4).map(w=>w.top20Pace);
+  let trend='insufficient data',trendColor='var(--text3)';
+  const validRecent=recent.filter(v=>v!=null);
+  if(validRecent.length>=3){
+    const first=validRecent[0],lastP=validRecent[validRecent.length-1];
+    const change=lastP-first;const rel=Math.abs(change/first);
+    const paceInvert=corrSport!=='bike';
+    if(rel<0.005){trend='stable';trendColor='var(--text3)'}
+    else{const improving=paceInvert?change<0:change>0;trend=improving?'improving':'declining';trendColor=improving?'var(--accent)':'var(--accent2)'}
+  }
+  const insight=(()=>{
+    if(!z)return'Log sessions to build a picture.';
+    const parts=[`You're in the <strong style="color:${z.color}">${z.label}</strong> zone, ${dist!=null?dist+' point'+(dist===1?'':'s'):'—'} from optimal.`];
+    if(ratioStatus!=='—')parts.push(`Your ratio is <strong style="color:${ratioColor}">${ratioStatus}</strong>.`);
+    parts.push(`Performance is <strong style="color:${trendColor}">${trend}</strong>.`);
+    return parts.join(' ');
+  })();
+  body.innerHTML=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px"><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 6px;text-align:center"><div style="font-family:var(--font-display);font-size:14px;font-weight:800;color:${z?z.color:'var(--text3)'};line-height:1.1">${z?z.label:'—'}</div><div style="font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;font-weight:700">M Zone (M=${last.m??'—'})</div></div><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 6px;text-align:center"><div style="font-family:var(--font-display);font-size:18px;font-weight:800;color:var(--text)">${dist!=null?dist:'—'}</div><div style="font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;font-weight:700">Dist from optimal</div></div><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 6px;text-align:center"><div style="font-family:var(--font-display);font-size:13px;font-weight:800;color:${ratioColor};line-height:1.1">${ratioStatus}</div><div style="font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;font-weight:700">LP/IP vs curve</div></div><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 6px;text-align:center"><div style="font-family:var(--font-display);font-size:13px;font-weight:800;color:${trendColor};line-height:1.1">${trend}</div><div style="font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;font-weight:700">Trend (4 wk)</div></div></div><div style="font-size:12px;color:var(--text2);line-height:1.55;padding:9px 11px;background:var(--surface2);border-radius:7px;border-left:2px solid var(--accent)">${insight}</div>`;
+}
+function renderZonePerformance(weeks,paceInvert){
+  const body=document.getElementById('zonePerfBody');if(!body)return;
+  if(weeks.length<2){body.innerHTML='<div style="color:var(--text3);font-style:italic;font-size:11px">Need at least 2 weeks of data.</div>';return}
+  const rows=M_ZONES.map(z=>{
+    const idxs=[];weeks.forEach((w,i)=>{if(w.m!=null&&w.m>=z.min&&w.m<=z.max)idxs.push(i)});
+    const pacesArr=idxs.map(i=>weeks[i].top20Pace).filter(v=>v!=null);
+    const ratiosArr=idxs.map(i=>weeks[i].lpipRatio).filter(v=>v!=null);
+    const wow=[];idxs.forEach(i=>{if(i>0){const prev=weeks[i-1],cur=weeks[i];if(prev.top20Pace!=null&&cur.top20Pace!=null&&prev.top20Pace>0){wow.push((cur.top20Pace-prev.top20Pace)/prev.top20Pace*100)}}});
+    const avg=arr=>arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:null;
+    return{...z,n:idxs.length,avgPace:avg(pacesArr),avgRatio:avg(ratiosArr),avgWow:avg(wow)};
+  });
+  const populated=rows.filter(r=>r.n>0&&r.avgPace!=null);
+  let bestKey=null;
+  if(populated.length){
+    populated.sort((a,b)=>paceInvert?a.avgPace-b.avgPace:b.avgPace-a.avgPace);
+    bestKey=populated[0].key;
+  }
+  const header=`<tr><th style="text-align:left;padding:5px 6px;font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3)">Zone</th><th style="text-align:center;padding:5px 6px;font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3)">n</th><th style="text-align:right;padding:5px 6px;font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3)">Top 20%</th><th style="text-align:right;padding:5px 6px;font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3)">LP/IP</th><th style="text-align:right;padding:5px 6px;font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3)">WoW pace</th></tr>`;
+  const rowHtml=rows.map(r=>{
+    const isBest=r.key===bestKey;
+    const bg=isBest?'background:rgba(0,212,170,0.08);border-left:3px solid var(--accent)':'';
+    const dim=r.n===0?'opacity:0.45':'';
+    return `<tr style="${bg};${dim}"><td style="padding:8px 6px;border-bottom:1px solid var(--border);font-size:12px"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${r.color};margin-right:6px;vertical-align:middle"></span><span style="color:var(--text2);font-weight:600">${r.label}</span><span style="color:var(--text3);font-size:9px;margin-left:4px">${r.min}-${r.max===Infinity?'30+':r.max}</span>${isBest?' <span style="font-size:8px;color:var(--accent);background:rgba(0,212,170,0.16);padding:1px 5px;border-radius:3px;font-family:var(--font-display);font-weight:700;letter-spacing:0.04em;text-transform:uppercase">Best</span>':''}</td><td style="padding:8px 6px;border-bottom:1px solid var(--border);text-align:center;font-family:var(--font-display);font-weight:700;color:var(--text2)">${r.n}</td><td style="padding:8px 6px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--font-display);font-weight:700;color:${isBest?'var(--accent)':'var(--text)'}">${fmtPaceForSport(corrSport,r.avgPace)}</td><td style="padding:8px 6px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--font-display);font-weight:700;color:var(--text2)">${r.avgRatio!=null?r.avgRatio.toFixed(2):'—'}</td><td style="padding:8px 6px;border-bottom:1px solid var(--border);text-align:right;font-size:11px">${r.avgWow!=null?paceImprovementLabel(corrSport,r.avgWow):'—'}</td></tr>`;
+  }).join('');
+  body.innerHTML=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">${header}${rowHtml}</table></div>`+(bestKey?`<div style="font-size:11px;color:var(--text2);line-height:1.55;padding:8px 10px;background:var(--surface2);border-radius:6px;border-left:2px solid var(--accent);margin-top:10px">Best zone for Top 20% pace: <strong style="color:var(--accent)">${rows.find(r=>r.key===bestKey).label}</strong>. If this matches the Optimal zone (25–27), the M-score model is supported.</div>`:'');
+}
+function renderDistanceFromOptimal(weeks,pairR){
+  const body=document.getElementById('distOptBody');if(!body)return;
+  const dist=pairR['mDistance_top20Pace'];const tss=pairR['tss_top20Pace'];
+  if(!dist||dist.r==null||!tss||tss.r==null){body.innerHTML='<div style="color:var(--text3);font-style:italic;font-size:11px">Need ≥ 3 weeks with both M and Top 20% pace logged.</div>';return}
+  const fmtR=v=>(v>=0?'+':'')+v.toFixed(2);
+  const distAbs=Math.abs(dist.r),tssAbs=Math.abs(tss.r);
+  const winner=distAbs>tssAbs?'distance':'tss';
+  const supports=winner==='distance'&&dist.r<-0.3;
+  const verdict=supports?{label:'✅ Optimal-zone model supported',color:'var(--accent)',body:'Distance-from-optimal predicts pace better than raw TSS, and the relationship is in the expected direction (closer to M=26 → faster pace).'}:winner==='distance'?{label:'🟡 Mixed',color:'var(--yellow)',body:'Distance-from-optimal beats raw TSS, but the effect is weak or in an unexpected direction. Need more weeks to be confident.'}:{label:'❌ Not supported in this period',color:'var(--accent2)',body:'Raw TSS predicts pace better than distance-from-optimal — there is no clear evidence of an optimal zone in this period.'};
+  const interp=`<strong style="color:var(--text2)">M-dist ↔ Top 20% pace:</strong> r = ${fmtR(dist.r)} (n=${dist.n}). ${dist.r<-0.3?'Negative r as expected — closer-to-optimal correlates with faster pace.':dist.r>0.3?'Positive r — being further from optimal correlates with faster pace, which contradicts the model.':'Weak relationship — no clear effect.'}`;
+  body.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px"><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 8px"><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;margin-bottom:4px">M-dist → Pace</div><div style="font-family:var(--font-display);font-size:22px;font-weight:800;color:${distAbs>=0.7?'var(--accent)':distAbs>=0.4?'var(--yellow)':'var(--text3)'}">${fmtR(dist.r)}</div><div style="font-size:9px;color:var(--text3);margin-top:2px">n=${dist.n}</div></div><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 8px"><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;margin-bottom:4px">TSS → Pace (control)</div><div style="font-family:var(--font-display);font-size:22px;font-weight:800;color:${tssAbs>=0.7?'var(--accent)':tssAbs>=0.4?'var(--yellow)':'var(--text3)'}">${fmtR(tss.r)}</div><div style="font-size:9px;color:var(--text3);margin-top:2px">n=${tss.n}</div></div></div><div style="font-size:11px;color:var(--text2);line-height:1.55;padding:9px 11px;background:var(--surface2);border-radius:7px;margin-bottom:8px">${interp}</div><div style="font-size:11px;color:var(--text2);line-height:1.55;padding:9px 11px;background:var(--surface);border-radius:7px;border-left:3px solid ${verdict.color}"><div style="font-family:var(--font-display);font-size:11px;font-weight:800;letter-spacing:0.04em;color:${verdict.color};margin-bottom:4px">${verdict.label}</div>${verdict.body}</div>`;
+}
+function renderPlateauDetection(weeks,paceInvert){
+  const body=document.getElementById('plateauBody');if(!body)return;
+  if(weeks.length<4){body.innerHTML='<div style="color:var(--text3);font-style:italic;font-size:11px">Need ≥ 4 weeks of data.</div>';return}
+  const flags=[];
+  for(let i=3;i<weeks.length;i++){
+    const win=weeks.slice(i-3,i+1);
+    const tssVals=win.map(w=>w.tss).filter(v=>v!=null&&v>0);
+    const mVals=win.map(w=>w.m).filter(v=>v!=null);
+    const paces=win.map(w=>w.top20Pace).filter(v=>v!=null);
+    if(tssVals.length<4||mVals.length<4||paces.length<4)continue;
+    const tssMean=tssVals.reduce((a,b)=>a+b,0)/tssVals.length;
+    const tssStable=tssVals.every(v=>Math.abs(v-tssMean)/tssMean<=0.10);
+    const mGood=mVals.every(v=>v>=24&&v<=26);
+    if(!tssStable||!mGood)continue;
+    const first=paces[0],last=paces[paces.length-1];
+    const change=last-first;const relChange=Math.abs(change/first);
+    const improving=paceInvert?change<0:change>0;
+    const meaningful=relChange>=0.005;
+    flags.push({weekEnd:weeks[i].week,tssMean:Math.round(tssMean),paceChange:change,improving:improving&&meaningful,stalled:!meaningful||!improving});
+  }
+  const stalled=flags.filter(f=>f.stalled);
+  const improvingRuns=flags.filter(f=>!f.stalled);
+  if(!flags.length){body.innerHTML='<div style="font-size:11px;color:var(--text3);line-height:1.55">No 4-week stable-TSS + good-M windows found yet. Plateau detection requires sustained training in the M=24–26 range with TSS within ±10% for 4 weeks.</div>';return}
+  const fmtDate=k=>{const d=new Date(k+'T12:00:00');return d.toLocaleDateString('en-US',{month:'short',day:'numeric'})};
+  let html='';
+  if(stalled.length){
+    const last=stalled[stalled.length-1];
+    html+=`<div style="padding:11px 13px;background:rgba(255,204,0,0.07);border-left:3px solid var(--yellow);border-radius:7px;margin-bottom:8px"><div style="font-family:var(--font-display);font-size:12px;font-weight:800;color:var(--yellow);letter-spacing:0.04em;margin-bottom:4px">⚠ Possible plateau detected</div><div style="font-size:11px;color:var(--text2);line-height:1.55">Last detected: window ending <strong>${fmtDate(last.weekEnd)}</strong> at ~${last.tssMean} TSS. Performance may be plateauing at current TSS despite good M. Consider a progressive TSS increase.</div></div>`;
+  }
+  if(improvingRuns.length){
+    const last=improvingRuns[improvingRuns.length-1];
+    html+=`<div style="padding:11px 13px;background:rgba(0,212,170,0.07);border-left:3px solid var(--accent);border-radius:7px;margin-bottom:8px"><div style="font-family:var(--font-display);font-size:12px;font-weight:800;color:var(--accent);letter-spacing:0.04em;margin-bottom:4px">✓ Adapting on stable TSS</div><div style="font-size:11px;color:var(--text2);line-height:1.55">Most recent: window ending <strong>${fmtDate(last.weekEnd)}</strong> at ~${last.tssMean} TSS — pace is still improving. Hold the load.</div></div>`;
+  }
+  html+=`<div style="font-size:10px;color:var(--text3);line-height:1.5;margin-top:6px">Found ${flags.length} qualifying 4-wk window${flags.length===1?'':'s'}: ${improvingRuns.length} improving, ${stalled.length} stalled.</div>`;
+  body.innerHTML=html;
+}
+function renderAdaptationEfficiency(weeks,paceInvert){
+  const body=document.getElementById('adaptEffBody');if(!body)return;
+  const valid=weeks.filter(w=>w.top20Pace!=null&&w.tss>0);
+  if(valid.length<4){body.innerHTML='<div style="color:var(--text3);font-style:italic;font-size:11px">Need ≥ 4 weeks with both pace and TSS to compute adaptation efficiency.</div>';return}
+  const first=valid[0].top20Pace,last=valid[valid.length-1].top20Pace;
+  const paceChangePct=paceInvert?(first-last)/first*100:(last-first)/first*100;
+  const avgTSS=valid.reduce((s,w)=>s+w.tss,0)/valid.length;
+  const effPer100=avgTSS>0?(paceChangePct/avgTSS)*100:null;
+  const wowList=[];
+  for(let i=1;i<weeks.length;i++){const cur=weeks[i],prev=weeks[i-1];if(cur.top20Pace==null||prev.top20Pace==null||prev.top20Pace<=0||!cur.tss||cur.m==null)continue;const wowPct=paceInvert?(prev.top20Pace-cur.top20Pace)/prev.top20Pace*100:(cur.top20Pace-prev.top20Pace)/prev.top20Pace*100;wowList.push({m:cur.m,tss:cur.tss,wowPct,gainPer100:wowPct/cur.tss*100})}
+  const highM=wowList.filter(x=>x.m>=19);
+  const lowM=wowList.filter(x=>x.m<14);
+  const avg=arr=>arr.length?arr.reduce((s,x)=>s+x.gainPer100,0)/arr.length:null;
+  const avgT=arr=>arr.length?arr.reduce((s,x)=>s+x.tss,0)/arr.length:null;
+  const highEff=avg(highM),lowEff=avg(lowM),highTSSavg=avgT(highM),lowTSSavg=avgT(lowM);
+  const qwaWeeks=weeks.slice(-8);
+  const qwa=qwaWeeks.reduce((s,w)=>s+(w.m||0)*Math.sqrt(w.tss||0),0);
+  const qwaPaceFirst=qwaWeeks.find(w=>w.top20Pace!=null)?.top20Pace;
+  const qwaPaceLast=[...qwaWeeks].reverse().find(w=>w.top20Pace!=null)?.top20Pace;
+  const qwaPaceChange=qwaPaceFirst&&qwaPaceLast?(paceInvert?(qwaPaceFirst-qwaPaceLast)/qwaPaceFirst*100:(qwaPaceLast-qwaPaceFirst)/qwaPaceFirst*100):null;
+  const qwaTracking=qwa>0&&qwaPaceChange!=null&&qwaPaceChange>0;
+  const avgIFvals=valid.map(w=>w.avgIF).filter(v=>v!=null&&v>0);
+  const avgIF=avgIFvals.length?avgIFvals.reduce((a,b)=>a+b,0)/avgIFvals.length:0.80;
+  const tssToHours=t=>t/(avgIF*avgIF*100);
+  let qualityWinsMsg=null;
+  if(highEff!=null&&lowEff!=null&&highEff>lowEff)qualityWinsMsg='Quality training produces more adaptation per hour than volume alone.';
+  let substitutionMsg=null;
+  if(highEff!=null&&highEff>0&&wowList.length){
+    const observedAvgWow=wowList.reduce((s,x)=>s+x.wowPct,0)/wowList.length;
+    if(observedAvgWow>0){
+      const tssNeededHighM=observedAvgWow/(highEff/100);
+      const savings=avgTSS-tssNeededHighM;
+      if(savings>5){const hours=tssToHours(savings);substitutionMsg=`At your high-M efficiency, you could match the same pace gain with about <strong style="color:var(--accent)">${Math.round(savings)} fewer TSS per week</strong> — roughly <strong style="color:var(--accent)">${hours.toFixed(1)} h</strong> less training.`}
+    }
+  }
+  const fmtEff=v=>v==null?'—':(v>=0?'+':'')+v.toFixed(3)+'%';
+  const effColor=effPer100==null?'var(--text3)':effPer100>0.05?'var(--accent)':effPer100<-0.05?'var(--accent2)':'var(--text3)';
+  const effContext=effPer100==null?'Insufficient data.':effPer100>0?`You gain <strong style="color:var(--accent)">${effPer100.toFixed(2)}%</strong> pace per 100 TSS over this period (avg ${Math.round(avgTSS)} TSS/wk).`:effPer100<0?`Pace is regressing by <strong style="color:var(--accent2)">${Math.abs(effPer100).toFixed(2)}%</strong> per 100 TSS — your load isn't translating to gains.`:'Pace is flat at this load.';
+  let html=`<div style="display:grid;grid-template-columns:1fr;gap:6px;margin-bottom:10px"><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 12px"><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;margin-bottom:4px">Adaptation efficiency</div><div style="font-family:var(--font-display);font-size:24px;font-weight:800;color:${effColor};line-height:1">${effPer100==null?'—':(effPer100>=0?'+':'')+effPer100.toFixed(2)+'%'}</div><div style="font-size:10px;color:var(--text3);margin-top:3px">per 100 TSS · over ${valid.length} wks</div><div style="font-size:11px;color:var(--text2);line-height:1.5;margin-top:8px">${effContext}</div></div></div>`;
+  html+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px"><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 8px"><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;margin-bottom:3px">High-M wks (M ≥ 19)</div><div style="font-family:var(--font-display);font-size:18px;font-weight:800;color:${highEff!=null?(highEff>0?'var(--accent)':'var(--accent2)'):'var(--text3)'};line-height:1.1">${fmtEff(highEff)}</div><div style="font-size:9px;color:var(--text3);margin-top:3px">n=${highM.length}${highTSSavg!=null?' · ~'+Math.round(highTSSavg)+' TSS':''}</div></div><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 8px"><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;margin-bottom:3px">Low-M wks (M &lt; 14)</div><div style="font-family:var(--font-display);font-size:18px;font-weight:800;color:${lowEff!=null?(lowEff>0?'var(--accent)':'var(--accent2)'):'var(--text3)'};line-height:1.1">${fmtEff(lowEff)}</div><div style="font-size:9px;color:var(--text3);margin-top:3px">n=${lowM.length}${lowTSSavg!=null?' · ~'+Math.round(lowTSSavg)+' TSS':''}</div></div></div>`;
+  if(qualityWinsMsg)html+=`<div style="font-size:11px;color:var(--text2);line-height:1.55;padding:9px 11px;background:rgba(0,212,170,0.08);border-radius:7px;border-left:3px solid var(--accent);margin-bottom:8px">✓ <strong style="color:var(--accent)">${qualityWinsMsg}</strong> Per WoW pace gain: high-M weeks return ${fmtEff(highEff)} per 100 TSS vs ${fmtEff(lowEff)} for low-M weeks.</div>`;
+  else if(highEff!=null&&lowEff!=null)html+=`<div style="font-size:11px;color:var(--text2);line-height:1.55;padding:9px 11px;background:var(--surface2);border-radius:7px;border-left:3px solid var(--text3);margin-bottom:8px">High-M weeks return ${fmtEff(highEff)} per 100 TSS vs ${fmtEff(lowEff)} low-M — quality is not winning over volume in this period.</div>`;
+  else if(highEff==null||lowEff==null)html+=`<div style="font-size:11px;color:var(--text3);line-height:1.55;padding:9px 11px;background:var(--surface2);border-radius:7px;margin-bottom:8px;font-style:italic">Need both high-M (≥19) and low-M (&lt;14) weeks in this period to compare quality vs volume efficiency.</div>`;
+  html+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 12px;margin-bottom:8px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;font-weight:700">Quality-weighted accumulation · last 8 wk</div></div><div style="display:flex;align-items:baseline;gap:14px"><div><div style="font-family:var(--font-display);font-size:22px;font-weight:800;color:var(--text);line-height:1">${qwa>0?Math.round(qwa):'—'}</div><div style="font-size:9px;color:var(--text3);margin-top:2px">M × √TSS, summed</div></div><div style="flex:1"><div style="font-size:11px;color:var(--text2);line-height:1.5">${qwaPaceChange!=null?`Pace change over same window: <strong style="color:${qwaPaceChange>0?'var(--accent)':'var(--accent2)'}">${(qwaPaceChange>=0?'+':'')+qwaPaceChange.toFixed(2)+'%'}</strong>.${qwaTracking?' Quality accumulation and pace gains are moving together.':qwa>0&&qwaPaceChange<=0?' Quality accumulation is rising but pace is not yet — give it 2–3 wks to show.':''}`:'Pace change unavailable for this window.'}</div></div></div></div>`;
+  if(substitutionMsg)html+=`<div style="font-size:11px;color:var(--text2);line-height:1.55;padding:9px 11px;background:var(--surface);border-radius:7px;border-left:3px solid var(--accent)"><div style="font-family:var(--font-display);font-size:11px;font-weight:800;letter-spacing:0.04em;color:var(--accent);margin-bottom:4px">💡 Substitution insight</div>${substitutionMsg}</div>`;
+  body.innerHTML=html;
 }
 function setCoachPredSport(s) { coachPredSport = s; renderCoachTab(); }
 function refreshCoachAnalysis() { renderCoachTab(); flash('Coach refreshed'); }
@@ -2533,7 +2874,23 @@ function updateTargetGap() {
 }
 
 function saveCoachPrefs() { renderCoachTab(); }
-function init(){load();document.getElementById('fDate').value=today();onSportChange();render();renderSettings();document.getElementById('fTime').addEventListener('input',updateLivePreview);setupFrameTooltip()}
+function renderProfileSwitcher(){const meta=getActiveProfile();const btn=document.getElementById('profileSwitcherName');if(btn)btn.textContent=meta?meta.name:'No profile';const dd=document.getElementById('profileDropdown');if(!dd)return;const list=Storage.listProfiles();const activeId=Storage.getActiveId();dd.innerHTML=list.map(p=>{const isActive=p.id===activeId;return`<div class="profile-dropdown-row${isActive?' active':''}" onclick="switchProfile('${p.id}')"><span class="pname">${isActive?'✓ ':''}${p.name}</span><span class="picon" onclick="event.stopPropagation();renameProfile('${p.id}')" title="Rename">✎</span><span class="picon" onclick="event.stopPropagation();deleteProfileUI('${p.id}')" title="Delete">×</span></div>`}).join('')+'<div class="profile-dropdown-divider"></div><div class="profile-dropdown-add" onclick="openNewProfileModal()">+ New profile</div>'}
+function toggleProfileDropdown(e){if(e)e.stopPropagation();const dd=document.getElementById('profileDropdown');if(!dd)return;const open=dd.style.display!=='none';if(open){dd.style.display='none'}else{renderProfileSwitcher();dd.style.display='block';setTimeout(()=>{document.addEventListener('click',closeProfileDropdownOnce)},0)}}
+function closeProfileDropdownOnce(){const dd=document.getElementById('profileDropdown');if(dd)dd.style.display='none';document.removeEventListener('click',closeProfileDropdownOnce)}
+function switchProfile(id){if(Storage.getActiveId()===id){closeProfileDropdownOnce();return}Storage.setActiveId(id);load();render();renderSettings();renderProfileSwitcher();closeProfileDropdownOnce();const meta=getActiveProfile();flash('Switched to '+(meta?meta.name:'profile'))}
+function openNewProfileModal(){closeProfileDropdownOnce();const m=document.getElementById('newProfileModal');m.style.display='flex';const inp=document.getElementById('newProfileName');inp.value='';setTimeout(()=>inp.focus(),50)}
+function closeNewProfileModal(e){if(!e||(e.target&&e.target.classList&&e.target.classList.contains('modal-overlay')))document.getElementById('newProfileModal').style.display='none'}
+function commitNewProfile(){const inp=document.getElementById('newProfileName');const name=(inp.value||'').trim();if(!name)return flash('Enter a name');const id='p_'+uid();const meta={id,name,createdAt:today()};const list=Storage.listProfiles();list.push(meta);Storage.saveProfiles(list);Storage.saveData(id,{});Storage.setActiveId(id);document.getElementById('newProfileModal').style.display='none';load();render();renderSettings();renderProfileSwitcher();flash('Created '+name)}
+function renameProfile(id){closeProfileDropdownOnce();const list=Storage.listProfiles();const p=list.find(x=>x.id===id);if(!p)return;const next=prompt('Rename profile',p.name);if(next===null)return;const trimmed=next.trim();if(!trimmed)return flash('Name required');p.name=trimmed;Storage.saveProfiles(list);renderProfileSwitcher();flash('Renamed')}
+function deleteProfileUI(id){closeProfileDropdownOnce();const list=Storage.listProfiles();if(list.length<=1)return flash("Can't delete your only profile.");const p=list.find(x=>x.id===id);if(!p)return;if(!confirm(`Delete profile '${p.name}' and all its data? This cannot be undone.`))return;const wasActive=Storage.getActiveId()===id;Storage.deleteProfile(id);if(wasActive){const remaining=Storage.listProfiles();if(remaining.length){Storage.setActiveId(remaining[0].id);load()}}render();renderSettings();renderProfileSwitcher();flash('Deleted '+p.name)}
+function completeFirstRun(){const inp=document.getElementById('firstRunName');const name=(inp.value||'').trim()||'Me';const id='p_'+uid();const meta={id,name,createdAt:today()};Storage.saveProfiles([meta]);Storage.saveData(id,{});Storage.setActiveId(id);document.getElementById('firstRunModal').style.display='none';load();document.getElementById('fDate').value=today();onSportChange();render();renderSettings();document.getElementById('fTime').addEventListener('input',updateLivePreview);setupFrameTooltip();renderProfileSwitcher();flash('Created '+name)}
+function init(){
+  migrateLegacyIfNeeded()
+  const profiles=Storage.listProfiles()
+  if(!profiles.length){const m=document.getElementById('firstRunModal');if(m)m.style.display='flex';renderProfileSwitcher();return}
+  if(!Storage.getActiveId()||!profiles.find(p=>p.id===Storage.getActiveId()))Storage.setActiveId(profiles[0].id)
+  load();document.getElementById('fDate').value=today();onSportChange();render();renderSettings();document.getElementById('fTime').addEventListener('input',updateLivePreview);setupFrameTooltip();renderProfileSwitcher()
+}
 init()
 </script>
 
