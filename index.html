@@ -564,49 +564,51 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
     </div>
     <div class="card" id="corrPanel" style="margin-bottom:14px">
       <div class="expandable-header" style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
-        <span class="expandable-title">📊 PERFORMANCE CORRELATIONS</span>
+        <span class="expandable-title">📊 DOES M IMPROVE PERFORMANCE?</span>
         <span style="font-size:9px;color:var(--text3);font-weight:400;letter-spacing:0.04em">weekly · pearson r</span>
       </div>
-      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.5">Overlays your weekly M, TSS, and pace (normalized). Top 20% pace is the primary performance metric (solid orange) — average pace is shown faded for context. Pearson r quantifies the linear relationship (−1 to +1).</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.5">The headline question: <strong style="color:var(--text2)">at the same TSS, do better-M weeks produce better performance?</strong> If yes, M is doing real work. If raw TSS already explains everything, the M model is redundant.</div>
       <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;align-items:center">
-        <span style="font-size:10px;color:var(--text3);margin-right:2px;font-family:var(--font-display);letter-spacing:0.05em;text-transform:uppercase">Pace:</span>
+        <span style="font-size:10px;color:var(--text3);margin-right:2px;font-family:var(--font-display);letter-spacing:0.05em;text-transform:uppercase">Sport:</span>
         <span class="sport-pill active" data-corrsport="run" onclick="setCorrSport('run')">🏃 Run</span>
         <span class="sport-pill" data-corrsport="bike" onclick="setCorrSport('bike')">🚴 Bike</span>
         <span class="sport-pill" data-corrsport="swim" onclick="setCorrSport('swim')">🏊 Swim</span>
       </div>
       <div id="corrLayerToggles" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;font-size:10px;color:var(--text3);align-items:center">
         <label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="togZones" checked onchange="renderCorrelations()" style="margin:0"> M-zone shading</label>
-        <label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="togTop20" checked onchange="renderCorrelations()" style="margin:0"> Top 20% pace <span style="font-size:8px;color:var(--yellow);background:rgba(255,204,0,0.12);border:1px solid rgba(255,204,0,0.25);padding:1px 4px;border-radius:3px;letter-spacing:0.04em;text-transform:uppercase">Exp</span></label>
-        <label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="togLpIp" checked onchange="renderCorrelations()" style="margin:0"> LP/IP ratio <span style="font-size:8px;color:var(--yellow);background:rgba(255,204,0,0.12);border:1px solid rgba(255,204,0,0.25);padding:1px 4px;border-radius:3px;letter-spacing:0.04em;text-transform:uppercase">Exp</span></label>
-        <label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="togPb" checked onchange="renderCorrelations()" style="margin:0"> PB pace</label>
-        <label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="togWoW" checked onchange="renderCorrelations()" style="margin:0"> Weekly Δ</label>
+        <label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="togMDist" checked onchange="renderCorrelations()" style="margin:0"> M-distance line</label>
+        <label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="togPerf" checked onchange="renderCorrelations()" style="margin:0"> Performance score</label>
+        <label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="togWoW" checked onchange="renderCorrelations()" style="margin:0"> Weekly Δ markers</label>
       </div>
-      <div style="position:relative"><canvas id="corrOverlayCanvas" height="230" style="width:100%;display:block"></canvas></div>
+      <div style="position:relative"><canvas id="corrOverlayCanvas" height="240" style="width:100%;display:block"></canvas></div>
       <div id="corrLegend" style="display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:10px;color:var(--text3);line-height:1.5"></div>
+      <div style="font-size:10px;color:var(--text3);margin-top:8px;padding:8px 10px;background:var(--surface2);border-radius:6px;line-height:1.5"><strong style="color:var(--text2)">Performance score</strong> = best 1–2 quality sessions per week (IF ≥ 0.78). For run/swim it tracks fastest delivered pace, for bike it tracks highest power. Easy aerobic sessions are excluded — that's what eliminates the "more easy volume → slower average pace" artifact you were seeing.</div>
 
       <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
-          <span style="font-family:var(--font-display);font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text2)">Rolling 8-week Correlation with Pace</span>
-          <span style="font-size:9px;color:var(--text3);font-weight:400">Tests consistency over time</span>
+          <span style="font-family:var(--font-display);font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text2)">Rolling 8-week relationship to performance</span>
+          <span style="font-size:9px;color:var(--text3);font-weight:400">|r| close to 1 = strong link</span>
         </div>
-        <div style="position:relative"><canvas id="corrRollingCanvas" height="110" style="width:100%;display:block"></canvas></div>
+        <div style="position:relative"><canvas id="corrRollingCanvas" height="120" style="width:100%;display:block"></canvas></div>
         <div id="corrRollingCurrent" style="font-size:10px;color:var(--text3);margin-top:6px;display:flex;gap:14px;flex-wrap:wrap"></div>
+        <div style="font-size:10px;color:var(--text3);margin-top:6px;line-height:1.5">The <strong style="color:var(--text2)">teal line is the answer to your question</strong>: it's the partial correlation of M with performance, holding TSS constant. If it stays positive (above 0), better M reliably predicts better performance even at matched TSS.</div>
       </div>
 
       <div style="margin-top:14px">
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
-          <span style="font-family:var(--font-display);font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text2)">Correlation matrix</span>
-          <span style="font-size:9px;color:var(--text3);font-weight:400">Shows relationship strength</span>
+          <span style="font-family:var(--font-display);font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text2)">Headline correlations</span>
+          <span style="font-size:9px;color:var(--text3);font-weight:400">+r = better, −r = worse</span>
         </div>
         <div id="corrMatrix"></div>
       </div>
 
       <div style="margin-top:14px">
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
-          <span style="font-family:var(--font-display);font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text2)">Lagged <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0.02em">(predicting future Top 20% pace)</span></span>
-          <span style="font-size:9px;color:var(--text3);font-weight:400">Tests if today's training predicts pace +1/+2/+3 wks ahead</span>
+          <span style="font-family:var(--font-display);font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text2)">Lagged effects <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0.02em">(does this week's training predict next week's performance?)</span></span>
+          <span style="font-size:9px;color:var(--text3);font-weight:400">+1, +2, +3 wks ahead</span>
         </div>
         <div id="corrLagMatrix"></div>
+        <div style="font-size:10px;color:var(--text3);margin-top:6px;line-height:1.5"><strong style="color:var(--text2)">How to read</strong>: each cell shows how this week's value (M, TSS, etc.) correlates with the performance score N weeks later. A strong +r at "+2 wk" means: when this metric goes up, performance tends to go up two weeks later — fitness adaptation usually shows up here.</div>
       </div>
 
       <div id="corrInsight" style="font-size:11px;color:var(--text3);margin-top:10px;font-style:italic;line-height:1.6"></div>
@@ -614,18 +616,18 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
     </div>
     <div class="card" id="zonePerfCard" style="margin-bottom:14px">
       <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
-        <span class="expandable-title">📈 Performance by Training Zone</span>
+        <span class="expandable-title">📈 Performance by M Zone</span>
         <span style="font-size:8px;color:var(--yellow);background:rgba(255,204,0,0.12);border:1px solid rgba(255,204,0,0.25);padding:1px 4px;border-radius:3px;letter-spacing:0.04em;text-transform:uppercase">Exp</span>
       </div>
-      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.5">Which M zone produces your best Top 20% pace? Per zone: weeks (n), avg pace, avg LP/IP ratio, and avg week-over-week pace change.</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.5">Which M zone produced your best performance score? If the "Best" badge lands on Optimal (25–27), the zone model is working. If it lands lower, you may be over-prescribing volume.</div>
       <div id="zonePerfBody"></div>
     </div>
     <div class="card" id="distOptCard" style="margin-bottom:14px">
       <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
-        <span class="expandable-title">🎯 Distance from Optimal vs Performance</span>
+        <span class="expandable-title">🎯 Same TSS, Different M — Does M Win?</span>
         <span style="font-size:8px;color:var(--yellow);background:rgba(255,204,0,0.12);border:1px solid rgba(255,204,0,0.25);padding:1px 4px;border-radius:3px;letter-spacing:0.04em;text-transform:uppercase">Exp</span>
       </div>
-      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.5">Tests whether being closer to <strong style="color:var(--text2)">M = 26</strong> predicts better Top 20% pace — a nonlinear test that raw correlation misses. Compared to raw TSS for context.</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.5">Buckets your weeks into <strong style="color:var(--text2)">low / mid / high TSS</strong>, then within each bucket compares performance for high-M weeks vs low-M weeks. This is the cleanest test of "for the same training load, does better M produce better performance?"</div>
       <div id="distOptBody"></div>
     </div>
     <div class="card" id="plateauCard" style="margin-bottom:14px">
@@ -1893,6 +1895,17 @@ function setCoachTone(t) { coachTone = t; document.querySelectorAll('.tone-btn')
 function setCoachPeriod(p) { coachPeriod = p; document.querySelectorAll('.coach-period-tab').forEach(b => b.classList.remove('active')); document.querySelector(`.coach-period-tab[data-period="${p}"]`)?.classList.add('active'); renderCoachTab(); }
 function setCorrSport(s){corrSport=s;document.querySelectorAll('[data-corrsport]').forEach(p=>p.classList.toggle('active',p.dataset.corrsport===s));renderCorrelations()}
 function pearsonR(xs,ys){const n=xs.length;if(n<3)return{r:null,n};const mx=xs.reduce((a,b)=>a+b,0)/n,my=ys.reduce((a,b)=>a+b,0)/n;let num=0,dx=0,dy=0;for(let i=0;i<n;i++){const a=xs[i]-mx,b=ys[i]-my;num+=a*b;dx+=a*a;dy+=b*b}const den=Math.sqrt(dx*dy);return{r:den>0?num/den:null,n}}
+// Partial correlation: r(X,Y | Z) — strips out the linear effect of Z from both X and Y, then correlates the residuals.
+// This answers: "controlling for Z, does X still predict Y?"
+function partialCorr(xs,ys,zs){
+  const n=xs.length;
+  if(n<4||ys.length!==n||zs.length!==n)return{r:null,n};
+  const rxy=pearsonR(xs,ys).r,rxz=pearsonR(xs,zs).r,ryz=pearsonR(ys,zs).r;
+  if(rxy==null||rxz==null||ryz==null)return{r:null,n};
+  const den=Math.sqrt((1-rxz*rxz)*(1-ryz*ryz));
+  if(!isFinite(den)||den<1e-9)return{r:null,n};
+  return{r:(rxy-rxz*ryz)/den,n};
+}
 const M_OPTIMAL_CENTER=26,M_OPTIMAL_LOW=25,M_OPTIMAL_HIGH=27;
 const M_ZONES=[
   {key:'recovery',label:'Recovery',min:0,max:9,color:'var(--zone-healthy,#64748b)'},
@@ -1904,33 +1917,79 @@ const M_ZONES=[
   {key:'injury',label:'Injury Risk',min:30,max:Infinity,color:'var(--zone-injury,#e11d48)'}
 ];
 function getMZone(m){if(m==null||isNaN(m))return null;return M_ZONES.find(z=>m>=z.min&&m<=z.max)||M_ZONES[M_ZONES.length-1]}
-function aggregateWeeklyForCorr(wos,sport){const byWeek=new Map();const fd=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');wos.forEach(w=>{const d=new Date(w.date+'T12:00:00'),wd=d.getDay(),df=wd===0?-6:1-wd;const mn=new Date(d);mn.setDate(d.getDate()+df);const k=fd(mn);if(!byWeek.has(k))byWeek.set(k,[]);byWeek.get(k).push(w)});const out=[];for(const[k,sessions]of byWeek){const days=getDayAggs(sessions);const mSum=days.reduce((s,d)=>s+d.m,0);const lpSum=days.reduce((s,d)=>s+d.lp,0);const ipSum=days.reduce((s,d)=>s+d.ip,0);const lpipRatio=ipSum>0?lpSum/ipSum:null;const adjSum=sessions.reduce((s,w)=>s+(w.adjTSS||Math.round(w.rawTSS*sportMult(w.sport))),0);const wifSum=sessions.reduce((s,w)=>s+w.ifv*(w.adjTSS||Math.round(w.rawTSS*sportMult(w.sport))),0);const avgIF=adjSum>0?wifSum/adjSum:null;const sportW=sessions.filter(w=>w.sport===sport);let meanPace=null;if(sportW.length){const paces=[];sportW.forEach(w=>{if(sport==='bike'){const ftp=parseFloat(profile.bike)||200;paces.push(w.ifv*ftp)}else if(sport==='run'){const lt=pSec(profile.run);if(lt)paces.push(lt/w.ifv)}else{const css=pSec(profile.swim);if(css)paces.push(css/w.ifv)}});if(paces.length)meanPace=paces.reduce((a,b)=>a+b,0)/paces.length}const mDistance=mSum!=null?Math.abs(mSum-M_OPTIMAL_CENTER):null;let onCurveDeviation=null;if(lpipRatio!=null&&adjSum>0){const optR=getCurveRatio(adjSum);if(optR>0)onCurveDeviation=Math.abs(lpipRatio-optR)}const mZ=getMZone(mSum);out.push({week:k,m:mSum,tss:adjSum,avgIF,meanPace,lpipRatio,mDistance,onCurveDeviation,mZone:mZ?mZ.key:null,mZoneLabel:mZ?mZ.label:null})}return out.sort((a,b)=>a.week.localeCompare(b.week))}
-function corrLagged(weeks,srcKey,lag,paceInvert,dstKey){dstKey=dstKey||'top20Pace';const pairs=[];for(let i=0;i+lag<weeks.length;i++){const x=weeks[i][srcKey],y=weeks[i+lag][dstKey];if(x!=null&&y!=null&&!isNaN(x)&&!isNaN(y))pairs.push([x,y])}if(pairs.length<3)return{r:null,n:pairs.length};const xs=pairs.map(p=>p[0]),ys=pairs.map(p=>p[1]);let pr=pearsonR(xs,ys);if(paceInvert&&pr.r!=null)pr={r:-pr.r,n:pr.n};return pr}
-function corrRolling(weeks,srcKey,winSize,paceInvert){const result=[];for(let i=0;i<weeks.length;i++){if(i<winSize-1){result.push(null);continue}const win=weeks.slice(i-winSize+1,i+1);const pairs=win.filter(w=>w[srcKey]!=null&&w.meanPace!=null&&!isNaN(w[srcKey])&&!isNaN(w.meanPace));if(pairs.length<3){result.push(null);continue}const xs=pairs.map(p=>p[srcKey]),ys=pairs.map(p=>p.meanPace);let pr=pearsonR(xs,ys);if(paceInvert&&pr.r!=null)pr={r:-pr.r,n:pr.n};result.push(pr.r)}return result}
+// Build a per-session performance score, then take the best 1–2 sessions/week.
+// KEY DESIGN: we DON'T normalize raw pace by dividing by IF — that would cancel out fitness changes.
+// Instead, we use the actual delivered pace from quality sessions (IF ≥ 0.78), which captures fitness
+// directly: as the athlete gets fitter, their actual pace at hard efforts gets faster (lower seconds),
+// independent of any threshold update. We weight toward sessions with HIGHER IF to favor true quality
+// efforts and exclude long easy volume. This also dodges the "more easy miles → slower avg pace" trap.
+//
+// For run/swim (lower seconds = better): score = -actualPace (sec/mi or sec/100m), so higher = better.
+// For bike (higher watts = better): score = actualPower.
+function computePerformanceScore(sessions,sport){
+  if(!sessions||!sessions.length)return null;
+  const samples=[];
+  sessions.forEach(w=>{
+    if(w.sport!==sport||!w.ifv||w.ifv<=0)return;
+    // Only count quality sessions — easy aerobic work doesn't reflect peak fitness
+    if(w.ifv<0.78)return;
+    if(sport==='bike'){
+      const ftp=parseFloat(profile.bike)||200;
+      const power=w.ifv*ftp;
+      samples.push({score:power,if:w.ifv});
+    }else if(sport==='run'){
+      const lt=pSec(profile.run);
+      if(!lt)return;
+      const pace=lt/w.ifv; // seconds per mile
+      samples.push({score:-pace,if:w.ifv}); // negate so higher = better (faster)
+    }else{
+      const css=pSec(profile.swim);
+      if(!css)return;
+      const pace=css/w.ifv;
+      samples.push({score:-pace,if:w.ifv});
+    }
+  });
+  if(!samples.length)return null;
+  // Sort by score descending (best first). Take top 2.
+  samples.sort((a,b)=>b.score-a.score);
+  const k=Math.min(2,samples.length);
+  const top=samples.slice(0,k);
+  const avgScore=top.reduce((s,x)=>s+x.score,0)/k;
+  return{score:avgScore,n:samples.length};
+}
+function aggregateWeeklyForCorr(wos,sport){const byWeek=new Map();const fd=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');wos.forEach(w=>{const d=new Date(w.date+'T12:00:00'),wd=d.getDay(),df=wd===0?-6:1-wd;const mn=new Date(d);mn.setDate(d.getDate()+df);const k=fd(mn);if(!byWeek.has(k))byWeek.set(k,[]);byWeek.get(k).push(w)});const out=[];for(const[k,sessions]of byWeek){const days=getDayAggs(sessions);const mSum=days.reduce((s,d)=>s+d.m,0);const lpSum=days.reduce((s,d)=>s+d.lp,0);const ipSum=days.reduce((s,d)=>s+d.ip,0);const lpipRatio=ipSum>0?lpSum/ipSum:null;const adjSum=sessions.reduce((s,w)=>s+(w.adjTSS||Math.round(w.rawTSS*sportMult(w.sport))),0);const wifSum=sessions.reduce((s,w)=>s+w.ifv*(w.adjTSS||Math.round(w.rawTSS*sportMult(w.sport))),0);const avgIF=adjSum>0?wifSum/adjSum:null;const sportW=sessions.filter(w=>w.sport===sport);let meanPace=null;if(sportW.length){const paces=[];sportW.forEach(w=>{if(sport==='bike'){const ftp=parseFloat(profile.bike)||200;paces.push(w.ifv*ftp)}else if(sport==='run'){const lt=pSec(profile.run);if(lt)paces.push(lt/w.ifv)}else{const css=pSec(profile.swim);if(css)paces.push(css/w.ifv)}});if(paces.length)meanPace=paces.reduce((a,b)=>a+b,0)/paces.length}const perfObj=computePerformanceScore(sessions,sport);const perfScore=perfObj?perfObj.score:null;const mDistance=mSum!=null?Math.abs(mSum-M_OPTIMAL_CENTER):null;const mZ=getMZone(mSum);out.push({week:k,m:mSum,tss:adjSum,avgIF,meanPace,lpipRatio,mDistance,perfScore,mZone:mZ?mZ.key:null,mZoneLabel:mZ?mZ.label:null})}return out.sort((a,b)=>a.week.localeCompare(b.week))}
+function corrLagged(weeks,srcKey,lag,dstKey){dstKey=dstKey||'perfScore';const pairs=[];for(let i=0;i+lag<weeks.length;i++){const x=weeks[i][srcKey],y=weeks[i+lag][dstKey];if(x!=null&&y!=null&&!isNaN(x)&&!isNaN(y))pairs.push([x,y])}if(pairs.length<3)return{r:null,n:pairs.length};const xs=pairs.map(p=>p[0]),ys=pairs.map(p=>p[1]);return pearsonR(xs,ys)}
+// Rolling correlation against perfScore (already sign-correct: higher score = better, no inversion needed).
+function corrRolling(weeks,srcKey,winSize){const result=[];for(let i=0;i<weeks.length;i++){if(i<winSize-1){result.push(null);continue}const win=weeks.slice(i-winSize+1,i+1);const pairs=win.filter(w=>w[srcKey]!=null&&w.perfScore!=null&&!isNaN(w[srcKey])&&!isNaN(w.perfScore));if(pairs.length<3){result.push(null);continue}const xs=pairs.map(p=>p[srcKey]),ys=pairs.map(p=>p.perfScore);result.push(pearsonR(xs,ys).r)}return result}
+// Rolling partial correlation: r(M, perfScore | TSS) — answers "controlling for TSS, does M predict performance?"
+function partialCorrRolling(weeks,winSize){const result=[];for(let i=0;i<weeks.length;i++){if(i<winSize-1){result.push(null);continue}const win=weeks.slice(i-winSize+1,i+1);const pairs=win.filter(w=>w.m!=null&&w.tss!=null&&w.perfScore!=null&&!isNaN(w.m)&&!isNaN(w.tss)&&!isNaN(w.perfScore));if(pairs.length<4){result.push(null);continue}const xs=pairs.map(p=>p.m),ys=pairs.map(p=>p.perfScore),zs=pairs.map(p=>p.tss);result.push(partialCorr(xs,ys,zs).r)}return result}
 function drawCorrOverlay(weeks,opts){
   opts=opts||{};
   const canvas=document.getElementById('corrOverlayCanvas');if(!canvas)return;
   const dpr=window.devicePixelRatio||1;
-  const W=canvas.offsetWidth||canvas.parentElement.offsetWidth||360,H=230;
+  const W=canvas.offsetWidth||canvas.parentElement.offsetWidth||360,H=240;
   canvas.width=W*dpr;canvas.height=H*dpr;
   const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
   if(weeks.length<2){ctx.fillStyle='#4a5560';ctx.font='11px Barlow Condensed,sans-serif';ctx.textAlign='center';ctx.fillText('Need ≥ 2 weeks of data in this period',W/2,H/2);return}
-  const PAD_L=24,PAD_R=opts.lpip?32:14,PAD_T=12,PAD_B=44;
+  const PAD_L=28,PAD_R=28,PAD_T=14,PAD_B=42;
   const cW=W-PAD_L-PAD_R,cH=H-PAD_T-PAD_B;
-  const paceInvert=corrSport!=='bike';
   const n=weeks.length;
   const xS=i=>PAD_L+(n>1?cW*i/(n-1):cW/2);
+
+  // Left axis: M (used for zone shading + the M line)
   const mVals=weeks.map(w=>w.m).filter(v=>v!=null);
   const mMin=mVals.length?Math.min(...mVals):0,mMax=mVals.length?Math.max(...mVals):42;
   const mRange=(mMax-mMin)||1;
   const yM=v=>PAD_T+cH*(1-(v-mMin)/mRange);
+
+  // Background M-zone shading (left axis)
   if(opts.zones&&mVals.length){
     const zones=[
       {min:0,max:13,color:'rgba(100,116,139,0.07)'},
       {min:14,max:18,color:'rgba(5,150,105,0.07)'},
       {min:19,max:24,color:'rgba(59,130,246,0.07)'},
-      {min:25,max:27,color:'rgba(255,204,0,0.09)'},
-      {min:28,max:42,color:'rgba(225,29,72,0.07)'}
+      {min:25,max:27,color:'rgba(255,204,0,0.10)'},
+      {min:28,max:60,color:'rgba(225,29,72,0.07)'}
     ];
     zones.forEach(z=>{
       const top=Math.max(z.min,mMin),bot=Math.min(z.max,mMax);
@@ -1939,132 +1998,120 @@ function drawCorrOverlay(weeks,opts){
       ctx.fillStyle=z.color;
       ctx.fillRect(PAD_L,Math.min(y1,y2),cW,Math.abs(y2-y1)||1);
     });
-  }
-  ctx.strokeStyle='rgba(42,48,53,0.9)';ctx.lineWidth=0.5;
-  for(let i=0;i<=4;i++){const y=PAD_T+cH*i/4;ctx.beginPath();ctx.moveTo(PAD_L,y);ctx.lineTo(PAD_L+cW,y);ctx.stroke()}
-  if(opts.pb){
-    const paces=weeks.map(w=>w.meanPace).filter(v=>v!=null);
-    if(paces.length>=2){
-      const pmin=Math.min(...paces),pmax=Math.max(...paces),prange=(pmax-pmin)||1;
-      const pbVal=paceInvert?pmin:pmax;
-      const norm=(pbVal-pmin)/prange;
-      const adj=paceInvert?1-norm:norm;
-      const y=PAD_T+cH*(1-adj);
-      ctx.strokeStyle='rgba(232,234,235,0.5)';ctx.lineWidth=1;ctx.setLineDash([2,3]);
-      ctx.beginPath();ctx.moveTo(PAD_L,y);ctx.lineTo(PAD_L+cW,y);ctx.stroke();
+    // Highlight the M=26 optimal line
+    if(M_OPTIMAL_CENTER>=mMin&&M_OPTIMAL_CENTER<=mMax){
+      const yOpt=yM(M_OPTIMAL_CENTER);
+      ctx.strokeStyle='rgba(255,204,0,0.45)';ctx.lineWidth=1;ctx.setLineDash([4,3]);
+      ctx.beginPath();ctx.moveTo(PAD_L,yOpt);ctx.lineTo(PAD_L+cW,yOpt);ctx.stroke();
       ctx.setLineDash([]);
-      ctx.fillStyle='rgba(232,234,235,0.6)';ctx.font='9px Barlow Condensed,sans-serif';ctx.textAlign='left';
-      ctx.fillText('PB',PAD_L+3,y-2);
+      ctx.fillStyle='rgba(255,204,0,0.7)';ctx.font='9px Barlow Condensed,sans-serif';ctx.textAlign='left';
+      ctx.fillText('M=26',PAD_L+3,yOpt-3);
     }
   }
-  // Mean pace (secondary): faded, dashed, no markers
+  // Faint horizontal grid
+  ctx.strokeStyle='rgba(42,48,53,0.5)';ctx.lineWidth=0.5;
+  for(let i=0;i<=4;i++){const y=PAD_T+cH*i/4;ctx.beginPath();ctx.moveTo(PAD_L,y);ctx.lineTo(PAD_L+cW,y);ctx.stroke()}
+
+  // Always draw M as the primary teal line
   {
-    const vals=weeks.map(w=>w.meanPace).filter(v=>v!=null&&!isNaN(v));
+    ctx.beginPath();ctx.strokeStyle='#00d4aa';ctx.lineWidth=2;let first=true;
+    weeks.forEach((w,i)=>{const v=w.m;if(v==null||isNaN(v)){first=true;return}const x=xS(i),y=yM(v);if(first){ctx.moveTo(x,y);first=false}else ctx.lineTo(x,y)});
+    ctx.stroke();
+    weeks.forEach((w,i)=>{const v=w.m;if(v==null||isNaN(v))return;ctx.beginPath();ctx.fillStyle='#00d4aa';ctx.arc(xS(i),yM(v),2.5,0,Math.PI*2);ctx.fill()});
+  }
+
+  // M-distance overlay (smaller scale = closer to optimal, drawn lighter on its own normalization)
+  if(opts.mdist){
+    const distVals=weeks.map(w=>w.mDistance).filter(v=>v!=null);
+    if(distVals.length>=2){
+      const dmin=0,dmax=Math.max(...distVals,5);
+      const yD=v=>PAD_T+cH*(v-dmin)/((dmax-dmin)||1); // inverted: 0 (best) at top, dmax at bottom
+      ctx.beginPath();ctx.strokeStyle='rgba(255,204,0,0.7)';ctx.lineWidth=1.5;ctx.setLineDash([4,2]);let first=true;
+      weeks.forEach((w,i)=>{const v=w.mDistance;if(v==null||isNaN(v)){first=true;return}const x=xS(i),y=yD(v);if(first){ctx.moveTo(x,y);first=false}else ctx.lineTo(x,y)});
+      ctx.stroke();ctx.setLineDash([]);
+      weeks.forEach((w,i)=>{const v=w.mDistance;if(v==null||isNaN(v))return;ctx.beginPath();ctx.fillStyle='rgba(255,204,0,0.7)';ctx.arc(xS(i),yD(v),2,0,Math.PI*2);ctx.fill()});
+    }
+  }
+
+  // TSS line (own normalization, blue)
+  {
+    const vals=weeks.map(w=>w.tss).filter(v=>v!=null&&!isNaN(v));
+    if(vals.length>=2){
+      const mn=Math.min(...vals),mx=Math.max(...vals);
+      const range=(mx-mn)||1;
+      const yT=v=>PAD_T+cH*(1-(v-mn)/range);
+      ctx.beginPath();ctx.strokeStyle='#3b82f6';ctx.lineWidth=2;let first=true;
+      weeks.forEach((w,i)=>{const v=w.tss;if(v==null||isNaN(v)){first=true;return}const x=xS(i),y=yT(v);if(first){ctx.moveTo(x,y);first=false}else ctx.lineTo(x,y)});
+      ctx.stroke();
+      weeks.forEach((w,i)=>{const v=w.tss;if(v==null||isNaN(v))return;ctx.beginPath();ctx.fillStyle='#3b82f6';ctx.arc(xS(i),yT(v),2.5,0,Math.PI*2);ctx.fill()});
+    }
+  }
+
+  // Performance score (PRIMARY): normalized to its own range, drawn bright orange
+  if(opts.perf){
+    const vals=weeks.map(w=>w.perfScore).filter(v=>v!=null&&!isNaN(v));
     if(vals.length>=2){
       const mn=Math.min(...vals),mx=Math.max(...vals),range=(mx-mn)||1;
-      const yS=v=>{const norm=(v-mn)/range;const adj=paceInvert?1-norm:norm;return PAD_T+cH*(1-adj)};
-      ctx.beginPath();ctx.strokeStyle='rgba(255,107,53,0.35)';ctx.lineWidth=1.25;ctx.setLineDash([3,3]);
-      let first=true;
-      weeks.forEach((w,i)=>{const v=w.meanPace;if(v==null||isNaN(v)){first=true;return}const x=xS(i),y=yS(v);if(first){ctx.moveTo(x,y);first=false}else ctx.lineTo(x,y)});
-      ctx.stroke();ctx.setLineDash([]);
-    }
-  }
-  // M and TSS series (no IF — IF is circular vs pace)
-  const series=[{key:'m',color:'#00d4aa'},{key:'tss',color:'#3b82f6'}];
-  series.forEach(s=>{
-    const vals=weeks.map(w=>w[s.key]).filter(v=>v!=null&&!isNaN(v));
-    if(vals.length<2)return;
-    const mn=Math.min(...vals),mx=Math.max(...vals);
-    const range=(mx-mn)||1;
-    const yS=v=>{const norm=(v-mn)/range;const adj=s.invert?1-norm:norm;return PAD_T+cH*(1-adj)};
-    ctx.beginPath();ctx.strokeStyle=s.color;ctx.lineWidth=2;let first=true;
-    weeks.forEach((w,i)=>{const v=w[s.key];if(v==null||isNaN(v)){first=true;return}const x=xS(i),y=yS(v);if(first){ctx.moveTo(x,y);first=false}else ctx.lineTo(x,y)});
-    ctx.stroke();
-    weeks.forEach((w,i)=>{const v=w[s.key];if(v==null||isNaN(v))return;ctx.beginPath();ctx.fillStyle=s.color;ctx.arc(xS(i),yS(v),2.5,0,Math.PI*2);ctx.fill()})
-  });
-  // Top 20% pace (PRIMARY performance metric): bright solid line with markers
-  if(opts.top20){
-    const paces=weeks.map(w=>w.meanPace);
-    const allPaces=paces.filter(v=>v!=null);
-    if(allPaces.length>=3){
-      const pmin=Math.min(...allPaces),pmax=Math.max(...allPaces),prange=(pmax-pmin)||1;
-      const win=Math.min(10,allPaces.length);
-      const pts=[];
-      for(let i=0;i<n;i++){
-        const start=Math.max(0,i-win+1);
-        const window=paces.slice(start,i+1).filter(v=>v!=null);
-        if(window.length<3){pts.push(null);continue}
-        const sorted=[...window].sort((a,b)=>a-b);
-        const idx=paceInvert?Math.floor(sorted.length*0.2):Math.floor(sorted.length*0.8);
-        const top20=sorted[Math.max(0,Math.min(sorted.length-1,idx))];
-        const norm=(top20-pmin)/prange;
-        const adj=paceInvert?1-norm:norm;
-        pts.push(PAD_T+cH*(1-adj));
-      }
-      ctx.strokeStyle='#ff6b35';ctx.lineWidth=2.25;ctx.setLineDash([]);
-      ctx.beginPath();let first=true;
-      pts.forEach((y,i)=>{if(y==null){first=true;return}const x=xS(i);if(first){ctx.moveTo(x,y);first=false}else ctx.lineTo(x,y)});
+      const yP=v=>PAD_T+cH*(1-(v-mn)/range); // higher score = higher on chart
+      ctx.beginPath();ctx.strokeStyle='#ff6b35';ctx.lineWidth=2.5;let first=true;
+      weeks.forEach((w,i)=>{const v=w.perfScore;if(v==null||isNaN(v)){first=true;return}const x=xS(i),y=yP(v);if(first){ctx.moveTo(x,y);first=false}else ctx.lineTo(x,y)});
       ctx.stroke();
-      pts.forEach((y,i)=>{if(y==null)return;ctx.beginPath();ctx.fillStyle='#ff6b35';ctx.arc(xS(i),y,2.5,0,Math.PI*2);ctx.fill()});
+      weeks.forEach((w,i)=>{const v=w.perfScore;if(v==null||isNaN(v))return;ctx.beginPath();ctx.fillStyle='#ff6b35';ctx.arc(xS(i),yP(v),3,0,Math.PI*2);ctx.fill()});
     }
   }
-  if(opts.lpip){
-    const ratios=weeks.map(w=>w.lpipRatio).filter(v=>v!=null);
-    if(ratios.length>=2){
-      const rmin=Math.min(...ratios),rmax=Math.max(...ratios),rrange=(rmax-rmin)||1;
-      const yR=v=>PAD_T+cH*(1-(v-rmin)/rrange);
-      ctx.strokeStyle='rgba(168,85,247,0.6)';ctx.lineWidth=1.5;ctx.setLineDash([5,3]);
-      ctx.beginPath();let first=true;
-      weeks.forEach((w,i)=>{const v=w.lpipRatio;if(v==null){first=true;return}const x=xS(i),y=yR(v);if(first){ctx.moveTo(x,y);first=false}else ctx.lineTo(x,y)});
-      ctx.stroke();ctx.setLineDash([]);
-      ctx.fillStyle='rgba(168,85,247,0.75)';ctx.font='9px Barlow Condensed,sans-serif';ctx.textAlign='left';
-      ctx.fillText(rmax.toFixed(2),PAD_L+cW+3,PAD_T+8);
-      ctx.fillText(rmin.toFixed(2),PAD_L+cW+3,PAD_T+cH);
-      ctx.save();ctx.translate(W-4,PAD_T+cH/2);ctx.rotate(Math.PI/2);ctx.textAlign='center';
-      ctx.fillText('LP/IP',0,0);ctx.restore();
-    }
-  }
+
+  // Left axis labels (M)
   if(mVals.length){
     ctx.fillStyle='rgba(0,212,170,0.7)';ctx.font='9px Barlow Condensed,sans-serif';ctx.textAlign='right';
     ctx.fillText(Math.round(mMax),PAD_L-3,PAD_T+8);
     ctx.fillText(Math.round(mMin),PAD_L-3,PAD_T+cH);
+    ctx.save();ctx.translate(8,PAD_T+cH/2);ctx.rotate(-Math.PI/2);ctx.textAlign='center';
+    ctx.fillStyle='rgba(0,212,170,0.5)';ctx.fillText('M',0,0);ctx.restore();
   }
+
+  // X-axis labels
   ctx.fillStyle='#4a5560';ctx.font='9px Barlow Condensed,sans-serif';ctx.textAlign='center';
   const labelIdxs=n<=6?weeks.map((_,i)=>i):[0,Math.floor(n/4),Math.floor(n/2),Math.floor(3*n/4),n-1];
   labelIdxs.forEach(i=>{const d=new Date(weeks[i].week+'T12:00:00');const lbl=(d.getMonth()+1)+'/'+d.getDate();ctx.fillText(lbl,xS(i),PAD_T+cH+12)});
+
+  // Week-over-week markers (perf direction)
   if(opts.wow){
     const wowY=PAD_T+cH+28;
     ctx.font='11px Barlow Condensed,sans-serif';ctx.textAlign='center';
     weeks.forEach((w,i)=>{
-      if(i===0||w.meanPace==null||weeks[i-1].meanPace==null)return;
-      const diff=w.meanPace-weeks[i-1].meanPace;
-      if(Math.abs(diff)<0.001)return;
-      const faster=paceInvert?diff<0:diff>0;
-      ctx.fillStyle=faster?'rgba(0,212,170,0.85)':'rgba(255,59,59,0.85)';
-      ctx.fillText(faster?'↑':'↓',xS(i),wowY);
+      if(i===0||w.perfScore==null||weeks[i-1].perfScore==null)return;
+      const diff=w.perfScore-weeks[i-1].perfScore;
+      if(Math.abs(diff)<1e-6)return;
+      const better=diff>0;
+      ctx.fillStyle=better?'rgba(0,212,170,0.85)':'rgba(255,59,59,0.85)';
+      ctx.fillText(better?'↑':'↓',xS(i),wowY);
     });
   }
 }
-function drawCorrRolling(weeks,paceInvert){
+function drawCorrRolling(weeks){
   const canvas=document.getElementById('corrRollingCanvas');if(!canvas)return null;
   const dpr=window.devicePixelRatio||1;
-  const W=canvas.offsetWidth||canvas.parentElement.offsetWidth||360,H=110;
+  const W=canvas.offsetWidth||canvas.parentElement.offsetWidth||360,H=120;
   canvas.width=W*dpr;canvas.height=H*dpr;
   const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
   const PAD_L=24,PAD_R=10,PAD_T=8,PAD_B=18;
   const cW=W-PAD_L-PAD_R,cH=H-PAD_T-PAD_B;
   const n=weeks.length;
-  const mRoll=corrRolling(weeks,'mDistance',8,paceInvert);
-  const tssRoll=corrRolling(weeks,'tss',8,paceInvert);
+  // r(M, perfScore) — raw association
+  const mRoll=corrRolling(weeks,'m',8);
+  // r(TSS, perfScore) — control
+  const tssRoll=corrRolling(weeks,'tss',8);
+  // r(M, perfScore | TSS) — the headline answer: does M matter at fixed TSS?
+  const partialRoll=partialCorrRolling(weeks,8);
   if(n<8){
     ctx.fillStyle='#4a5560';ctx.font='11px Barlow Condensed,sans-serif';ctx.textAlign='center';
     ctx.fillText('Need ≥ 8 weeks for rolling correlation',W/2,H/2);
-    return{mRoll,tssRoll};
+    return{mRoll,tssRoll,partialRoll};
   }
   const xS=i=>PAD_L+(n>1?cW*i/(n-1):cW/2);
   const yS=r=>PAD_T+cH*(1-(r+1)/2);
-  ctx.fillStyle='rgba(0,212,170,0.05)';ctx.fillRect(PAD_L,yS(1),cW,yS(0.5)-yS(1));
-  ctx.fillStyle='rgba(255,59,59,0.05)';ctx.fillRect(PAD_L,yS(-0.5),cW,yS(-1)-yS(-0.5));
+  // Light shading for "good zone" (above 0)
+  ctx.fillStyle='rgba(0,212,170,0.05)';ctx.fillRect(PAD_L,yS(1),cW,yS(0)-yS(1));
   ctx.strokeStyle='rgba(42,48,53,0.7)';ctx.lineWidth=0.5;
   [1,0.5,-0.5,-1].forEach(v=>{ctx.beginPath();ctx.moveTo(PAD_L,yS(v));ctx.lineTo(PAD_L+cW,yS(v));ctx.stroke()});
   ctx.strokeStyle='rgba(74,85,96,0.7)';ctx.lineWidth=1;ctx.setLineDash([2,2]);
@@ -2074,13 +2121,21 @@ function drawCorrRolling(weeks,paceInvert){
   ctx.fillText('+1',PAD_L-3,yS(1)+3);
   ctx.fillText('0',PAD_L-3,yS(0)+3);
   ctx.fillText('-1',PAD_L-3,yS(-1)+3);
-  const draw=(arr,color)=>{ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2;let first=true;arr.forEach((v,i)=>{if(v==null||isNaN(v)){first=true;return}const x=xS(i),y=yS(v);if(first){ctx.moveTo(x,y);first=false}else ctx.lineTo(x,y)});ctx.stroke()};
-  draw(mRoll,'#00d4aa');
-  draw(tssRoll,'#3b82f6');
+  // Draw raw M and TSS dimmed; partial correlation as the bright primary
+  const draw=(arr,color,width,dashed)=>{
+    ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=width;
+    if(dashed)ctx.setLineDash(dashed);
+    let first=true;arr.forEach((v,i)=>{if(v==null||isNaN(v)){first=true;return}const x=xS(i),y=yS(v);if(first){ctx.moveTo(x,y);first=false}else ctx.lineTo(x,y)});
+    ctx.stroke();
+    if(dashed)ctx.setLineDash([]);
+  };
+  draw(tssRoll,'rgba(59,130,246,0.55)',1.5,[4,3]);
+  draw(mRoll,'rgba(0,212,170,0.45)',1.5,[4,3]);
+  draw(partialRoll,'#00d4aa',2.5);
   ctx.fillStyle='#4a5560';ctx.font='9px Barlow Condensed,sans-serif';ctx.textAlign='center';
   const labelIdxs=n<=6?weeks.map((_,i)=>i):[0,Math.floor(n/4),Math.floor(n/2),Math.floor(3*n/4),n-1];
   labelIdxs.forEach(i=>{const d=new Date(weeks[i].week+'T12:00:00');const lbl=(d.getMonth()+1)+'/'+d.getDate();ctx.fillText(lbl,xS(i),H-5)});
-  return{mRoll,tssRoll};
+  return{mRoll,tssRoll,partialRoll};
 }
 function rColorStr(r){const a=Math.abs(r);return a>=0.7?'var(--accent)':a>=0.4?'var(--yellow)':'var(--text3)'}
 function renderCorrelations(){
@@ -2088,78 +2143,85 @@ function renderCorrelations(){
   document.querySelectorAll('[data-corrsport]').forEach(p=>p.classList.toggle('active',p.dataset.corrsport===corrSport));
   const wos=getCoachPeriodWorkouts();
   const weeks=aggregateWeeklyForCorr(wos,corrSport);
-  const _paceInvertEarly=corrSport!=='bike';
-  const _allPaces=weeks.map(w=>w.meanPace);
-  const _win=10;
-  weeks.forEach((w,i)=>{
-    const start=Math.max(0,i-_win+1);
-    const winVals=_allPaces.slice(start,i+1).filter(v=>v!=null);
-    if(winVals.length<3){w.top20Pace=null;return}
-    const sorted=[...winVals].sort((a,b)=>a-b);
-    const idx=_paceInvertEarly?Math.floor(sorted.length*0.2):Math.floor(sorted.length*0.8);
-    w.top20Pace=sorted[Math.max(0,Math.min(sorted.length-1,idx))];
-  });
+
   const opts={
     zones:document.getElementById('togZones')?.checked!==false,
-    top20:document.getElementById('togTop20')?.checked!==false,
-    lpip:document.getElementById('togLpIp')?.checked!==false,
-    pb:document.getElementById('togPb')?.checked!==false,
+    mdist:document.getElementById('togMDist')?.checked!==false,
+    perf:document.getElementById('togPerf')?.checked!==false,
     wow:document.getElementById('togWoW')?.checked!==false
   };
   drawCorrOverlay(weeks,opts);
-  const fmtPace=(sport,v)=>{if(v==null)return'—';if(sport==='bike')return Math.round(v)+'w';return formatSecondsToPace(Math.round(v))+(sport==='run'?'/mi':'/100m')};
+
+  // Legend
   const leg=document.getElementById('corrLegend');
   if(leg){
-    const mVals=weeks.map(w=>w.m).filter(v=>v!=null),tssVals=weeks.map(w=>w.tss).filter(v=>v!=null),ifVals=weeks.map(w=>w.avgIF).filter(v=>v!=null&&v>0),pVals=weeks.map(w=>w.meanPace).filter(v=>v!=null),lpipVals=weeks.map(w=>w.lpipRatio).filter(v=>v!=null);
-    const cell=(color,label,lo,hi,dashed)=>`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:14px;height:0;border-top:2px ${dashed||'solid'} ${color};display:inline-block"></span><span style="color:var(--text2);font-weight:700">${label}</span><span style="color:var(--text3)">${lo} → ${hi}</span></span>`;
+    const mVals=weeks.map(w=>w.m).filter(v=>v!=null),tssVals=weeks.map(w=>w.tss).filter(v=>v!=null),mDistVals=weeks.map(w=>w.mDistance).filter(v=>v!=null),perfVals=weeks.map(w=>w.perfScore).filter(v=>v!=null);
+    const cell=(color,label,extra,dashed)=>`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:14px;height:0;border-top:2px ${dashed||'solid'} ${color};display:inline-block"></span><span style="color:var(--text2);font-weight:700">${label}</span>${extra?`<span style="color:var(--text3)">${extra}</span>`:''}</span>`;
     const items=[
-      mVals.length?cell('#00d4aa','M',Math.min(...mVals),Math.max(...mVals)):'',
-      tssVals.length?cell('#3b82f6','TSS',Math.min(...tssVals),Math.max(...tssVals)):'',
-      (opts.top20&&pVals.length>=3)?cell('#ff6b35','Top 20% pace (primary)','rolling','window'):'',
-      pVals.length?cell('rgba(255,107,53,0.45)','Avg pace (secondary)',fmtPace(corrSport,Math.min(...pVals)),fmtPace(corrSport,Math.max(...pVals)),'dashed'):'',
-      (opts.lpip&&lpipVals.length>=2)?cell('rgba(168,85,247,0.7)','LP/IP ratio',Math.min(...lpipVals).toFixed(2),Math.max(...lpipVals).toFixed(2),'dashed'):'',
-      opts.pb?cell('rgba(232,234,235,0.6)','PB pace','best','—','dotted'):''
+      mVals.length?cell('#00d4aa','M',`${Math.min(...mVals)} → ${Math.max(...mVals)}`):'',
+      tssVals.length?cell('#3b82f6','TSS',`${Math.round(Math.min(...tssVals))} → ${Math.round(Math.max(...tssVals))}`):'',
+      (opts.mdist&&mDistVals.length)?cell('rgba(255,204,0,0.8)','M-distance','|M − 26|','dashed'):'',
+      (opts.perf&&perfVals.length)?cell('#ff6b35','Performance','best quality sessions, IF ≥ 0.78'):''
     ];
     leg.innerHTML=items.filter(Boolean).join('');
   }
-  const paceInvert=corrSport!=='bike';
-  const labels={mDistance:'M-dist',onCurveDeviation:'Off-curve',tss:'TSS',top20Pace:'Top 20%'};
-  const keys=['mDistance','onCurveDeviation','tss','top20Pace'];
-  const pairR={};
-  for(let i=0;i<keys.length;i++)for(let j=i+1;j<keys.length;j++){
-    const k1=keys[i],k2=keys[j];
-    const pairs=weeks.filter(w=>w[k1]!=null&&w[k2]!=null&&!isNaN(w[k1])&&!isNaN(w[k2]));
-    if(pairs.length<3){pairR[k1+'_'+k2]={r:null,n:pairs.length};continue}
-    const xs=pairs.map(p=>p[k1]),ys=pairs.map(p=>p[k2]);
-    let pr=pearsonR(xs,ys);
-    if(paceInvert&&(k1==='top20Pace'||k2==='top20Pace')&&pr.r!=null)pr={r:-pr.r,n:pr.n};
-    pairR[k1+'_'+k2]=pr;
+
+  // Compute headline correlations using perfScore as the target
+  const validForPerf=weeks.filter(w=>w.perfScore!=null&&!isNaN(w.perfScore));
+  const r=(srcKey)=>{
+    const pairs=validForPerf.filter(w=>w[srcKey]!=null&&!isNaN(w[srcKey]));
+    if(pairs.length<3)return{r:null,n:pairs.length};
+    return pearsonR(pairs.map(p=>p[srcKey]),pairs.map(p=>p.perfScore));
+  };
+  const rM=r('m'),rMDist=r('mDistance'),rTSS=r('tss');
+  let rMPartial={r:null,n:0},rTSSPartial={r:null,n:0};
+  {
+    const pairs=validForPerf.filter(w=>w.m!=null&&w.tss!=null&&!isNaN(w.m)&&!isNaN(w.tss));
+    if(pairs.length>=4){
+      rMPartial=partialCorr(pairs.map(p=>p.m),pairs.map(p=>p.perfScore),pairs.map(p=>p.tss));
+      rTSSPartial=partialCorr(pairs.map(p=>p.tss),pairs.map(p=>p.perfScore),pairs.map(p=>p.m));
+    }
+    rMPartial.n=pairs.length;rTSSPartial.n=pairs.length;
   }
+
   const mat=document.getElementById('corrMatrix');
   if(mat){
-    const header='<tr><th style="padding:4px 6px"></th>'+keys.map(k=>`<th style="padding:4px 6px;color:var(--text3);font-family:var(--font-display);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;text-align:center">${labels[k]}</th>`).join('')+'</tr>';
-    const rows=[];
-    for(let i=0;i<keys.length;i++){
-      const cells=[`<td style="padding:4px 6px;color:var(--text3);font-family:var(--font-display);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em">${labels[keys[i]]}</td>`];
-      for(let j=0;j<keys.length;j++){
-        if(j<=i){cells.push('<td style="padding:4px 6px;background:rgba(42,48,53,0.25);border-radius:4px"></td>');continue}
-        const key=keys[i]+'_'+keys[j];const pr=pairR[key];
-        if(!pr||pr.r==null)cells.push(`<td style="padding:6px;text-align:center;font-size:10px;color:var(--text3);background:var(--surface2);border-radius:4px">—<div style="font-size:8px;margin-top:2px">n=${pr?pr.n:0}</div></td>`);
-        else{const c=rColorStr(pr.r);const bg=Math.abs(pr.r)>=0.7?'rgba(0,212,170,0.08)':Math.abs(pr.r)>=0.4?'rgba(255,204,0,0.06)':'var(--surface2)';cells.push(`<td style="padding:6px;text-align:center;font-size:13px;font-weight:800;color:${c};background:${bg};border-radius:4px">${pr.r>=0?'+':''}${pr.r.toFixed(2)}<div style="font-size:8px;color:var(--text3);font-weight:500;margin-top:2px">n=${pr.n}</div></td>`)}
-      }
-      rows.push('<tr>'+cells.join('')+'</tr>');
+    const fmtR=v=>v==null?'—':(v>=0?'+':'')+v.toFixed(2);
+    const cellBox=(label,sublabel,r,n,emphasize)=>{
+      if(r==null)return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;flex:1;min-width:130px"><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;font-weight:700">${label}</div><div style="font-size:9px;color:var(--text3);margin-top:1px;font-style:italic">${sublabel}</div><div style="font-family:var(--font-display);font-size:20px;font-weight:800;color:var(--text3);margin-top:5px">—</div><div style="font-size:9px;color:var(--text3);margin-top:2px">n=${n}</div></div>`;
+      const c=rColorStr(r);
+      const bg=Math.abs(r)>=0.7?'rgba(0,212,170,0.10)':Math.abs(r)>=0.4?'rgba(255,204,0,0.07)':'var(--surface2)';
+      const border=emphasize?'2px solid var(--accent)':'1px solid var(--border)';
+      return `<div style="background:${bg};border:${border};border-radius:8px;padding:10px;flex:1;min-width:130px"><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;font-weight:700">${label}</div><div style="font-size:9px;color:var(--text3);margin-top:1px;font-style:italic">${sublabel}</div><div style="font-family:var(--font-display);font-size:22px;font-weight:800;color:${c};margin-top:5px;line-height:1">${fmtR(r)}</div><div style="font-size:9px;color:var(--text3);margin-top:3px">n=${n}</div></div>`;
+    };
+    const mPartialAbs=rMPartial.r!=null?Math.abs(rMPartial.r):0;
+    const tssPartialAbs=rTSSPartial.r!=null?Math.abs(rTSSPartial.r):0;
+    const headlineWin=rMPartial.r!=null&&rMPartial.r>0.2&&mPartialAbs>=tssPartialAbs;
+    let html=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">${cellBox('M → Perf','raw association',rM.r,rM.n,false)}${cellBox('TSS → Perf','raw association',rTSS.r,rTSS.n,false)}</div>`;
+    html+=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">${cellBox('M → Perf | TSS','controlling for TSS',rMPartial.r,rMPartial.n,headlineWin)}${cellBox('TSS → Perf | M','controlling for M',rTSSPartial.r,rTSSPartial.n,false)}</div>`;
+    let verdict='',verdictColor='';
+    if(rMPartial.r!=null&&rTSSPartial.r!=null){
+      if(rMPartial.r>0.3&&rMPartial.r>rTSSPartial.r){verdict='✅ <strong>M is doing real work</strong> — at the same TSS, higher M predicts better performance.';verdictColor='var(--accent)'}
+      else if(rMPartial.r>0.15){verdict='🟡 M shows a positive partial effect, but it\'s modest. Need more weeks or wider M variation to be confident.';verdictColor='var(--yellow)'}
+      else if(rTSSPartial.r>0.3&&rTSSPartial.r>rMPartial.r){verdict='🟠 <strong>TSS is the dominant signal</strong> here — at the same M, more TSS still predicts better performance. M may not be adding much beyond raw load in this window.';verdictColor='var(--accent2)'}
+      else if(rMPartial.r<-0.15){verdict='🔴 M is negatively associated with performance once TSS is held constant — surprising. Check for confounders (taper weeks, returning from layoff at high M, etc.).';verdictColor='var(--red)'}
+      else{verdict='⚪️ Neither M nor TSS shows a strong partial signal in this period. The relationship is weak or noisy.';verdictColor='var(--text3)'}
     }
-    mat.innerHTML=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:separate;border-spacing:3px">${header}${rows.join('')}</table></div><div style="font-size:9px;color:var(--text3);margin-top:6px;display:flex;gap:10px;flex-wrap:wrap"><span><span style="display:inline-block;width:8px;height:8px;background:var(--accent);border-radius:2px;vertical-align:middle"></span> |r| ≥ 0.7 strong</span><span><span style="display:inline-block;width:8px;height:8px;background:var(--yellow);border-radius:2px;vertical-align:middle"></span> 0.4 – 0.7 moderate</span><span><span style="display:inline-block;width:8px;height:8px;background:var(--text3);border-radius:2px;vertical-align:middle"></span> < 0.4 weak</span>${paceInvert?'<span style="color:var(--text3)">· pace sign flipped so +r means faster pace</span>':''}</div><div style="font-size:9px;color:var(--text3);margin-top:4px;line-height:1.5"><strong style="color:var(--text2)">M-dist</strong> = |M − 26| (lower = closer to optimal). <strong style="color:var(--text2)">Off-curve</strong> = |LP/IP − optimal ratio for this TSS|. For M-dist↔Top 20% a <strong>negative r</strong> means closer-to-optimal predicts faster pace.</div>`;
+    if(verdict)html+=`<div style="font-size:11px;color:var(--text2);line-height:1.55;padding:9px 11px;background:var(--surface);border-radius:7px;border-left:3px solid ${verdictColor||'var(--text3)'};margin-bottom:6px">${verdict}</div>`;
+    html+=`<div style="font-size:9px;color:var(--text3);margin-top:4px;line-height:1.5"><strong style="color:var(--text2)">How to read</strong>: <strong>+r</strong> means higher value → better performance, <strong>−r</strong> means higher value → worse. The "<strong>| TSS</strong>" cell is the answer to your headline question — does M still predict performance once raw load is accounted for?</div>`;
+    mat.innerHTML=html;
   }
-  const lagSpecs=[{src:'mDistance',color:'#00d4aa',label:'M-dist → Top 20%'},{src:'onCurveDeviation',color:'rgba(168,85,247,0.85)',label:'Off-curve → Top 20%'},{src:'tss',color:'#3b82f6',label:'TSS → Top 20%'}];
+
+  // Lagged correlations against perfScore (note: M-distance expected sign is negative — closer to optimal → better perf)
+  const lagSpecs=[{src:'m',color:'#00d4aa',label:'M',expected:'+'},{src:'mDistance',color:'rgba(255,204,0,0.85)',label:'M-distance',expected:'−'},{src:'tss',color:'#3b82f6',label:'TSS',expected:'+'}];
   const lagsArr=[1,2,3];
   const laggedR={};
-  lagSpecs.forEach(s=>{laggedR[s.src]=lagsArr.map(L=>corrLagged(weeks,s.src,L,paceInvert))});
+  lagSpecs.forEach(s=>{laggedR[s.src]=lagsArr.map(L=>corrLagged(weeks,s.src,L))});
   const lagMat=document.getElementById('corrLagMatrix');
   if(lagMat){
-    const header='<tr><th style="padding:4px 6px"></th>'+lagsArr.map(L=>`<th style="padding:4px 6px;color:var(--text3);font-family:var(--font-display);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;text-align:center">+${L} wk</th>`).join('')+'</tr>';
+    const header='<tr><th style="padding:4px 6px;text-align:left"></th>'+lagsArr.map(L=>`<th style="padding:4px 6px;color:var(--text3);font-family:var(--font-display);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;text-align:center">+${L} wk</th>`).join('')+'</tr>';
     const rows=lagSpecs.map(s=>{
-      const cells=[`<td style="padding:4px 6px;color:var(--text2);font-family:var(--font-display);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em"><span style="display:inline-block;width:10px;height:2px;background:${s.color};vertical-align:middle;margin-right:4px;border-radius:1px"></span>${s.label}</td>`];
+      const cells=[`<td style="padding:4px 6px;color:var(--text2);font-family:var(--font-display);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em"><span style="display:inline-block;width:10px;height:2px;background:${s.color};vertical-align:middle;margin-right:4px;border-radius:1px"></span>${s.label} <span style="color:var(--text3);font-size:8px;margin-left:2px">(exp ${s.expected})</span></td>`];
       laggedR[s.src].forEach(pr=>{
         if(!pr||pr.r==null)cells.push(`<td style="padding:6px;text-align:center;font-size:10px;color:var(--text3);background:var(--surface2);border-radius:4px">—<div style="font-size:8px;margin-top:2px">n=${pr?pr.n:0}</div></td>`);
         else{const c=rColorStr(pr.r);const bg=Math.abs(pr.r)>=0.7?'rgba(0,212,170,0.08)':Math.abs(pr.r)>=0.4?'rgba(255,204,0,0.06)':'var(--surface2)';cells.push(`<td style="padding:6px;text-align:center;font-size:13px;font-weight:800;color:${c};background:${bg};border-radius:4px">${pr.r>=0?'+':''}${pr.r.toFixed(2)}<div style="font-size:8px;color:var(--text3);font-weight:500;margin-top:2px">n=${pr.n}</div></td>`)}
@@ -2168,52 +2230,48 @@ function renderCorrelations(){
     });
     lagMat.innerHTML=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:separate;border-spacing:3px">${header}${rows.join('')}</table></div>`;
   }
-  const rolling=drawCorrRolling(weeks,paceInvert);
+
+  // Rolling chart
+  const rolling=drawCorrRolling(weeks);
   const rollingCur=document.getElementById('corrRollingCurrent');
   if(rollingCur&&rolling){
     const last=arr=>{for(let i=arr.length-1;i>=0;i--)if(arr[i]!=null&&!isNaN(arr[i]))return arr[i];return null};
     const fmt=v=>v==null?'—':(v>=0?'+':'')+v.toFixed(2);
-    const mNow=last(rolling.mRoll),tssNow=last(rolling.tssRoll);
-    rollingCur.innerHTML=`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:12px;height:2px;background:#00d4aa;display:inline-block;border-radius:1px"></span><span style="color:var(--text2);font-weight:700">M-dist→Pace</span> <span style="color:var(--text);font-weight:700">${fmt(mNow)}</span></span><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:12px;height:2px;background:#3b82f6;display:inline-block;border-radius:1px"></span><span style="color:var(--text2);font-weight:700">TSS→Pace</span> <span style="color:var(--text);font-weight:700">${fmt(tssNow)}</span></span>`;
+    const partialNow=last(rolling.partialRoll),mNow=last(rolling.mRoll),tssNow=last(rolling.tssRoll);
+    rollingCur.innerHTML=`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:14px;height:2.5px;background:#00d4aa;display:inline-block;border-radius:1px"></span><span style="color:var(--text2);font-weight:700">M | TSS → Perf</span> <span style="color:var(--text);font-weight:800">${fmt(partialNow)}</span></span><span style="display:inline-flex;align-items:center;gap:5px;opacity:0.65"><span style="width:14px;border-top:1.5px dashed rgba(0,212,170,0.6);display:inline-block"></span><span style="color:var(--text3);font-weight:600">M raw</span> <span style="color:var(--text2);font-weight:700">${fmt(mNow)}</span></span><span style="display:inline-flex;align-items:center;gap:5px;opacity:0.65"><span style="width:14px;border-top:1.5px dashed rgba(59,130,246,0.6);display:inline-block"></span><span style="color:var(--text3);font-weight:600">TSS raw</span> <span style="color:var(--text2);font-weight:700">${fmt(tssNow)}</span></span>`;
   }
+
   const insight=document.getElementById('corrInsight');
   if(insight){
-    const entries=Object.entries(pairR).filter(([,v])=>v.r!=null);
-    entries.sort((a,b)=>Math.abs(b[1].r)-Math.abs(a[1].r));
-    if(!entries.length)insight.textContent='Not enough overlapping weeks yet — need ≥ 3 weeks with both metrics to compute r.';
+    if(rMPartial.r==null)insight.textContent='Not enough overlapping weeks yet — need ≥ 4 weeks with M, TSS, and a performance score logged.';
     else{
-      const top=entries[0];const[k1,k2]=top[0].split('_');const r=top[1].r;
-      const strength=Math.abs(r)>=0.7?'Strong':Math.abs(r)>=0.4?'Moderate':'Weak';
-      const dir=r>=0?'positive':'negative';
-      const distPace=pairR['mDistance_top20Pace'];const offPace=pairR['onCurveDeviation_top20Pace'];const tssPace=pairR['tss_top20Pace'];
-      const parts=[`${strength} ${dir} link — ${labels[k1]} vs ${labels[k2]}: r = ${r>=0?'+':''}${r.toFixed(2)} (n=${top[1].n}).`];
-      if(distPace&&distPace.r!=null&&top[0]!=='mDistance_top20Pace')parts.push(`M-dist↔Top20 r = ${distPace.r>=0?'+':''}${distPace.r.toFixed(2)}.`);
-      if(offPace&&offPace.r!=null&&top[0]!=='onCurveDeviation_top20Pace')parts.push(`Off-curve↔Top20 r = ${offPace.r>=0?'+':''}${offPace.r.toFixed(2)}.`);
-      if(tssPace&&tssPace.r!=null&&top[0]!=='tss_top20Pace')parts.push(`TSS↔Top20 r = ${tssPace.r>=0?'+':''}${tssPace.r.toFixed(2)}.`);
+      const fmt=v=>(v>=0?'+':'')+v.toFixed(2);
+      const parts=[`Headline: r(M, Perf | TSS) = ${fmt(rMPartial.r)} (n=${rMPartial.n}).`];
+      if(rTSSPartial.r!=null)parts.push(`r(TSS, Perf | M) = ${fmt(rTSSPartial.r)}.`);
+      if(rM.r!=null&&rTSS.r!=null)parts.push(`Naive: r(M)=${fmt(rM.r)}, r(TSS)=${fmt(rTSS.r)}.`);
       insight.textContent=parts.join(' ');
     }
   }
+
   const auto=document.getElementById('corrAutoInsight');
   if(auto){
     const msgs=[];
-    const distPace=pairR['mDistance_top20Pace'];const tssPace=pairR['tss_top20Pace'];
-    const distLag=laggedR.mDistance||[];
-    const distStronger=distPace?.r!=null&&tssPace?.r!=null&&Math.abs(distPace.r)>Math.abs(tssPace.r);
-    const lagSignificant=distLag.some(l=>l&&l.r!=null&&Math.abs(l.r)>0.3);
-    if(distStronger&&lagSignificant)msgs.push('🟢 <strong>Distance-from-optimal predicts pace better than raw TSS</strong> — the optimal-zone model is supported.');
-    else if(distStronger)msgs.push('🟡 Distance-from-optimal correlates with pace more strongly than TSS, but the predictive (lagged) signal is weak.');
-    else if(distPace?.r!=null&&tssPace?.r!=null&&Math.abs(tssPace.r)>Math.abs(distPace.r))msgs.push('🟡 Raw TSS predicts pace better than distance-from-optimal — the optimal-zone hypothesis is not supported in this period.');
-    const mRoll=rolling?.mRoll||[];
-    const recent=mRoll.slice(-12).filter(v=>v!=null&&!isNaN(v));
-    const last6=recent.slice(-6);
-    const stable=last6.length>=6&&last6.every(v=>Math.abs(v)>0.5);
-    if(stable)msgs.push('🟢 <strong>Relationship is stable and reliable</strong> (rolling |r| > 0.5 for 6+ weeks).');
-    if(distLag[0]&&distLag[2]&&distLag[0].r!=null&&distLag[2].r!=null){
-      if(Math.abs(distLag[0].r)>0.5&&Math.abs(distLag[2].r)<0.2)msgs.push('🟡 Effect is short-term, not sustained — the signal fades by 3 weeks.');
+    const partRoll=rolling?.partialRoll||[];
+    const recentPartial=partRoll.slice(-12).filter(v=>v!=null&&!isNaN(v));
+    if(rMPartial.r!=null&&rTSSPartial.r!=null){
+      if(rMPartial.r>0.3&&rMPartial.r>rTSSPartial.r)msgs.push('🟢 <strong>M predicts performance independently of TSS</strong> — your zone model is doing real work.');
+      else if(rTSSPartial.r>rMPartial.r&&rTSSPartial.r>0.3)msgs.push('🟡 <strong>TSS dominates over M</strong> in this period — at fixed M, more TSS still buys performance. Consider whether you\'re under-prescribing volume.');
     }
-    if(recent.length>=6){
-      const mn=Math.min(...recent),mx=Math.max(...recent);
-      if(mx-mn>1.0)msgs.push('🔴 <strong>Data is unstable</strong> — avoid strong conclusions; rolling correlation swings widely.');
+    if(recentPartial.length>=6){
+      const last6=recentPartial.slice(-6);
+      if(last6.every(v=>v>0.3))msgs.push('🟢 The M-controlled-for-TSS effect has been stably positive for 6+ weeks — high confidence.');
+      const mn=Math.min(...recentPartial),mx=Math.max(...recentPartial);
+      if(mx-mn>0.8)msgs.push('🔴 <strong>The partial correlation is unstable</strong> — swings widely week to week. Treat all conclusions as tentative.');
+    }
+    const mLag2=laggedR.m?.[1],tssLag2=laggedR.tss?.[1];
+    if(mLag2?.r!=null&&tssLag2?.r!=null){
+      if(mLag2.r>0.4&&mLag2.r>tssLag2.r)msgs.push('🟢 This week\'s M predicts performance 2 weeks out — the adaptation lag matches what you\'d expect.');
+      else if(tssLag2.r>0.4&&tssLag2.r>mLag2.r)msgs.push('🟡 This week\'s TSS predicts future performance better than M does — the direct dose-response is what\'s driving gains.');
     }
     if(msgs.length){
       auto.style.display='block';
@@ -2222,11 +2280,12 @@ function renderCorrelations(){
       auto.style.display='none';
     }
   }
+
   renderCoachSummary(weeks);
-  renderZonePerformance(weeks,paceInvert);
-  renderDistanceFromOptimal(weeks,pairR);
-  renderPlateauDetection(weeks,paceInvert);
-  renderAdaptationEfficiency(weeks,paceInvert);
+  renderZonePerformance(weeks);
+  renderTSSMatchedM(weeks,rMPartial,rTSSPartial);
+  renderPlateauDetection(weeks);
+  renderAdaptationEfficiency(weeks);
 }
 function fmtPaceForSport(sport,v){if(v==null||isNaN(v))return'—';if(sport==='bike')return Math.round(v)+'w';return formatSecondsToPace(Math.round(v))+(sport==='run'?'/mi':'/100m')}
 function paceImprovementLabel(sport,delta){if(delta==null||!isFinite(delta))return'—';const paceInvert=sport!=='bike';const better=paceInvert?delta<0:delta>0;const pct=Math.abs(delta);if(pct<0.05)return`<span style="color:var(--text3)">±${pct.toFixed(2)}%</span>`;return `<span style="color:${better?'var(--accent)':'var(--accent2)'}">${better?'↑':'↓'} ${pct.toFixed(2)}%</span>`}
@@ -2246,15 +2305,15 @@ function renderCoachSummary(weeks){
       else{ratioStatus=Math.abs(rel)<0.25?'slightly intensity-heavy':'intensity-heavy';ratioColor='var(--accent2)'}
     }
   }
-  const recent=weeks.slice(-4).map(w=>w.top20Pace);
+  // Performance trend uses perfScore (higher = better, sport-agnostic)
+  const recent=weeks.slice(-4).map(w=>w.perfScore);
   let trend='insufficient data',trendColor='var(--text3)';
   const validRecent=recent.filter(v=>v!=null);
   if(validRecent.length>=3){
     const first=validRecent[0],lastP=validRecent[validRecent.length-1];
-    const change=lastP-first;const rel=Math.abs(change/first);
-    const paceInvert=corrSport!=='bike';
+    const change=lastP-first;const rel=Math.abs(change/(Math.abs(first)||1));
     if(rel<0.005){trend='stable';trendColor='var(--text3)'}
-    else{const improving=paceInvert?change<0:change>0;trend=improving?'improving':'declining';trendColor=improving?'var(--accent)':'var(--accent2)'}
+    else{const improving=change>0;trend=improving?'improving':'declining';trendColor=improving?'var(--accent)':'var(--accent2)'}
   }
   const insight=(()=>{
     if(!z)return'Log sessions to build a picture.';
@@ -2265,45 +2324,129 @@ function renderCoachSummary(weeks){
   })();
   body.innerHTML=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px"><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 6px;text-align:center"><div style="font-family:var(--font-display);font-size:14px;font-weight:800;color:${z?z.color:'var(--text3)'};line-height:1.1">${z?z.label:'—'}</div><div style="font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;font-weight:700">M Zone (M=${last.m??'—'})</div></div><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 6px;text-align:center"><div style="font-family:var(--font-display);font-size:18px;font-weight:800;color:var(--text)">${dist!=null?dist:'—'}</div><div style="font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;font-weight:700">Dist from optimal</div></div><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 6px;text-align:center"><div style="font-family:var(--font-display);font-size:13px;font-weight:800;color:${ratioColor};line-height:1.1">${ratioStatus}</div><div style="font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;font-weight:700">LP/IP vs curve</div></div><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 6px;text-align:center"><div style="font-family:var(--font-display);font-size:13px;font-weight:800;color:${trendColor};line-height:1.1">${trend}</div><div style="font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;font-weight:700">Trend (4 wk)</div></div></div><div style="font-size:12px;color:var(--text2);line-height:1.55;padding:9px 11px;background:var(--surface2);border-radius:7px;border-left:2px solid var(--accent)">${insight}</div>`;
 }
-function renderZonePerformance(weeks,paceInvert){
+
+function renderZonePerformance(weeks){
   const body=document.getElementById('zonePerfBody');if(!body)return;
   if(weeks.length<2){body.innerHTML='<div style="color:var(--text3);font-style:italic;font-size:11px">Need at least 2 weeks of data.</div>';return}
   const rows=M_ZONES.map(z=>{
     const idxs=[];weeks.forEach((w,i)=>{if(w.m!=null&&w.m>=z.min&&w.m<=z.max)idxs.push(i)});
-    const pacesArr=idxs.map(i=>weeks[i].top20Pace).filter(v=>v!=null);
-    const ratiosArr=idxs.map(i=>weeks[i].lpipRatio).filter(v=>v!=null);
-    const wow=[];idxs.forEach(i=>{if(i>0){const prev=weeks[i-1],cur=weeks[i];if(prev.top20Pace!=null&&cur.top20Pace!=null&&prev.top20Pace>0){wow.push((cur.top20Pace-prev.top20Pace)/prev.top20Pace*100)}}});
+    const perfs=idxs.map(i=>weeks[i].perfScore).filter(v=>v!=null);
+    const tssVals=idxs.map(i=>weeks[i].tss).filter(v=>v!=null);
+    const wow=[];idxs.forEach(i=>{if(i>0){const prev=weeks[i-1],cur=weeks[i];if(prev.perfScore!=null&&cur.perfScore!=null){wow.push(cur.perfScore-prev.perfScore)}}});
     const avg=arr=>arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:null;
-    return{...z,n:idxs.length,avgPace:avg(pacesArr),avgRatio:avg(ratiosArr),avgWow:avg(wow)};
+    return{...z,n:idxs.length,avgPerf:avg(perfs),avgTSS:avg(tssVals),avgWow:avg(wow)};
   });
-  const populated=rows.filter(r=>r.n>0&&r.avgPace!=null);
+  const populated=rows.filter(r=>r.n>0&&r.avgPerf!=null);
   let bestKey=null;
   if(populated.length){
-    populated.sort((a,b)=>paceInvert?a.avgPace-b.avgPace:b.avgPace-a.avgPace);
+    populated.sort((a,b)=>b.avgPerf-a.avgPerf);
     bestKey=populated[0].key;
   }
-  const header=`<tr><th style="text-align:left;padding:5px 6px;font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3)">Zone</th><th style="text-align:center;padding:5px 6px;font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3)">n</th><th style="text-align:right;padding:5px 6px;font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3)">Top 20%</th><th style="text-align:right;padding:5px 6px;font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3)">LP/IP</th><th style="text-align:right;padding:5px 6px;font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3)">WoW pace</th></tr>`;
+  const fmtPerf=v=>{
+    if(v==null)return'—';
+    if(corrSport==='bike')return Math.round(v)+'w';
+    return formatSecondsToPace(Math.round(-v))+(corrSport==='run'?'/mi':'/100m');
+  };
+  const fmtWow=v=>{if(v==null)return'—';if(Math.abs(v)<0.05)return`<span style="color:var(--text3)">±0</span>`;const better=v>0;return `<span style="color:${better?'var(--accent)':'var(--accent2)'}">${better?'↑':'↓'} ${Math.abs(v).toFixed(1)}</span>`};
+  const header=`<tr><th style="text-align:left;padding:5px 6px;font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3)">Zone</th><th style="text-align:center;padding:5px 6px;font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3)">n</th><th style="text-align:right;padding:5px 6px;font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3)">Avg TSS</th><th style="text-align:right;padding:5px 6px;font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3)">Perf</th><th style="text-align:right;padding:5px 6px;font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3)">WoW Δ</th></tr>`;
   const rowHtml=rows.map(r=>{
     const isBest=r.key===bestKey;
     const bg=isBest?'background:rgba(0,212,170,0.08);border-left:3px solid var(--accent)':'';
     const dim=r.n===0?'opacity:0.45':'';
-    return `<tr style="${bg};${dim}"><td style="padding:8px 6px;border-bottom:1px solid var(--border);font-size:12px"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${r.color};margin-right:6px;vertical-align:middle"></span><span style="color:var(--text2);font-weight:600">${r.label}</span><span style="color:var(--text3);font-size:9px;margin-left:4px">${r.min}-${r.max===Infinity?'30+':r.max}</span>${isBest?' <span style="font-size:8px;color:var(--accent);background:rgba(0,212,170,0.16);padding:1px 5px;border-radius:3px;font-family:var(--font-display);font-weight:700;letter-spacing:0.04em;text-transform:uppercase">Best</span>':''}</td><td style="padding:8px 6px;border-bottom:1px solid var(--border);text-align:center;font-family:var(--font-display);font-weight:700;color:var(--text2)">${r.n}</td><td style="padding:8px 6px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--font-display);font-weight:700;color:${isBest?'var(--accent)':'var(--text)'}">${fmtPaceForSport(corrSport,r.avgPace)}</td><td style="padding:8px 6px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--font-display);font-weight:700;color:var(--text2)">${r.avgRatio!=null?r.avgRatio.toFixed(2):'—'}</td><td style="padding:8px 6px;border-bottom:1px solid var(--border);text-align:right;font-size:11px">${r.avgWow!=null?paceImprovementLabel(corrSport,r.avgWow):'—'}</td></tr>`;
+    return `<tr style="${bg};${dim}"><td style="padding:8px 6px;border-bottom:1px solid var(--border);font-size:12px"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${r.color};margin-right:6px;vertical-align:middle"></span><span style="color:var(--text2);font-weight:600">${r.label}</span><span style="color:var(--text3);font-size:9px;margin-left:4px">${r.min}-${r.max===Infinity?'30+':r.max}</span>${isBest?' <span style="font-size:8px;color:var(--accent);background:rgba(0,212,170,0.16);padding:1px 5px;border-radius:3px;font-family:var(--font-display);font-weight:700;letter-spacing:0.04em;text-transform:uppercase">Best</span>':''}</td><td style="padding:8px 6px;border-bottom:1px solid var(--border);text-align:center;font-family:var(--font-display);font-weight:700;color:var(--text2)">${r.n}</td><td style="padding:8px 6px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--font-display);font-weight:700;color:var(--text2)">${r.avgTSS!=null?Math.round(r.avgTSS):'—'}</td><td style="padding:8px 6px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--font-display);font-weight:700;color:${isBest?'var(--accent)':'var(--text)'}">${fmtPerf(r.avgPerf)}</td><td style="padding:8px 6px;border-bottom:1px solid var(--border);text-align:right;font-size:11px">${fmtWow(r.avgWow)}</td></tr>`;
   }).join('');
-  body.innerHTML=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">${header}${rowHtml}</table></div>`+(bestKey?`<div style="font-size:11px;color:var(--text2);line-height:1.55;padding:8px 10px;background:var(--surface2);border-radius:6px;border-left:2px solid var(--accent);margin-top:10px">Best zone for Top 20% pace: <strong style="color:var(--accent)">${rows.find(r=>r.key===bestKey).label}</strong>. If this matches the Optimal zone (25–27), the M-score model is supported.</div>`:'');
+  let footer='';
+  if(bestKey){
+    const bestRow=rows.find(r=>r.key===bestKey);
+    const isOptimalWin=bestKey==='optimal'||bestKey==='prod';
+    footer=`<div style="font-size:11px;color:var(--text2);line-height:1.55;padding:8px 10px;background:var(--surface2);border-radius:6px;border-left:2px solid ${isOptimalWin?'var(--accent)':'var(--yellow)'};margin-top:10px">Best zone for performance: <strong style="color:${isOptimalWin?'var(--accent)':'var(--yellow)'}">${bestRow.label}</strong> (avg ${bestRow.avgTSS?Math.round(bestRow.avgTSS):'?'} TSS). ${isOptimalWin?'This matches the M-score model — the productive/optimal range is doing the work.':'The best zone is outside Productive/Optimal — check whether your weekly TSS goal is calibrated correctly for your fitness.'}</div>`;
+  }
+  body.innerHTML=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">${header}${rowHtml}</table></div>${footer}`;
 }
-function renderDistanceFromOptimal(weeks,pairR){
+
+// NEW: TSS-matched M comparison. Bins weeks by TSS tertile, then within each bin compares high-M vs low-M perf.
+// This is the cleanest answer to "at the same load, does better M produce better performance?"
+function renderTSSMatchedM(weeks,rMPartial,rTSSPartial){
   const body=document.getElementById('distOptBody');if(!body)return;
-  const dist=pairR['mDistance_top20Pace'];const tss=pairR['tss_top20Pace'];
-  if(!dist||dist.r==null||!tss||tss.r==null){body.innerHTML='<div style="color:var(--text3);font-style:italic;font-size:11px">Need ≥ 3 weeks with both M and Top 20% pace logged.</div>';return}
-  const fmtR=v=>(v>=0?'+':'')+v.toFixed(2);
-  const distAbs=Math.abs(dist.r),tssAbs=Math.abs(tss.r);
-  const winner=distAbs>tssAbs?'distance':'tss';
-  const supports=winner==='distance'&&dist.r<-0.3;
-  const verdict=supports?{label:'✅ Optimal-zone model supported',color:'var(--accent)',body:'Distance-from-optimal predicts pace better than raw TSS, and the relationship is in the expected direction (closer to M=26 → faster pace).'}:winner==='distance'?{label:'🟡 Mixed',color:'var(--yellow)',body:'Distance-from-optimal beats raw TSS, but the effect is weak or in an unexpected direction. Need more weeks to be confident.'}:{label:'❌ Not supported in this period',color:'var(--accent2)',body:'Raw TSS predicts pace better than distance-from-optimal — there is no clear evidence of an optimal zone in this period.'};
-  const interp=`<strong style="color:var(--text2)">M-dist ↔ Top 20% pace:</strong> r = ${fmtR(dist.r)} (n=${dist.n}). ${dist.r<-0.3?'Negative r as expected — closer-to-optimal correlates with faster pace.':dist.r>0.3?'Positive r — being further from optimal correlates with faster pace, which contradicts the model.':'Weak relationship — no clear effect.'}`;
-  body.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px"><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 8px"><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;margin-bottom:4px">M-dist → Pace</div><div style="font-family:var(--font-display);font-size:22px;font-weight:800;color:${distAbs>=0.7?'var(--accent)':distAbs>=0.4?'var(--yellow)':'var(--text3)'}">${fmtR(dist.r)}</div><div style="font-size:9px;color:var(--text3);margin-top:2px">n=${dist.n}</div></div><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 8px"><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;margin-bottom:4px">TSS → Pace (control)</div><div style="font-family:var(--font-display);font-size:22px;font-weight:800;color:${tssAbs>=0.7?'var(--accent)':tssAbs>=0.4?'var(--yellow)':'var(--text3)'}">${fmtR(tss.r)}</div><div style="font-size:9px;color:var(--text3);margin-top:2px">n=${tss.n}</div></div></div><div style="font-size:11px;color:var(--text2);line-height:1.55;padding:9px 11px;background:var(--surface2);border-radius:7px;margin-bottom:8px">${interp}</div><div style="font-size:11px;color:var(--text2);line-height:1.55;padding:9px 11px;background:var(--surface);border-radius:7px;border-left:3px solid ${verdict.color}"><div style="font-family:var(--font-display);font-size:11px;font-weight:800;letter-spacing:0.04em;color:${verdict.color};margin-bottom:4px">${verdict.label}</div>${verdict.body}</div>`;
+  const valid=weeks.filter(w=>w.m!=null&&w.tss!=null&&w.tss>0&&w.perfScore!=null&&!isNaN(w.perfScore));
+  if(valid.length<6){
+    body.innerHTML='<div style="color:var(--text3);font-style:italic;font-size:11px">Need ≥ 6 weeks with M, TSS, and a performance score logged in this period.</div>';
+    return;
+  }
+  const sortedTSS=[...valid].sort((a,b)=>a.tss-b.tss).map(w=>w.tss);
+  const t1=sortedTSS[Math.floor(sortedTSS.length/3)];
+  const t2=sortedTSS[Math.floor(sortedTSS.length*2/3)];
+  const bin=w=>w.tss<=t1?'low':w.tss<=t2?'mid':'high';
+  const bins={low:[],mid:[],high:[]};
+  valid.forEach(w=>bins[bin(w)].push(w));
+  const fmtPerf=v=>{
+    if(v==null||!isFinite(v))return'—';
+    if(corrSport==='bike')return Math.round(v)+'w';
+    return formatSecondsToPace(Math.round(-v))+(corrSport==='run'?'/mi':'/100m');
+  };
+  const fmtDelta=(highMperf,lowMperf)=>{
+    if(highMperf==null||lowMperf==null)return null;
+    const d=highMperf-lowMperf; // higher = better in our score convention
+    if(corrSport==='bike'){
+      const pct=lowMperf>0?d/lowMperf*100:0;
+      return{abs:(d>=0?'+':'')+Math.round(d)+'w',pct:(pct>=0?'+':'')+pct.toFixed(1)+'%',positive:d>0};
+    }else{
+      const lowSec=-lowMperf;
+      const pct=lowSec>0?d/lowSec*100:0;
+      const sec=Math.abs(Math.round(d));
+      return{abs:(d>=0?'-':'+')+sec+'s',pct:(pct>=0?'+':'')+pct.toFixed(1)+'%',positive:d>0};
+    }
+  };
+  const summarizeBin=(label,arr,range)=>{
+    if(!arr.length)return{label,n:0,html:`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 10px;flex:1;min-width:140px;opacity:0.45"><div style="font-family:var(--font-display);font-size:11px;font-weight:800;color:var(--text3);letter-spacing:0.04em;text-transform:uppercase">${label} TSS</div><div style="font-size:10px;color:var(--text3);margin-top:6px">No weeks in this bin</div></div>`};
+    const sortedM=[...arr].sort((a,b)=>a.m-b.m);
+    const mMedian=sortedM[Math.floor(sortedM.length/2)].m;
+    const high=arr.filter(w=>w.m>=mMedian);
+    const low=arr.filter(w=>w.m<mMedian);
+    if(!high.length||!low.length||high.length===arr.length){
+      return{label,n:arr.length,html:`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 10px;flex:1;min-width:140px"><div style="font-family:var(--font-display);font-size:11px;font-weight:800;color:var(--text2);letter-spacing:0.04em;text-transform:uppercase">${label} TSS</div><div style="font-size:9px;color:var(--text3);margin-top:2px">${range} · n=${arr.length}</div><div style="font-size:10px;color:var(--text3);margin-top:8px;font-style:italic">M range too narrow in this bin to compare</div></div>`};
+    }
+    const highPerf=high.reduce((s,w)=>s+w.perfScore,0)/high.length;
+    const lowPerf=low.reduce((s,w)=>s+w.perfScore,0)/low.length;
+    const highMavg=high.reduce((s,w)=>s+w.m,0)/high.length;
+    const lowMavg=low.reduce((s,w)=>s+w.m,0)/low.length;
+    const delta=fmtDelta(highPerf,lowPerf);
+    const winColor=delta.positive?'var(--accent)':'var(--accent2)';
+    const verdict=delta.positive?'High M wins':'Low M wins';
+    return{label,n:arr.length,delta,positive:delta.positive,html:`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 10px;flex:1;min-width:140px"><div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font-family:var(--font-display);font-size:11px;font-weight:800;color:var(--text2);letter-spacing:0.04em;text-transform:uppercase">${label} TSS</div><div style="font-size:9px;color:var(--text3)">n=${arr.length}</div></div><div style="font-size:9px;color:var(--text3);margin-top:1px">${range}</div><div style="display:flex;gap:6px;margin-top:8px;font-size:11px"><div style="flex:1;padding:5px 6px;background:rgba(0,212,170,0.08);border-radius:5px"><div style="font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em">High M (${highMavg.toFixed(1)})</div><div style="font-family:var(--font-display);font-size:13px;font-weight:800;color:var(--text);margin-top:1px">${fmtPerf(highPerf)}</div></div><div style="flex:1;padding:5px 6px;background:rgba(74,85,96,0.15);border-radius:5px"><div style="font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em">Low M (${lowMavg.toFixed(1)})</div><div style="font-family:var(--font-display);font-size:13px;font-weight:800;color:var(--text2);margin-top:1px">${fmtPerf(lowPerf)}</div></div></div><div style="font-size:11px;color:${winColor};font-weight:700;margin-top:8px">${verdict} <span style="font-family:var(--font-display);font-weight:800">${delta.abs}</span> <span style="color:var(--text3);font-weight:600">(${delta.pct})</span></div></div>`};
+  };
+  const lowSum=summarizeBin('Low',bins.low,`≤${Math.round(t1)} TSS`);
+  const midSum=summarizeBin('Mid',bins.mid,`${Math.round(t1)}–${Math.round(t2)} TSS`);
+  const highSum=summarizeBin('High',bins.high,`>${Math.round(t2)} TSS`);
+  const tally=[lowSum,midSum,highSum].filter(b=>b.delta);
+  const highMwins=tally.filter(b=>b.positive).length;
+  const lowMwins=tally.length-highMwins;
+  let verdict='',verdictColor='';
+  if(tally.length===0){
+    verdict='Not enough M variation within bins yet — need more weeks where the M values within the same TSS tertile span a meaningful range.';
+    verdictColor='var(--text3)';
+  }else if(highMwins===tally.length&&tally.length>=2){
+    verdict=`✅ <strong>M wins in every TSS bin</strong> (${highMwins}/${tally.length}). At every load level, the higher-M weeks produced better performance — exactly the pattern your hypothesis predicts.`;
+    verdictColor='var(--accent)';
+  }else if(highMwins>lowMwins){
+    verdict=`🟢 <strong>M wins in ${highMwins}/${tally.length} bins.</strong> Higher-M weeks tend to outperform lower-M weeks at matched TSS — supporting your model.`;
+    verdictColor='var(--accent)';
+  }else if(lowMwins>highMwins){
+    verdict=`🟠 <strong>Lower M wins in ${lowMwins}/${tally.length} bins</strong> — surprising. Possible explanations: (a) high-M weeks are often taper or post-injury return weeks; (b) "low M" here includes long aerobic-base blocks that genuinely build capacity; (c) M variation within bins is too narrow to be informative.`;
+    verdictColor='var(--accent2)';
+  }else{
+    verdict=`🟡 <strong>Split decision</strong> (${highMwins} high-M vs ${lowMwins} low-M wins). Headline question is unresolved in this period.`;
+    verdictColor='var(--yellow)';
+  }
+  let extra='';
+  if(rMPartial?.r!=null){
+    const fmtR=v=>(v>=0?'+':'')+v.toFixed(2);
+    extra=`<div style="font-size:10px;color:var(--text3);margin-top:8px;line-height:1.5">Partial correlation: r(M, Performance | TSS) = <strong style="color:${rMPartial.r>0.2?'var(--accent)':rMPartial.r<-0.2?'var(--accent2)':'var(--text2)'}">${fmtR(rMPartial.r)}</strong>${rTSSPartial?.r!=null?` &nbsp;·&nbsp; r(TSS, Performance | M) = <strong style="color:${rTSSPartial.r>0.2?'var(--accent)':'var(--text2)'}">${fmtR(rTSSPartial.r)}</strong>`:''}.</div>`;
+  }
+  body.innerHTML=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">${lowSum.html}${midSum.html}${highSum.html}</div><div style="font-size:11px;color:var(--text2);line-height:1.55;padding:9px 11px;background:var(--surface);border-radius:7px;border-left:3px solid ${verdictColor}">${verdict}</div>${extra}<div style="font-size:9px;color:var(--text3);margin-top:8px;line-height:1.5"><strong style="color:var(--text2)">Method</strong>: weeks split into TSS tertiles. Within each tertile, weeks above the median M are "high M", weeks at/below the median are "low M". The arrow points at whichever group has the better average performance.</div>`;
 }
-function renderPlateauDetection(weeks,paceInvert){
+
+function renderPlateauDetection(weeks){
   const body=document.getElementById('plateauBody');if(!body)return;
   if(weeks.length<4){body.innerHTML='<div style="color:var(--text3);font-style:italic;font-size:11px">Need ≥ 4 weeks of data.</div>';return}
   const flags=[];
@@ -2311,44 +2454,55 @@ function renderPlateauDetection(weeks,paceInvert){
     const win=weeks.slice(i-3,i+1);
     const tssVals=win.map(w=>w.tss).filter(v=>v!=null&&v>0);
     const mVals=win.map(w=>w.m).filter(v=>v!=null);
-    const paces=win.map(w=>w.top20Pace).filter(v=>v!=null);
-    if(tssVals.length<4||mVals.length<4||paces.length<4)continue;
+    const perfs=win.map(w=>w.perfScore).filter(v=>v!=null);
+    if(tssVals.length<4||mVals.length<4||perfs.length<4)continue;
     const tssMean=tssVals.reduce((a,b)=>a+b,0)/tssVals.length;
     const tssStable=tssVals.every(v=>Math.abs(v-tssMean)/tssMean<=0.10);
-    const mGood=mVals.every(v=>v>=24&&v<=26);
+    const mGood=mVals.every(v=>v>=24&&v<=27);
     if(!tssStable||!mGood)continue;
-    const first=paces[0],last=paces[paces.length-1];
-    const change=last-first;const relChange=Math.abs(change/first);
-    const improving=paceInvert?change<0:change>0;
+    const first=perfs[0],last=perfs[perfs.length-1];
+    const change=last-first;
+    const refMag=Math.abs(first)||1;
+    const relChange=Math.abs(change)/refMag;
+    const improving=change>0;
     const meaningful=relChange>=0.005;
     flags.push({weekEnd:weeks[i].week,tssMean:Math.round(tssMean),paceChange:change,improving:improving&&meaningful,stalled:!meaningful||!improving});
   }
   const stalled=flags.filter(f=>f.stalled);
   const improvingRuns=flags.filter(f=>!f.stalled);
-  if(!flags.length){body.innerHTML='<div style="font-size:11px;color:var(--text3);line-height:1.55">No 4-week stable-TSS + good-M windows found yet. Plateau detection requires sustained training in the M=24–26 range with TSS within ±10% for 4 weeks.</div>';return}
+  if(!flags.length){body.innerHTML='<div style="font-size:11px;color:var(--text3);line-height:1.55">No 4-week stable-TSS + good-M windows found yet. Plateau detection requires sustained training in the M=24–27 range with TSS within ±10% for 4 weeks.</div>';return}
   const fmtDate=k=>{const d=new Date(k+'T12:00:00');return d.toLocaleDateString('en-US',{month:'short',day:'numeric'})};
   let html='';
   if(stalled.length){
     const last=stalled[stalled.length-1];
-    html+=`<div style="padding:11px 13px;background:rgba(255,204,0,0.07);border-left:3px solid var(--yellow);border-radius:7px;margin-bottom:8px"><div style="font-family:var(--font-display);font-size:12px;font-weight:800;color:var(--yellow);letter-spacing:0.04em;margin-bottom:4px">⚠ Possible plateau detected</div><div style="font-size:11px;color:var(--text2);line-height:1.55">Last detected: window ending <strong>${fmtDate(last.weekEnd)}</strong> at ~${last.tssMean} TSS. Performance may be plateauing at current TSS despite good M. Consider a progressive TSS increase.</div></div>`;
+    html+=`<div style="padding:11px 13px;background:rgba(255,204,0,0.07);border-left:3px solid var(--yellow);border-radius:7px;margin-bottom:8px"><div style="font-family:var(--font-display);font-size:12px;font-weight:800;color:var(--yellow);letter-spacing:0.04em;margin-bottom:4px">⚠ Possible plateau detected</div><div style="font-size:11px;color:var(--text2);line-height:1.55">Last detected: window ending <strong>${fmtDate(last.weekEnd)}</strong> at ~${last.tssMean} TSS. Performance is flat at current TSS despite good M. Consider a progressive TSS increase.</div></div>`;
   }
   if(improvingRuns.length){
     const last=improvingRuns[improvingRuns.length-1];
-    html+=`<div style="padding:11px 13px;background:rgba(0,212,170,0.07);border-left:3px solid var(--accent);border-radius:7px;margin-bottom:8px"><div style="font-family:var(--font-display);font-size:12px;font-weight:800;color:var(--accent);letter-spacing:0.04em;margin-bottom:4px">✓ Adapting on stable TSS</div><div style="font-size:11px;color:var(--text2);line-height:1.55">Most recent: window ending <strong>${fmtDate(last.weekEnd)}</strong> at ~${last.tssMean} TSS — pace is still improving. Hold the load.</div></div>`;
+    html+=`<div style="padding:11px 13px;background:rgba(0,212,170,0.07);border-left:3px solid var(--accent);border-radius:7px;margin-bottom:8px"><div style="font-family:var(--font-display);font-size:12px;font-weight:800;color:var(--accent);letter-spacing:0.04em;margin-bottom:4px">✓ Adapting on stable TSS</div><div style="font-size:11px;color:var(--text2);line-height:1.55">Most recent: window ending <strong>${fmtDate(last.weekEnd)}</strong> at ~${last.tssMean} TSS — performance is still improving. Hold the load.</div></div>`;
   }
   html+=`<div style="font-size:10px;color:var(--text3);line-height:1.5;margin-top:6px">Found ${flags.length} qualifying 4-wk window${flags.length===1?'':'s'}: ${improvingRuns.length} improving, ${stalled.length} stalled.</div>`;
   body.innerHTML=html;
 }
-function renderAdaptationEfficiency(weeks,paceInvert){
+
+function renderAdaptationEfficiency(weeks){
   const body=document.getElementById('adaptEffBody');if(!body)return;
-  const valid=weeks.filter(w=>w.top20Pace!=null&&w.tss>0);
-  if(valid.length<4){body.innerHTML='<div style="color:var(--text3);font-style:italic;font-size:11px">Need ≥ 4 weeks with both pace and TSS to compute adaptation efficiency.</div>';return}
-  const first=valid[0].top20Pace,last=valid[valid.length-1].top20Pace;
-  const paceChangePct=paceInvert?(first-last)/first*100:(last-first)/first*100;
+  const valid=weeks.filter(w=>w.perfScore!=null&&w.tss>0);
+  if(valid.length<4){body.innerHTML='<div style="color:var(--text3);font-style:italic;font-size:11px">Need ≥ 4 weeks with both performance score and TSS to compute adaptation efficiency.</div>';return}
+  // Use perfScore (higher = better for all sports) as the performance metric
+  const first=valid[0].perfScore,last=valid[valid.length-1].perfScore;
+  const refMag=Math.abs(first)||1;
+  const perfChangePct=(last-first)/refMag*100;
   const avgTSS=valid.reduce((s,w)=>s+w.tss,0)/valid.length;
-  const effPer100=avgTSS>0?(paceChangePct/avgTSS)*100:null;
+  const effPer100=avgTSS>0?(perfChangePct/avgTSS)*100:null;
   const wowList=[];
-  for(let i=1;i<weeks.length;i++){const cur=weeks[i],prev=weeks[i-1];if(cur.top20Pace==null||prev.top20Pace==null||prev.top20Pace<=0||!cur.tss||cur.m==null)continue;const wowPct=paceInvert?(prev.top20Pace-cur.top20Pace)/prev.top20Pace*100:(cur.top20Pace-prev.top20Pace)/prev.top20Pace*100;wowList.push({m:cur.m,tss:cur.tss,wowPct,gainPer100:wowPct/cur.tss*100})}
+  for(let i=1;i<weeks.length;i++){
+    const cur=weeks[i],prev=weeks[i-1];
+    if(cur.perfScore==null||prev.perfScore==null||!cur.tss||cur.m==null)continue;
+    const ref=Math.abs(prev.perfScore)||1;
+    const wowPct=(cur.perfScore-prev.perfScore)/ref*100;
+    wowList.push({m:cur.m,tss:cur.tss,wowPct,gainPer100:wowPct/cur.tss*100});
+  }
   const highM=wowList.filter(x=>x.m>=19);
   const lowM=wowList.filter(x=>x.m<14);
   const avg=arr=>arr.length?arr.reduce((s,x)=>s+x.gainPer100,0)/arr.length:null;
@@ -2356,10 +2510,10 @@ function renderAdaptationEfficiency(weeks,paceInvert){
   const highEff=avg(highM),lowEff=avg(lowM),highTSSavg=avgT(highM),lowTSSavg=avgT(lowM);
   const qwaWeeks=weeks.slice(-8);
   const qwa=qwaWeeks.reduce((s,w)=>s+(w.m||0)*Math.sqrt(w.tss||0),0);
-  const qwaPaceFirst=qwaWeeks.find(w=>w.top20Pace!=null)?.top20Pace;
-  const qwaPaceLast=[...qwaWeeks].reverse().find(w=>w.top20Pace!=null)?.top20Pace;
-  const qwaPaceChange=qwaPaceFirst&&qwaPaceLast?(paceInvert?(qwaPaceFirst-qwaPaceLast)/qwaPaceFirst*100:(qwaPaceLast-qwaPaceFirst)/qwaPaceFirst*100):null;
-  const qwaTracking=qwa>0&&qwaPaceChange!=null&&qwaPaceChange>0;
+  const qwaPerfFirst=qwaWeeks.find(w=>w.perfScore!=null)?.perfScore;
+  const qwaPerfLast=[...qwaWeeks].reverse().find(w=>w.perfScore!=null)?.perfScore;
+  const qwaPerfChange=qwaPerfFirst!=null&&qwaPerfLast!=null?(qwaPerfLast-qwaPerfFirst)/(Math.abs(qwaPerfFirst)||1)*100:null;
+  const qwaTracking=qwa>0&&qwaPerfChange!=null&&qwaPerfChange>0;
   const avgIFvals=valid.map(w=>w.avgIF).filter(v=>v!=null&&v>0);
   const avgIF=avgIFvals.length?avgIFvals.reduce((a,b)=>a+b,0)/avgIFvals.length:0.80;
   const tssToHours=t=>t/(avgIF*avgIF*100);
@@ -2371,18 +2525,18 @@ function renderAdaptationEfficiency(weeks,paceInvert){
     if(observedAvgWow>0){
       const tssNeededHighM=observedAvgWow/(highEff/100);
       const savings=avgTSS-tssNeededHighM;
-      if(savings>5){const hours=tssToHours(savings);substitutionMsg=`At your high-M efficiency, you could match the same pace gain with about <strong style="color:var(--accent)">${Math.round(savings)} fewer TSS per week</strong> — roughly <strong style="color:var(--accent)">${hours.toFixed(1)} h</strong> less training.`}
+      if(savings>5){const hours=tssToHours(savings);substitutionMsg=`At your high-M efficiency, you could match the same performance gain with about <strong style="color:var(--accent)">${Math.round(savings)} fewer TSS per week</strong> — roughly <strong style="color:var(--accent)">${hours.toFixed(1)} h</strong> less training.`}
     }
   }
   const fmtEff=v=>v==null?'—':(v>=0?'+':'')+v.toFixed(3)+'%';
   const effColor=effPer100==null?'var(--text3)':effPer100>0.05?'var(--accent)':effPer100<-0.05?'var(--accent2)':'var(--text3)';
-  const effContext=effPer100==null?'Insufficient data.':effPer100>0?`You gain <strong style="color:var(--accent)">${effPer100.toFixed(2)}%</strong> pace per 100 TSS over this period (avg ${Math.round(avgTSS)} TSS/wk).`:effPer100<0?`Pace is regressing by <strong style="color:var(--accent2)">${Math.abs(effPer100).toFixed(2)}%</strong> per 100 TSS — your load isn't translating to gains.`:'Pace is flat at this load.';
+  const effContext=effPer100==null?'Insufficient data.':effPer100>0?`You gain <strong style="color:var(--accent)">${effPer100.toFixed(2)}%</strong> performance per 100 TSS over this period (avg ${Math.round(avgTSS)} TSS/wk).`:effPer100<0?`Performance is regressing by <strong style="color:var(--accent2)">${Math.abs(effPer100).toFixed(2)}%</strong> per 100 TSS — your load isn't translating to gains.`:'Performance is flat at this load.';
   let html=`<div style="display:grid;grid-template-columns:1fr;gap:6px;margin-bottom:10px"><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 12px"><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;margin-bottom:4px">Adaptation efficiency</div><div style="font-family:var(--font-display);font-size:24px;font-weight:800;color:${effColor};line-height:1">${effPer100==null?'—':(effPer100>=0?'+':'')+effPer100.toFixed(2)+'%'}</div><div style="font-size:10px;color:var(--text3);margin-top:3px">per 100 TSS · over ${valid.length} wks</div><div style="font-size:11px;color:var(--text2);line-height:1.5;margin-top:8px">${effContext}</div></div></div>`;
   html+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px"><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 8px"><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;margin-bottom:3px">High-M wks (M ≥ 19)</div><div style="font-family:var(--font-display);font-size:18px;font-weight:800;color:${highEff!=null?(highEff>0?'var(--accent)':'var(--accent2)'):'var(--text3)'};line-height:1.1">${fmtEff(highEff)}</div><div style="font-size:9px;color:var(--text3);margin-top:3px">n=${highM.length}${highTSSavg!=null?' · ~'+Math.round(highTSSavg)+' TSS':''}</div></div><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 8px"><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;margin-bottom:3px">Low-M wks (M &lt; 14)</div><div style="font-family:var(--font-display);font-size:18px;font-weight:800;color:${lowEff!=null?(lowEff>0?'var(--accent)':'var(--accent2)'):'var(--text3)'};line-height:1.1">${fmtEff(lowEff)}</div><div style="font-size:9px;color:var(--text3);margin-top:3px">n=${lowM.length}${lowTSSavg!=null?' · ~'+Math.round(lowTSSavg)+' TSS':''}</div></div></div>`;
-  if(qualityWinsMsg)html+=`<div style="font-size:11px;color:var(--text2);line-height:1.55;padding:9px 11px;background:rgba(0,212,170,0.08);border-radius:7px;border-left:3px solid var(--accent);margin-bottom:8px">✓ <strong style="color:var(--accent)">${qualityWinsMsg}</strong> Per WoW pace gain: high-M weeks return ${fmtEff(highEff)} per 100 TSS vs ${fmtEff(lowEff)} for low-M weeks.</div>`;
+  if(qualityWinsMsg)html+=`<div style="font-size:11px;color:var(--text2);line-height:1.55;padding:9px 11px;background:rgba(0,212,170,0.08);border-radius:7px;border-left:3px solid var(--accent);margin-bottom:8px">✓ <strong style="color:var(--accent)">${qualityWinsMsg}</strong> Per WoW gain: high-M weeks return ${fmtEff(highEff)} per 100 TSS vs ${fmtEff(lowEff)} for low-M weeks.</div>`;
   else if(highEff!=null&&lowEff!=null)html+=`<div style="font-size:11px;color:var(--text2);line-height:1.55;padding:9px 11px;background:var(--surface2);border-radius:7px;border-left:3px solid var(--text3);margin-bottom:8px">High-M weeks return ${fmtEff(highEff)} per 100 TSS vs ${fmtEff(lowEff)} low-M — quality is not winning over volume in this period.</div>`;
   else if(highEff==null||lowEff==null)html+=`<div style="font-size:11px;color:var(--text3);line-height:1.55;padding:9px 11px;background:var(--surface2);border-radius:7px;margin-bottom:8px;font-style:italic">Need both high-M (≥19) and low-M (&lt;14) weeks in this period to compare quality vs volume efficiency.</div>`;
-  html+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 12px;margin-bottom:8px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;font-weight:700">Quality-weighted accumulation · last 8 wk</div></div><div style="display:flex;align-items:baseline;gap:14px"><div><div style="font-family:var(--font-display);font-size:22px;font-weight:800;color:var(--text);line-height:1">${qwa>0?Math.round(qwa):'—'}</div><div style="font-size:9px;color:var(--text3);margin-top:2px">M × √TSS, summed</div></div><div style="flex:1"><div style="font-size:11px;color:var(--text2);line-height:1.5">${qwaPaceChange!=null?`Pace change over same window: <strong style="color:${qwaPaceChange>0?'var(--accent)':'var(--accent2)'}">${(qwaPaceChange>=0?'+':'')+qwaPaceChange.toFixed(2)+'%'}</strong>.${qwaTracking?' Quality accumulation and pace gains are moving together.':qwa>0&&qwaPaceChange<=0?' Quality accumulation is rising but pace is not yet — give it 2–3 wks to show.':''}`:'Pace change unavailable for this window.'}</div></div></div></div>`;
+  html+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 12px;margin-bottom:8px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;font-weight:700">Quality-weighted accumulation · last 8 wk</div></div><div style="display:flex;align-items:baseline;gap:14px"><div><div style="font-family:var(--font-display);font-size:22px;font-weight:800;color:var(--text);line-height:1">${qwa>0?Math.round(qwa):'—'}</div><div style="font-size:9px;color:var(--text3);margin-top:2px">M × √TSS, summed</div></div><div style="flex:1"><div style="font-size:11px;color:var(--text2);line-height:1.5">${qwaPerfChange!=null?`Performance change over same window: <strong style="color:${qwaPerfChange>0?'var(--accent)':'var(--accent2)'}">${(qwaPerfChange>=0?'+':'')+qwaPerfChange.toFixed(2)+'%'}</strong>.${qwaTracking?' Quality accumulation and gains are moving together.':qwa>0&&qwaPerfChange<=0?' Quality accumulation is rising but performance is not yet — give it 2–3 wks to show.':''}`:'Performance change unavailable for this window.'}</div></div></div></div>`;
   if(substitutionMsg)html+=`<div style="font-size:11px;color:var(--text2);line-height:1.55;padding:9px 11px;background:var(--surface);border-radius:7px;border-left:3px solid var(--accent)"><div style="font-family:var(--font-display);font-size:11px;font-weight:800;letter-spacing:0.04em;color:var(--accent);margin-bottom:4px">💡 Substitution insight</div>${substitutionMsg}</div>`;
   body.innerHTML=html;
 }
