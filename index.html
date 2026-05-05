@@ -576,7 +576,6 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
       </div>
       <div id="corrLayerToggles" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;font-size:10px;color:var(--text3);align-items:center">
         <label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="togZones" checked onchange="renderCorrelations()" style="margin:0"> M-zone shading</label>
-        <label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="togMDist" checked onchange="renderCorrelations()" style="margin:0"> M-distance line</label>
         <label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="togPerf" checked onchange="renderCorrelations()" style="margin:0"> Performance score</label>
         <label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="togWoW" checked onchange="renderCorrelations()" style="margin:0"> Weekly Δ markers</label>
       </div>
@@ -621,6 +620,14 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
       </div>
       <div style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.5">Which M zone produced your best performance score? If the "Best" badge lands on Optimal (25–27), the zone model is working. If it lands lower, you may be over-prescribing volume.</div>
       <div id="zonePerfBody"></div>
+    </div>
+    <div class="card" id="ratioCurveCard" style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+        <span class="expandable-title">🎯 Optimal Ratio Curve (Discovery)</span>
+        <span style="font-size:8px;color:var(--yellow);background:rgba(255,204,0,0.12);border:1px solid rgba(255,204,0,0.25);padding:1px 4px;border-radius:3px;letter-spacing:0.04em;text-transform:uppercase">Exp</span>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.5">Each dot is a week — color shows performance (grey low → bright orange high). The fitted curve is a performance-weighted power-law through your data; the 80% confidence band shows how much that fit could reasonably move with this much data. If your prescribed curve falls outside the band at both anchors, an Apply button appears.</div>
+      <div id="ratioCurveBody"></div>
     </div>
     <div class="card" id="distOptCard" style="margin-bottom:14px">
       <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
@@ -1963,6 +1970,86 @@ function corrLagged(weeks,srcKey,lag,dstKey){dstKey=dstKey||'perfScore';const pa
 function corrRolling(weeks,srcKey,winSize){const result=[];for(let i=0;i<weeks.length;i++){if(i<winSize-1){result.push(null);continue}const win=weeks.slice(i-winSize+1,i+1);const pairs=win.filter(w=>w[srcKey]!=null&&w.perfScore!=null&&!isNaN(w[srcKey])&&!isNaN(w.perfScore));if(pairs.length<3){result.push(null);continue}const xs=pairs.map(p=>p[srcKey]),ys=pairs.map(p=>p.perfScore);result.push(pearsonR(xs,ys).r)}return result}
 // Rolling partial correlation: r(M, perfScore | TSS) — answers "controlling for TSS, does M predict performance?"
 function partialCorrRolling(weeks,winSize){const result=[];for(let i=0;i<weeks.length;i++){if(i<winSize-1){result.push(null);continue}const win=weeks.slice(i-winSize+1,i+1);const pairs=win.filter(w=>w.m!=null&&w.tss!=null&&w.perfScore!=null&&!isNaN(w.m)&&!isNaN(w.tss)&&!isNaN(w.perfScore));if(pairs.length<4){result.push(null);continue}const xs=pairs.map(p=>p.m),ys=pairs.map(p=>p.perfScore),zs=pairs.map(p=>p.tss);result.push(partialCorr(xs,ys,zs).r)}return result}
+// ---- Optimal Ratio Curve Discovery ----
+// Performance-weighted power-curve fit: log(ratio) = log(a) + b·log(TSS), weighted by perfScore.
+// Each point gets weight in [0.1, 1.0] based on its perfScore relative to min/max of the dataset.
+// We add a 0.1 floor so even worst-perf weeks contribute a little (prevents the fit from collapsing
+// onto only the top weeks when the dataset is small).
+function fitWeightedPowerCurve(points){
+  // points: [{tss, ratio, weight}, ...]
+  const valid=points.filter(p=>p.tss>0&&p.ratio>0&&p.weight>0&&isFinite(p.tss)&&isFinite(p.ratio));
+  if(valid.length<4)return null;
+  let sumW=0,sumWX=0,sumWY=0,sumWXY=0,sumWX2=0;
+  valid.forEach(p=>{
+    const x=Math.log(p.tss),y=Math.log(p.ratio),w=p.weight;
+    sumW+=w;sumWX+=w*x;sumWY+=w*y;sumWXY+=w*x*y;sumWX2+=w*x*x;
+  });
+  const denom=sumW*sumWX2-sumWX*sumWX;
+  if(Math.abs(denom)<1e-9)return null;
+  const b=(sumW*sumWXY-sumWX*sumWY)/denom;
+  const logA=(sumWY-b*sumWX)/sumW;
+  const a=Math.exp(logA);
+  if(!isFinite(a)||!isFinite(b))return null;
+  return{a,b,n:valid.length};
+}
+// Build perfScore-derived weights from a list of weeks. Floor at 0.1, ceiling at 1.0.
+function perfWeights(weeks){
+  const perfs=weeks.map(w=>w.perfScore).filter(v=>v!=null&&isFinite(v));
+  if(!perfs.length)return weeks.map(_=>0);
+  const lo=Math.min(...perfs),hi=Math.max(...perfs),range=hi-lo;
+  return weeks.map(w=>{
+    if(w.perfScore==null||!isFinite(w.perfScore))return 0;
+    if(range<1e-9)return 1; // all same → equal weight
+    return 0.1+0.9*((w.perfScore-lo)/range);
+  });
+}
+// Bootstrap 80% confidence interval on the fitted curve. Resamples (tss, ratio, weight) tuples
+// with replacement, refits, and returns 10th/90th percentile predictions at each evaluation TSS.
+function bootstrapCurveCI(points,evalTSSs,nResamples){
+  nResamples=nResamples||200;
+  const valid=points.filter(p=>p.tss>0&&p.ratio>0&&p.weight>0&&isFinite(p.tss)&&isFinite(p.ratio));
+  if(valid.length<4)return null;
+  const predictions=evalTSSs.map(_=>[]);
+  for(let r=0;r<nResamples;r++){
+    const sample=[];
+    for(let i=0;i<valid.length;i++)sample.push(valid[Math.floor(Math.random()*valid.length)]);
+    const fit=fitWeightedPowerCurve(sample);
+    if(!fit)continue;
+    evalTSSs.forEach((tss,k)=>{predictions[k].push(fit.a*Math.pow(tss,fit.b))});
+  }
+  const lo=[],hi=[],med=[];
+  evalTSSs.forEach((tss,k)=>{
+    const arr=predictions[k];
+    if(!arr.length){lo.push(null);hi.push(null);med.push(null);return}
+    arr.sort((a,b)=>a-b);
+    lo.push(arr[Math.floor(arr.length*0.1)]);
+    hi.push(arr[Math.floor(arr.length*0.9)]);
+    med.push(arr[Math.floor(arr.length*0.5)]);
+  });
+  return{lo,hi,med,n:valid.length};
+}
+// Rolling top-quartile envelope: at each TSS in a sorted list, find the 5–7 nearest weeks (by TSS),
+// take only those in the top 25% by perfScore within that window, return the median ratio.
+// This gives a smooth visual cross-check on whether weighted fit is anchored to actually-good weeks.
+function topQuartileEnvelope(points,windowSize){
+  windowSize=windowSize||7;
+  const valid=points.filter(p=>p.tss>0&&p.ratio>0&&p.perfScore!=null&&isFinite(p.tss));
+  if(valid.length<8)return [];
+  const sorted=[...valid].sort((a,b)=>a.tss-b.tss);
+  const result=[];
+  for(let i=0;i<sorted.length;i++){
+    const start=Math.max(0,i-Math.floor(windowSize/2));
+    const end=Math.min(sorted.length,start+windowSize);
+    const win=sorted.slice(start,end);
+    if(win.length<4)continue;
+    const sortedByPerf=[...win].sort((a,b)=>b.perfScore-a.perfScore);
+    const top=sortedByPerf.slice(0,Math.max(2,Math.ceil(win.length*0.25)));
+    const ratios=top.map(p=>p.ratio).sort((a,b)=>a-b);
+    const medianRatio=ratios[Math.floor(ratios.length/2)];
+    result.push({tss:sorted[i].tss,ratio:medianRatio});
+  }
+  return result;
+}
 function drawCorrOverlay(weeks,opts){
   opts=opts||{};
   const canvas=document.getElementById('corrOverlayCanvas');if(!canvas)return;
@@ -2020,18 +2107,7 @@ function drawCorrOverlay(weeks,opts){
     weeks.forEach((w,i)=>{const v=w.m;if(v==null||isNaN(v))return;ctx.beginPath();ctx.fillStyle='#00d4aa';ctx.arc(xS(i),yM(v),2.5,0,Math.PI*2);ctx.fill()});
   }
 
-  // M-distance overlay (smaller scale = closer to optimal, drawn lighter on its own normalization)
-  if(opts.mdist){
-    const distVals=weeks.map(w=>w.mDistance).filter(v=>v!=null);
-    if(distVals.length>=2){
-      const dmin=0,dmax=Math.max(...distVals,5);
-      const yD=v=>PAD_T+cH*(v-dmin)/((dmax-dmin)||1); // inverted: 0 (best) at top, dmax at bottom
-      ctx.beginPath();ctx.strokeStyle='rgba(255,204,0,0.7)';ctx.lineWidth=1.5;ctx.setLineDash([4,2]);let first=true;
-      weeks.forEach((w,i)=>{const v=w.mDistance;if(v==null||isNaN(v)){first=true;return}const x=xS(i),y=yD(v);if(first){ctx.moveTo(x,y);first=false}else ctx.lineTo(x,y)});
-      ctx.stroke();ctx.setLineDash([]);
-      weeks.forEach((w,i)=>{const v=w.mDistance;if(v==null||isNaN(v))return;ctx.beginPath();ctx.fillStyle='rgba(255,204,0,0.7)';ctx.arc(xS(i),yD(v),2,0,Math.PI*2);ctx.fill()});
-    }
-  }
+  // M-distance overlay removed — kept M=26 reference line above instead.
 
   // TSS line (own normalization, blue)
   {
@@ -2146,7 +2222,6 @@ function renderCorrelations(){
 
   const opts={
     zones:document.getElementById('togZones')?.checked!==false,
-    mdist:document.getElementById('togMDist')?.checked!==false,
     perf:document.getElementById('togPerf')?.checked!==false,
     wow:document.getElementById('togWoW')?.checked!==false
   };
@@ -2155,12 +2230,11 @@ function renderCorrelations(){
   // Legend
   const leg=document.getElementById('corrLegend');
   if(leg){
-    const mVals=weeks.map(w=>w.m).filter(v=>v!=null),tssVals=weeks.map(w=>w.tss).filter(v=>v!=null),mDistVals=weeks.map(w=>w.mDistance).filter(v=>v!=null),perfVals=weeks.map(w=>w.perfScore).filter(v=>v!=null);
+    const mVals=weeks.map(w=>w.m).filter(v=>v!=null),tssVals=weeks.map(w=>w.tss).filter(v=>v!=null),perfVals=weeks.map(w=>w.perfScore).filter(v=>v!=null);
     const cell=(color,label,extra,dashed)=>`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:14px;height:0;border-top:2px ${dashed||'solid'} ${color};display:inline-block"></span><span style="color:var(--text2);font-weight:700">${label}</span>${extra?`<span style="color:var(--text3)">${extra}</span>`:''}</span>`;
     const items=[
       mVals.length?cell('#00d4aa','M',`${Math.min(...mVals)} → ${Math.max(...mVals)}`):'',
       tssVals.length?cell('#3b82f6','TSS',`${Math.round(Math.min(...tssVals))} → ${Math.round(Math.max(...tssVals))}`):'',
-      (opts.mdist&&mDistVals.length)?cell('rgba(255,204,0,0.8)','M-distance','|M − 26|','dashed'):'',
       (opts.perf&&perfVals.length)?cell('#ff6b35','Performance','best quality sessions, IF ≥ 0.78'):''
     ];
     leg.innerHTML=items.filter(Boolean).join('');
@@ -2173,7 +2247,7 @@ function renderCorrelations(){
     if(pairs.length<3)return{r:null,n:pairs.length};
     return pearsonR(pairs.map(p=>p[srcKey]),pairs.map(p=>p.perfScore));
   };
-  const rM=r('m'),rMDist=r('mDistance'),rTSS=r('tss');
+  const rM=r('m'),rTSS=r('tss');
   let rMPartial={r:null,n:0},rTSSPartial={r:null,n:0};
   {
     const pairs=validForPerf.filter(w=>w.m!=null&&w.tss!=null&&!isNaN(w.m)&&!isNaN(w.tss));
@@ -2213,7 +2287,7 @@ function renderCorrelations(){
   }
 
   // Lagged correlations against perfScore (note: M-distance expected sign is negative — closer to optimal → better perf)
-  const lagSpecs=[{src:'m',color:'#00d4aa',label:'M',expected:'+'},{src:'mDistance',color:'rgba(255,204,0,0.85)',label:'M-distance',expected:'−'},{src:'tss',color:'#3b82f6',label:'TSS',expected:'+'}];
+  const lagSpecs=[{src:'m',color:'#00d4aa',label:'M',expected:'+'},{src:'tss',color:'#3b82f6',label:'TSS',expected:'+'}];
   const lagsArr=[1,2,3];
   const laggedR={};
   lagSpecs.forEach(s=>{laggedR[s.src]=lagsArr.map(L=>corrLagged(weeks,s.src,L))});
@@ -2283,6 +2357,7 @@ function renderCorrelations(){
 
   renderCoachSummary(weeks);
   renderZonePerformance(weeks);
+  renderRatioCurveDiscovery(weeks);
   renderTSSMatchedM(weeks,rMPartial,rTSSPartial);
   renderPlateauDetection(weeks);
   renderAdaptationEfficiency(weeks);
@@ -2444,6 +2519,258 @@ function renderTSSMatchedM(weeks,rMPartial,rTSSPartial){
     extra=`<div style="font-size:10px;color:var(--text3);margin-top:8px;line-height:1.5">Partial correlation: r(M, Performance | TSS) = <strong style="color:${rMPartial.r>0.2?'var(--accent)':rMPartial.r<-0.2?'var(--accent2)':'var(--text2)'}">${fmtR(rMPartial.r)}</strong>${rTSSPartial?.r!=null?` &nbsp;·&nbsp; r(TSS, Performance | M) = <strong style="color:${rTSSPartial.r>0.2?'var(--accent)':'var(--text2)'}">${fmtR(rTSSPartial.r)}</strong>`:''}.</div>`;
   }
   body.innerHTML=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">${lowSum.html}${midSum.html}${highSum.html}</div><div style="font-size:11px;color:var(--text2);line-height:1.55;padding:9px 11px;background:var(--surface);border-radius:7px;border-left:3px solid ${verdictColor}">${verdict}</div>${extra}<div style="font-size:9px;color:var(--text3);margin-top:8px;line-height:1.5"><strong style="color:var(--text2)">Method</strong>: weeks split into TSS tertiles. Within each tertile, weeks above the median M are "high M", weeks at/below the median are "low M". The arrow points at whichever group has the better average performance.</div>`;
+}
+
+// Stash the latest discovery results so the Apply button can read them without re-fitting
+let lastDiscoveredAnchors=null;
+
+// Draw the ratio-curve scatter with prescribed/fitted curves and confidence band
+function drawRatioCurveDiscovery(canvasId,weeks,fit,ci,prescribed,topQuartile){
+  const canvas=document.getElementById(canvasId);if(!canvas)return;
+  const dpr=window.devicePixelRatio||1;
+  const W=canvas.offsetWidth||canvas.parentElement.offsetWidth||360,H=260;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
+  const PAD_L=36,PAD_R=14,PAD_T=14,PAD_B=36;
+  const cW=W-PAD_L-PAD_R,cH=H-PAD_T-PAD_B;
+  const valid=weeks.filter(w=>w.tss>0&&w.lpipRatio!=null&&w.lpipRatio>0&&isFinite(w.lpipRatio));
+  if(valid.length<3){
+    ctx.fillStyle='#4a5560';ctx.font='11px Barlow Condensed,sans-serif';ctx.textAlign='center';
+    ctx.fillText('Need ≥ 3 weeks with TSS + LP/IP logged',W/2,H/2);
+    return;
+  }
+  const tssMin=Math.max(50,Math.min(...valid.map(w=>w.tss))*0.8);
+  const tssMax=Math.max(...valid.map(w=>w.tss))*1.05;
+  // Log-scale on X
+  const logTssMin=Math.log(tssMin),logTssMax=Math.log(tssMax);
+  const xS=t=>PAD_L+cW*(Math.log(t)-logTssMin)/(logTssMax-logTssMin);
+  const allRatios=[...valid.map(w=>w.lpipRatio)];
+  if(fit){[tssMin,tssMax].forEach(t=>allRatios.push(fit.a*Math.pow(t,fit.b)))}
+  if(prescribed){[tssMin,tssMax].forEach(t=>allRatios.push(prescribed.a*Math.pow(t,prescribed.b)))}
+  if(ci&&ci.hi)ci.hi.forEach(v=>{if(v!=null)allRatios.push(v)});
+  const ratioMin=Math.max(0,Math.min(...allRatios)*0.85);
+  const ratioMax=Math.max(...allRatios)*1.05;
+  const yS=r=>PAD_T+cH*(1-(r-ratioMin)/(ratioMax-ratioMin));
+
+  // Grid lines (horizontal, on round ratios)
+  ctx.strokeStyle='rgba(42,48,53,0.5)';ctx.lineWidth=0.5;
+  const ratioStep=(ratioMax-ratioMin)/4;
+  for(let i=0;i<=4;i++){
+    const r=ratioMin+ratioStep*i;
+    ctx.beginPath();ctx.moveTo(PAD_L,yS(r));ctx.lineTo(PAD_L+cW,yS(r));ctx.stroke();
+    ctx.fillStyle='#4a5560';ctx.font='9px Barlow Condensed,sans-serif';ctx.textAlign='right';
+    ctx.fillText(r.toFixed(2),PAD_L-3,yS(r)+3);
+  }
+  // X-axis ticks at round-number TSS values
+  const xTicks=[200,400,600,800,1000,1500].filter(t=>t>=tssMin&&t<=tssMax);
+  xTicks.forEach(t=>{
+    ctx.beginPath();ctx.strokeStyle='rgba(42,48,53,0.4)';ctx.moveTo(xS(t),PAD_T);ctx.lineTo(xS(t),PAD_T+cH);ctx.stroke();
+    ctx.fillStyle='#4a5560';ctx.font='9px Barlow Condensed,sans-serif';ctx.textAlign='center';
+    ctx.fillText(t,xS(t),PAD_T+cH+12);
+  });
+  ctx.fillStyle='#4a5560';ctx.fillText('TSS (log scale)',PAD_L+cW/2,PAD_T+cH+24);
+  ctx.save();ctx.translate(10,PAD_T+cH/2);ctx.rotate(-Math.PI/2);ctx.textAlign='center';
+  ctx.fillText('LP/IP ratio',0,0);ctx.restore();
+
+  // Confidence band — fill between lo and hi at sample TSS points
+  if(ci&&ci.lo&&ci.hi){
+    const STEPS=80;
+    const evalTs=[];for(let i=0;i<=STEPS;i++)evalTs.push(tssMin*Math.pow(tssMax/tssMin,i/STEPS));
+    const ciDense=bootstrapCurveCI(valid.map(w=>({tss:w.tss,ratio:w.lpipRatio,weight:w.weight||1,perfScore:w.perfScore})),evalTs,150);
+    if(ciDense){
+      ctx.fillStyle='rgba(255,107,53,0.10)';
+      ctx.beginPath();
+      let started=false;
+      evalTs.forEach((t,i)=>{
+        const v=ciDense.hi[i];
+        if(v==null)return;
+        if(!started){ctx.moveTo(xS(t),yS(v));started=true}else ctx.lineTo(xS(t),yS(v));
+      });
+      for(let i=evalTs.length-1;i>=0;i--){
+        const v=ciDense.lo[i];if(v==null)continue;
+        ctx.lineTo(xS(evalTs[i]),yS(v));
+      }
+      ctx.closePath();ctx.fill();
+    }
+  }
+
+  // Prescribed curve (white dashed)
+  if(prescribed){
+    ctx.strokeStyle='rgba(232,234,235,0.55)';ctx.lineWidth=1.5;ctx.setLineDash([5,3]);
+    const STEPS=60;ctx.beginPath();
+    for(let i=0;i<=STEPS;i++){
+      const t=tssMin*Math.pow(tssMax/tssMin,i/STEPS);
+      const r=prescribed.a*Math.pow(t,prescribed.b);
+      if(i===0)ctx.moveTo(xS(t),yS(r));else ctx.lineTo(xS(t),yS(r));
+    }
+    ctx.stroke();ctx.setLineDash([]);
+  }
+  // Fitted curve (solid orange)
+  if(fit){
+    ctx.strokeStyle='#ff6b35';ctx.lineWidth=2.5;
+    const STEPS=60;ctx.beginPath();
+    for(let i=0;i<=STEPS;i++){
+      const t=tssMin*Math.pow(tssMax/tssMin,i/STEPS);
+      const r=fit.a*Math.pow(t,fit.b);
+      if(i===0)ctx.moveTo(xS(t),yS(r));else ctx.lineTo(xS(t),yS(r));
+    }
+    ctx.stroke();
+  }
+  // Top-quartile envelope (small light-orange dots, not connected)
+  if(topQuartile&&topQuartile.length){
+    topQuartile.forEach(p=>{
+      ctx.beginPath();ctx.fillStyle='rgba(255,204,0,0.7)';ctx.arc(xS(p.tss),yS(p.ratio),2.5,0,Math.PI*2);ctx.fill();
+    });
+  }
+  // Scatter: each week, color by perf score (grey low → bright orange high)
+  const perfs=valid.map(w=>w.perfScore).filter(v=>v!=null&&isFinite(v));
+  const pMin=perfs.length?Math.min(...perfs):0,pMax=perfs.length?Math.max(...perfs):1;
+  const pRange=(pMax-pMin)||1;
+  valid.forEach(w=>{
+    const x=xS(w.tss),y=yS(w.lpipRatio);
+    let color='rgba(120,130,140,0.6)';
+    if(w.perfScore!=null&&isFinite(w.perfScore)){
+      const t=(w.perfScore-pMin)/pRange; // 0 worst, 1 best
+      const r=Math.round(120+(255-120)*t);
+      const g=Math.round(130+(107-130)*t);
+      const b=Math.round(140+(53-140)*t);
+      color=`rgba(${r},${g},${b},0.9)`;
+    }
+    ctx.beginPath();ctx.fillStyle=color;ctx.arc(x,y,4,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(13,15,16,0.8)';ctx.lineWidth=0.5;ctx.stroke();
+  });
+}
+
+function renderRatioCurveDiscovery(weeks){
+  const body=document.getElementById('ratioCurveBody');if(!body)return;
+  // Filter to weeks with all required fields
+  const valid=weeks.filter(w=>w.tss>0&&w.lpipRatio!=null&&w.lpipRatio>0&&isFinite(w.lpipRatio));
+  const withPerf=valid.filter(w=>w.perfScore!=null&&isFinite(w.perfScore));
+  const minN=10; // hard minimum for any fitting
+  const goodN=20; // threshold for "high confidence"
+  if(withPerf.length<minN){
+    body.innerHTML=`<div style="color:var(--text3);font-style:italic;font-size:11px;line-height:1.5">Need ≥ ${minN} weeks with TSS, LP/IP, and a performance score (currently ${withPerf.length}). Switch the period selector to a longer range, or log more sessions.</div>`;
+    lastDiscoveredAnchors=null;
+    return;
+  }
+  // Build weighted points and fit
+  const weights=perfWeights(withPerf);
+  const fittable=withPerf.map((w,i)=>({tss:w.tss,ratio:w.lpipRatio,weight:weights[i],perfScore:w.perfScore}));
+  const fit=fitWeightedPowerCurve(fittable);
+  // Prescribed curve
+  const prescribed=getCurveParams();
+  // Bootstrap CI at the two anchor TSS values
+  const lowAnchorTSS=Math.round(Math.min(...withPerf.map(w=>w.tss)));
+  const highAnchorTSS=Math.round(Math.max(...withPerf.map(w=>w.tss)));
+  // Use round numbers if reasonable
+  const niceAnchorTSSs=[Math.max(200,Math.round(lowAnchorTSS/50)*50),Math.min(1500,Math.round(highAnchorTSS/50)*50)];
+  if(niceAnchorTSSs[1]<=niceAnchorTSSs[0])niceAnchorTSSs[1]=niceAnchorTSSs[0]+200;
+  const ci=bootstrapCurveCI(fittable,niceAnchorTSSs,200);
+  const topQ=topQuartileEnvelope(withPerf,7);
+
+  // Draw chart
+  drawRatioCurveDiscovery('ratioCurveCanvas',withPerf.map((w,i)=>({...w,weight:weights[i]})),fit,ci,prescribed,topQ);
+
+  // Anchor table
+  const fmtRatio=v=>v==null?'—':v.toFixed(2);
+  const fmtAB=(p)=>p?`a=${p.a.toFixed(4)}, b=${p.b.toFixed(3)}`:'—';
+  const fittedLowR=fit?fit.a*Math.pow(niceAnchorTSSs[0],fit.b):null;
+  const fittedHighR=fit?fit.a*Math.pow(niceAnchorTSSs[1],fit.b):null;
+  const prescribedLowR=prescribed?prescribed.a*Math.pow(niceAnchorTSSs[0],prescribed.b):null;
+  const prescribedHighR=prescribed?prescribed.a*Math.pow(niceAnchorTSSs[1],prescribed.b):null;
+  const tableHtml=`<table style="width:100%;border-collapse:collapse;font-size:11px"><tr><th style="text-align:left;padding:6px 4px;color:var(--text3);font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase">Source</th><th style="text-align:right;padding:6px 4px;color:var(--text3);font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase">@${niceAnchorTSSs[0]} TSS</th><th style="text-align:right;padding:6px 4px;color:var(--text3);font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase">@${niceAnchorTSSs[1]} TSS</th><th style="text-align:right;padding:6px 4px;color:var(--text3);font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase">Exp b</th></tr>
+  <tr><td style="padding:7px 4px;border-top:1px solid var(--border);color:var(--text2)">Prescribed <span style="font-size:8px;color:var(--text3)">(white dashed)</span></td><td style="padding:7px 4px;border-top:1px solid var(--border);text-align:right;font-family:var(--font-display);font-weight:700;color:var(--text2)">${fmtRatio(prescribedLowR)}</td><td style="padding:7px 4px;border-top:1px solid var(--border);text-align:right;font-family:var(--font-display);font-weight:700;color:var(--text2)">${fmtRatio(prescribedHighR)}</td><td style="padding:7px 4px;border-top:1px solid var(--border);text-align:right;font-family:var(--font-display);font-weight:700;color:var(--text2)">${prescribed?prescribed.b.toFixed(3):'—'}</td></tr>
+  <tr><td style="padding:7px 4px;border-top:1px solid var(--border);color:var(--text)">Fitted <span style="font-size:8px;color:var(--text3)">(solid orange)</span></td><td style="padding:7px 4px;border-top:1px solid var(--border);text-align:right;font-family:var(--font-display);font-weight:800;color:var(--accent2)">${fmtRatio(fittedLowR)}</td><td style="padding:7px 4px;border-top:1px solid var(--border);text-align:right;font-family:var(--font-display);font-weight:800;color:var(--accent2)">${fmtRatio(fittedHighR)}</td><td style="padding:7px 4px;border-top:1px solid var(--border);text-align:right;font-family:var(--font-display);font-weight:800;color:var(--accent2)">${fit?fit.b.toFixed(3):'—'}</td></tr>
+  <tr><td style="padding:7px 4px;border-top:1px solid var(--border);color:var(--text3);font-size:10px">80% CI</td><td style="padding:7px 4px;border-top:1px solid var(--border);text-align:right;color:var(--text3);font-family:var(--font-display);font-size:10px">${ci&&ci.lo[0]!=null?fmtRatio(ci.lo[0])+' – '+fmtRatio(ci.hi[0]):'—'}</td><td style="padding:7px 4px;border-top:1px solid var(--border);text-align:right;color:var(--text3);font-family:var(--font-display);font-size:10px">${ci&&ci.lo[1]!=null?fmtRatio(ci.lo[1])+' – '+fmtRatio(ci.hi[1]):'—'}</td><td style="padding:7px 4px;border-top:1px solid var(--border);text-align:right;color:var(--text3);font-family:var(--font-display);font-size:10px">—</td></tr>
+  </table>`;
+
+  // "At your typical TSS" sentence
+  const typicalTSS=weeklyTSSGoal||650;
+  const fittedTypical=fit?fit.a*Math.pow(typicalTSS,fit.b):null;
+  const prescribedTypical=prescribed?prescribed.a*Math.pow(typicalTSS,prescribed.b):null;
+  let typicalSentence='';
+  if(fittedTypical!=null&&prescribedTypical!=null){
+    const dev=fittedTypical-prescribedTypical;
+    const direction=dev>0.05?'more volume-heavy':dev<-0.05?'more intensity-heavy':'about the same';
+    const dirColor=Math.abs(dev)<0.05?'var(--text2)':'var(--accent2)';
+    typicalSentence=`<div style="font-size:11px;color:var(--text2);line-height:1.55;padding:9px 11px;background:var(--surface2);border-radius:7px;margin-top:10px">At your typical week (~${Math.round(typicalTSS)} TSS), prescribed says ratio should be <strong style="color:var(--text)">${fmtRatio(prescribedTypical)}</strong>. Your data says <strong style="color:${dirColor}">${fmtRatio(fittedTypical)}</strong> — that's <strong style="color:${dirColor}">${direction}</strong>${Math.abs(dev)<0.05?'.':' than the prescribed curve.'}</div>`;
+  }
+
+  // Best-vs-worst ratio one-liner: top 20% perf vs bottom 20% perf, mean lpipRatio
+  const sortedByPerf=[...withPerf].sort((a,b)=>b.perfScore-a.perfScore);
+  const top20n=Math.max(2,Math.floor(sortedByPerf.length*0.2));
+  const bot20=sortedByPerf.slice(-top20n);
+  const top20=sortedByPerf.slice(0,top20n);
+  const top20Mean=top20.reduce((s,w)=>s+w.lpipRatio,0)/top20.length;
+  const bot20Mean=bot20.reduce((s,w)=>s+w.lpipRatio,0)/bot20.length;
+  const top20TssMean=top20.reduce((s,w)=>s+w.tss,0)/top20.length;
+  const bot20TssMean=bot20.reduce((s,w)=>s+w.tss,0)/bot20.length;
+  const ratioGap=top20Mean-bot20Mean;
+  const bestVsWorstHtml=`<div style="display:flex;gap:6px;margin-top:10px"><div style="flex:1;padding:9px 10px;background:rgba(255,107,53,0.08);border:1px solid rgba(255,107,53,0.25);border-radius:7px"><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;font-weight:700">Best ${top20n} weeks</div><div style="font-family:var(--font-display);font-size:18px;font-weight:800;color:var(--accent2);margin-top:3px">ratio ${top20Mean.toFixed(2)}</div><div style="font-size:9px;color:var(--text3);margin-top:1px">avg ~${Math.round(top20TssMean)} TSS</div></div><div style="flex:1;padding:9px 10px;background:rgba(74,85,96,0.10);border:1px solid var(--border);border-radius:7px"><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;font-weight:700">Worst ${top20n} weeks</div><div style="font-family:var(--font-display);font-size:18px;font-weight:800;color:var(--text2);margin-top:3px">ratio ${bot20Mean.toFixed(2)}</div><div style="font-size:9px;color:var(--text3);margin-top:1px">avg ~${Math.round(bot20TssMean)} TSS</div></div></div><div style="font-size:11px;color:var(--text2);line-height:1.55;margin-top:8px">${Math.abs(ratioGap)<0.08?'No meaningful ratio difference between your best and worst weeks — ratio may not be a strong driver, or your TSS varies enough to mask the effect.':ratioGap>0?`Your best weeks ran <strong style="color:var(--accent2)">${ratioGap>0?'+':''}${ratioGap.toFixed(2)}</strong> more volume-heavy on average. ${Math.abs(top20TssMean-bot20TssMean)>100?'Note: the TSS gap between groups is large, so this could partly reflect TSS, not pure ratio.':''}`:`Your best weeks ran <strong style="color:var(--accent2)">${ratioGap.toFixed(2)}</strong> more intensity-heavy on average. ${Math.abs(top20TssMean-bot20TssMean)>100?'Note: the TSS gap between groups is large, so this could partly reflect TSS, not pure ratio.':''}`}</div>`;
+
+  // Off-curve cost: r(dev_from_fit, perfScore | TSS)
+  let offCurveHtml='';
+  if(fit){
+    const pairs=withPerf.filter(w=>w.tss>0&&w.lpipRatio>0).map(w=>({
+      dev:w.lpipRatio-fit.a*Math.pow(w.tss,fit.b),
+      perf:w.perfScore,
+      tss:w.tss
+    }));
+    if(pairs.length>=4){
+      const r=partialCorr(pairs.map(p=>p.dev),pairs.map(p=>p.perf),pairs.map(p=>p.tss));
+      if(r.r!=null){
+        const fmtR=v=>(v>=0?'+':'')+v.toFixed(2);
+        const interp=r.r<-0.3?{txt:`Strong negative — deviating from the fitted curve in either direction <strong style="color:var(--accent)">does cost performance</strong>. The curve is a real attractor for your training.`,color:'var(--accent)'}:r.r>0.3?{txt:`Strong positive — surprisingly, deviating <strong>above</strong> the fitted curve correlates with <strong>better</strong> performance. The fit may be biased low; you may benefit from more volume.`,color:'var(--accent2)'}:r.r<-0.15?{txt:`Mild negative — there is some evidence that being off-curve hurts performance, but it's weak.`,color:'var(--yellow)'}:Math.abs(r.r)<0.15?{txt:`Near zero — deviations from the fitted curve don't predict performance once TSS is held constant. Either the fit absorbed the signal already, or ratio matters less than you think.`,color:'var(--text3)'}:{txt:`Moderate positive — being above the curve mildly predicts better performance. Consider whether the fitted curve is too low.`,color:'var(--yellow)'};
+        offCurveHtml=`<div style="margin-top:12px;padding:10px 12px;background:var(--surface2);border-radius:7px;border-left:3px solid ${interp.color}"><div style="font-family:var(--font-display);font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3);margin-bottom:4px">Off-curve cost</div><div style="display:flex;align-items:baseline;gap:10px"><div style="font-family:var(--font-display);font-size:20px;font-weight:800;color:${interp.color}">${fmtR(r.r)}</div><div style="font-size:10px;color:var(--text3)">r(deviation from fit, performance | TSS)<br>n=${r.n}</div></div><div style="font-size:11px;color:var(--text2);line-height:1.55;margin-top:6px">${interp.txt}</div></div>`;
+      }
+    }
+  }
+
+  // Confidence label + Apply button
+  const lowExcludesPrescribed=ci&&ci.lo[0]!=null&&ci.hi[0]!=null&&prescribedLowR!=null&&(prescribedLowR<ci.lo[0]||prescribedLowR>ci.hi[0]);
+  const highExcludesPrescribed=ci&&ci.lo[1]!=null&&ci.hi[1]!=null&&prescribedHighR!=null&&(prescribedHighR<ci.lo[1]||prescribedHighR>ci.hi[1]);
+  const showApply=lowExcludesPrescribed&&highExcludesPrescribed&&fit&&withPerf.length>=goodN;
+  const confLabel=withPerf.length<goodN?`<span style="color:var(--yellow);font-weight:700">Low confidence</span> (n=${withPerf.length}, ideally ≥${goodN}). Take recommendations cautiously.`:`<span style="color:var(--accent);font-weight:700">High confidence</span> (n=${withPerf.length}).`;
+
+  // Cache for Apply
+  if(fit&&showApply){
+    lastDiscoveredAnchors={
+      anchorLowTSS:niceAnchorTSSs[0],
+      anchorLowRatio:Number(fittedLowR.toFixed(3)),
+      anchorHighTSS:niceAnchorTSSs[1],
+      anchorHighRatio:Number(fittedHighR.toFixed(3))
+    };
+  }else{
+    lastDiscoveredAnchors=null;
+  }
+  const applyBtn=showApply?`<div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="btn-sm" onclick="applyDiscoveredAnchors()" style="background:var(--accent2);color:var(--bg);font-weight:800;border:none;padding:7px 14px;border-radius:6px;cursor:pointer;font-family:var(--font-display);letter-spacing:0.05em;text-transform:uppercase;font-size:10px">Apply suggested anchors</button><span style="font-size:10px;color:var(--text3)">→ updates curve in Settings to (${niceAnchorTSSs[0]}, ${fittedLowR.toFixed(2)}) and (${niceAnchorTSSs[1]}, ${fittedHighR.toFixed(2)})</span></div>`:`<div style="margin-top:8px;font-size:10px;color:var(--text3);font-style:italic">${ci?'Prescribed anchors fall inside the 80% confidence band — current curve is consistent with your data, no update suggested.':''}</div>`;
+
+  body.innerHTML=`<div style="position:relative"><canvas id="ratioCurveCanvas" height="260" style="width:100%;display:block"></canvas></div>
+<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;font-size:10px;color:var(--text3);line-height:1.5">
+<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:14px;height:0;border-top:2.5px solid #ff6b35"></span>Fitted curve</span>
+<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:14px;height:0;border-top:1.5px dashed rgba(232,234,235,0.55)"></span>Prescribed</span>
+<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:12px;height:8px;background:rgba(255,107,53,0.18);border-radius:2px"></span>80% CI band</span>
+<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:6px;height:6px;background:rgba(255,204,0,0.7);border-radius:50%"></span>Top-quartile points</span>
+<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:6px;height:6px;background:#ff6b35;border-radius:50%"></span>Best week</span>
+<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:6px;height:6px;background:rgba(120,130,140,0.6);border-radius:50%"></span>Worst week</span>
+</div>
+<div style="margin-top:10px">${tableHtml}</div>
+${typicalSentence}
+${bestVsWorstHtml}
+${offCurveHtml}
+<div style="font-size:10px;color:var(--text3);line-height:1.5;margin-top:10px">${confLabel}</div>
+${applyBtn}`;
+}
+
+// Wire up the Apply button
+function applyDiscoveredAnchors(){
+  if(!lastDiscoveredAnchors){flash('No suggestion available');return}
+  if(!confirm(`Update efficiency curve anchors to:\n  Low: ${lastDiscoveredAnchors.anchorLowTSS} TSS → ${lastDiscoveredAnchors.anchorLowRatio} ratio\n  High: ${lastDiscoveredAnchors.anchorHighTSS} TSS → ${lastDiscoveredAnchors.anchorHighRatio} ratio\n\nThe previous values can always be restored in Settings.`))return;
+  curveConfig={...lastDiscoveredAnchors};
+  save();
+  flash('Curve anchors updated');
+  renderCorrelations();
+  if(typeof renderCurveConfig==='function')renderCurveConfig();
 }
 
 function renderPlateauDetection(weeks){
